@@ -1,0 +1,74 @@
+# =============================================================================
+# FinTechDemo K8s — order-service Deployment
+# 【職責】跑下單服務；指向 risk／account；預設關 Kafka（叢集示意可不掛 Redpanda）
+# 【技巧】annotations prometheus.io/*：常見 ServiceMonitor／抓取慣例（需叢集有對應堆疊才生效）
+# 【概念】與 compose 對照：K8s 這裡 FINTECH_KAFKA_ENABLED=false，本機全棧則用 compose demo=true
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+      annotations:
+        # 【技巧】字串要加引號，避免 YAML 把 true 解成布林造成工具差異
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: order-service
+          # 【技巧】本機：docker build --build-arg MODULE=order-service -t fintech-demo/order-service:local .
+          image: fintech-demo/order-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: FINTECH_SERVICES_RISK_URL
+              value: http://risk-service:8082
+            - name: FINTECH_SERVICES_ACCOUNT_URL
+              value: http://account-service:8084
+            # 【概念】示意清單不強制 Kafka；要非同步路徑可另加 Redpanda Deployment 再改 true
+            - name: FINTECH_KAFKA_ENABLED
+              value: "false"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70.0"
+          # 【概念】startupProbe 擋掉「啟動慢被 liveness 殺」→ CrashLoop／exit 137
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            periodSeconds: 5
+            failureThreshold: 36
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            periodSeconds: 20
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

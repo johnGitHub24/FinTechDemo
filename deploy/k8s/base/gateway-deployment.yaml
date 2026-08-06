@@ -1,0 +1,80 @@
+# =============================================================================
+# FinTechDemo K8s — gateway Deployment
+# 【職責】跑 gateway 容器（對外入口）；注入下游 order／risk／account 的 ClusterIP URL
+# 【技巧】Deployment＝宣告式「要 N 個相同 Pod」；selector.matchLabels 必須對上 template.labels
+# 【概念】Service 用 label 選 Pod；env 把 K8s DNS 名寫進 Spring fintech.services.*-url
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  # 【技巧】replicas：期望副本數；dev overlay 會 patch 成 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        # 【技巧】必須與 spec.selector.matchLabels 一致，否則 Deployment 無法接管 Pod
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          # 【技巧】本機先：docker build --build-arg MODULE=gateway -t fintech-demo/gateway:local .
+          image: fintech-demo/gateway:local
+          # 【技巧】IfNotPresent：本機已有 tag 就不再拉；示範用（prod 常用 Always＋digest）
+          imagePullPolicy: IfNotPresent
+          ports:
+            # 【技巧】containerPort：文件／網路政策參考；真正聽埠由程序決定（8080）
+            - containerPort: 8080
+              name: http
+          env:
+            # 【概念】K8s Service DNS：同 namespace 內用短名 order-service、risk-service、account-service
+            - name: FINTECH_SERVICES_ORDER_URL
+              value: http://order-service:8081
+            - name: FINTECH_SERVICES_RISK_URL
+              value: http://risk-service:8082
+            # 【技巧】每個 name 只應出現一次（曾誤重複 ACCOUNT_URL，已移除重複項）
+            - name: FINTECH_SERVICES_ACCOUNT_URL
+              value: http://account-service:8084
+            # 【技巧】容器記憶體感知：JVM 依 cgroup limit 配 heap，避免預設堆過大 → OOM 137
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70.0"
+          # 【概念】startupProbe：啟動期專用；未成功前「不執行」liveness（避免慢啟動被誤殺重啟）
+          # 【技巧】failureThreshold×periodSeconds ≈ 允許最長啟動時間（36×5s＝180s）
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 36
+            timeoutSeconds: 3
+          # 【技巧】readiness：未就緒則不進 Service 端點（避免打到還沒好的 Pod）
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 3
+          # 【技巧】liveness：僅在 startup 成功後生效；連續失敗才重啟（救死鎖，不是催促啟動）
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 20
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            # 【概念】requests＝排程保證；limits＝上限（防單一 Pod 吃光節點）
+            # 【技巧】kind 單節點 + 四個 Spring Boot：512Mi 易 OOM／慢啟動被殺；dev 用 768Mi
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

@@ -1,0 +1,17 @@
+# =============================================================================
+# order-service — application-demo.yml（Spring profile = demo）
+# 【職責】覆寫「Demo／compose 全棧」行為：打開 Kafka 非同步下單主路徑
+# 【技巧】檔名 application-{profile}.yml；啟用方式 SPRING_PROFILES_ACTIVE=demo 或 --spring.profiles.active=demo
+# 【概念】同一套程式，用 profile 切「單機可跑」vs「分散式示意」；需先 docker compose up -d（至少 Redpanda）
+# =============================================================================
+
+fintech:
+  kafka:
+    # 【技巧】只覆寫差異；其餘仍繼承 application.yml
+    enabled: true
+
+spring:
+  kafka:
+    listener:
+      # 【概念】與 fintech.kafka.enabled 對齊，讓 @KafkaListener 真正啟動
+      auto-startup: true

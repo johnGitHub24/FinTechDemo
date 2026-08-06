@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 上線部署階段層次（MD）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>上線部署階段層次（MD）</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/deploy/stages.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 逐層打通：上線部署階段層次</h1>
+<blockquote>
+<p><strong>怎麼用</strong>：每一階段有「通過閘門」；<strong>前一層未綠燈，不要跳下一層</strong>。<br><strong>細節解法</strong>（Docker／kind refused 等）：<a href="./k8s-tips.html"><code>K8s跑通與驗證技巧</code></a><br><strong>視覺版</strong>：<a href="../portals/stages.html"><code>上線部署階段層次.html</code></a></p>
+</blockquote>
+<hr>
+<h2>總覽（一圖）</h2>
+<div class="mermaid">flowchart TB
+  S0["S0 工程可建置<br/>gradlew check"] --> S1["S1 單機可 Demo<br/>order + Vue"]
+  S1 --> S2["S2 最短可成交<br/>+ risk-service"]
+  S2 --> S3["S3 分散式 Compose<br/>gateway+account+Kafka/Redis"]
+  S3 --> S4["S4 K8s 清單可渲染<br/>check-k8s / kustomize"]
+  S4 --> S5["S5 本機叢集可部署<br/>kind apply + health"]
+  S5 --> S6["S6 上雲就緒示意<br/>staging/prod overlay＋祕密／觀測"]
+</div>
+<table>
+<thead>
+<tr>
+<th>階段</th>
+<th>名稱</th>
+<th>你證明了什麼</th>
+<th>官方指令（通過閘門）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>S0</strong></td>
+<td>工程可建置</td>
+<td>程式／測試／設定語法正確</td>
+<td><code>.\scripts\check.ps1</code> 或 <code>.\gradlew.bat check</code></td>
+</tr>
+<tr>
+<td><strong>S1</strong></td>
+<td>單機可 Demo</td>
+<td>登入→下單劇情在本機成立</td>
+<td><code>:order-service:bootRun</code> + <code>frontend npm run dev</code></td>
+</tr>
+<tr>
+<td><strong>S2</strong></td>
+<td>最短可成交</td>
+<td>Feign 風控鏈通</td>
+<td>再開 <code>RiskServiceApplication</code> :8082</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td>分散式 Compose</td>
+<td>多容器＋Kafka／Redis／Gateway 通</td>
+<td><code>.\scripts\verify-pipeline.ps1 -Up -Smoke</code></td>
+</tr>
+<tr>
+<td><strong>S4</strong></td>
+<td>K8s 清單可渲染</td>
+<td>Manifest／overlay 結構正確</td>
+<td><code>.\scripts\check-k8s.ps1</code></td>
+</tr>
+<tr>
+<td><strong>S5</strong></td>
+<td>本機叢集可部署</td>
+<td>真 API server＋Pod Ready</td>
+<td>Docker Ready → kind → build/load → <code>kubectl apply -k</code></td>
+</tr>
+<tr>
+<td><strong>S6</strong></td>
+<td>上雲就緒示意</td>
+<td>多環境／祕密／觀測敘事可講</td>
+<td>overlay staging/prod、Secret、Ingress（本 Demo 可口述＋骨架）</td>
+</tr>
+</tbody></table>
+<p><strong>對應驗證 L 層</strong>（與 K8s 文件一致）：S0≈L0；S3⊃L1+L3；S4=L2；S5=L4。</p>
+<hr>
+<h2>S0 — 工程可建置（不上線也必須過）</h2>
+<p><strong>目標</strong>：倉庫隨時可驗證，無測試變更不算完成。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>做什麼</td>
+<td>跑單元＋整合；修好紅燈</td>
+</tr>
+<tr>
+<td>通過</td>
+<td><code>BUILD SUCCESSFUL</code></td>
+</tr>
+<tr>
+<td>指令</td>
+<td><code>.\scripts\check.ps1</code></td>
+</tr>
+<tr>
+<td>失敗常見</td>
+<td>編譯錯、測試紅、JDK≠21</td>
+</tr>
+<tr>
+<td>產出</td>
+<td>綠燈 CI 基礎</td>
+</tr>
+</tbody></table>
+<p><strong>閘門</strong>：不過 S0 → 禁止談部署。</p>
+<hr>
+<h2>S1 — 單機可 Demo（產品最小上線感）</h2>
+<p><strong>目標</strong>：Demo 最短路徑：登入、下單、查歷史／餘額（order 內建 H2）。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>做什麼</td>
+<td>起 order:8081 + Vue:5173</td>
+</tr>
+<tr>
+<td>通過</td>
+<td>可登入 <code>trader1/password</code>；Swagger／前台可用</td>
+</tr>
+<tr>
+<td>指令</td>
+<td><code>.\gradlew.bat :order-service:bootRun</code>；<code>cd frontend; npm run dev</code></td>
+</tr>
+<tr>
+<td>失敗常見</td>
+<td>8081 被佔（舊 Grails／其他 Java）</td>
+</tr>
+<tr>
+<td>設定檔</td>
+<td><code>order-service/.../application.yml</code></td>
+</tr>
+</tbody></table>
+<p><strong>閘門</strong>：本機劇情通 → 才加微服務。</p>
+<hr>
+<h2>S2 — 最短可成交（風控鏈）</h2>
+<p><strong>目標</strong>：點「成交」時 Feign 打得動 risk。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>做什麼</td>
+<td>並行起 Risk:8082</td>
+</tr>
+<tr>
+<td>通過</td>
+<td>風控通過／拒絕行為符合 <code>fintech.risk.max-notional</code></td>
+</tr>
+<tr>
+<td>指令</td>
+<td>IntelliJ <code>RiskServiceApplication</code> 或 <code>:risk-service:bootRun</code></td>
+</tr>
+<tr>
+<td>設定</td>
+<td>order yml <code>fintech.services.risk-url</code></td>
+</tr>
+</tbody></table>
+<p><strong>閘門</strong>：雙後端健康 → 才上分散式。</p>
+<hr>
+<h2>S3 — 分散式 Compose（容器化「準上線」）</h2>
+<p><strong>目標</strong>：多服務＋訊息＋快取在同一 Docker 網路跑通（<strong>日常上線演練首選</strong>）。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>做什麼</td>
+<td>Redpanda、Redis、risk、account、order、gateway</td>
+</tr>
+<tr>
+<td>通過</td>
+<td>health UP；<code>-Smoke</code> API 過</td>
+</tr>
+<tr>
+<td>指令</td>
+<td><code>.\scripts\verify-pipeline.ps1 -Up -Smoke</code></td>
+</tr>
+<tr>
+<td>前置</td>
+<td><code>docker info</code> 有 <strong>Server Version</strong></td>
+</tr>
+<tr>
+<td>設定</td>
+<td>compose <code>environment</code>、<code>application-demo.yml</code>（kafka/redis on）</td>
+</tr>
+<tr>
+<td>失敗常見</td>
+<td>引擎未開、埠衝突、健康檢查超時</td>
+</tr>
+</tbody></table>
+<p><strong>閘門</strong>：Compose 煙霧綠 → 才值得花時間在 K8s 叢集。</p>
+<p><strong>技巧</strong>：S3 已能講「分散式部署」；K8s 是編排形態，不是唯一上線方式。</p>
+<hr>
+<h2>S4 — K8s 清單可渲染（部署契約）</h2>
+<p><strong>目標</strong>：證明 <code>deploy/k8s</code> 可組出完整 YAML（<strong>不需活叢集</strong>）。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>做什麼</td>
+<td>kustomize build overlay</td>
+</tr>
+<tr>
+<td>通過</td>
+<td>輸出含 gateway／order／risk／account</td>
+</tr>
+<tr>
+<td>指令</td>
+<td><code>.\scripts\check-k8s.ps1</code></td>
+</tr>
+<tr>
+<td>失敗常見</td>
+<td>kubectl 未裝（會 SKIP）；YAML 語法錯</td>
+</tr>
+</tbody></table>
+<p><strong>閘門</strong>：S4 綠 =「部署描述正確」；<strong>不等于</strong>已上線。</p>
+<hr>
+<h2>S5 — 本機叢集可部署（Kind／真 API）</h2>
+<p><strong>目標</strong>：Manifest 真的進叢集，Pod Ready，可打 health。</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>動作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5.1</td>
+<td>Docker 引擎 Ready</td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>重建／修復 kind：<code>TradingKubernetes\scripts\start-local.ps1 -RecreateCluster -SkipMvp -SkipBuild</code></td>
+</tr>
+<tr>
+<td>5.3</td>
+<td><code>kubectl get --raw=/readyz</code> 成功</td>
+</tr>
+<tr>
+<td>5.4</td>
+<td><code>docker build</code> 四服務 → <code>kind load</code> → <code>kubectl apply -k deploy/k8s/overlays/dev</code></td>
+</tr>
+<tr>
+<td>5.5</td>
+<td><code>kubectl -n fintech-demo get pods</code> 皆 Ready；port-forward 打 health</td>
+</tr>
+</tbody></table>
+<p><strong>通過</strong>：四 Deployment Ready + health UP。<br><strong>細節／connection refused</strong>：見 <a href="./k8s-tips.html"><code>K8s跑通與驗證技巧</code></a> §4～§5。</p>
+<p><strong>閘門</strong>：S5 綠 =「本機 K8s 部署打通」；上雲前最後演練。</p>
+<hr>
+<h2>S6 — 上雲就緒示意（生產前）</h2>
+<p>本 Demo <strong>不強制</strong>實作完整雲上環境；上線架構敘事建議具備：</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>最低示意</th>
+<th>正式雲上（後續）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多環境</td>
+<td><code>overlays/dev</code> 已有</td>
+<td>增 <code>staging</code>／<code>prod</code>（改 replicas、資源、tag）</td>
+</tr>
+<tr>
+<td>祕密</td>
+<td>yml 明文僅 Demo</td>
+<td>K8s Secret／外部 Secret；JWT secret 勿進映像</td>
+</tr>
+<tr>
+<td>入口</td>
+<td>ClusterIP</td>
+<td>Ingress／Gateway API＋TLS</td>
+</tr>
+<tr>
+<td>資料</td>
+<td>H2／示意</td>
+<td>PostgreSQL StatefulSet 或託管 DB</td>
+</tr>
+<tr>
+<td>訊息／快取</td>
+<td>Compose 已證</td>
+<td>託管 Kafka／Redis 或叢內 Helm</td>
+</tr>
+<tr>
+<td>觀測</td>
+<td>Actuator／prometheus 注解</td>
+<td>Prometheus＋Grafana＋告警</td>
+</tr>
+<tr>
+<td>GitOps</td>
+<td>手動 apply</td>
+<td>Argo CD／Flux（對齊 TradingKubernetes）</td>
+</tr>
+</tbody></table>
+<p><strong>通過（示意）</strong>：能口述 S0→S5 路徑，並指出 prod 與 Demo 的差異清單。</p>
+<hr>
+<h2>逐層打通 Checklist（可列印）</h2>
+<pre><code class="language-text">[ ] S0  .\scripts\check.ps1
+[ ] S1  order bootRun + Vue；登入成功
+[ ] S2  risk 起來；成交可過風控
+[ ] S3  verify-pipeline.ps1 -Up -Smoke
+[ ] S4  check-k8s.ps1
+[ ] S5  kind API ready + apply -k + pods Ready
+[ ] S6  多環境／Secret／Ingress／觀測差異已寫進文件或 overlay 骨架
+</code></pre>
+<p><strong>規則</strong>：任一層失敗 → 停在該層修；<strong>禁止</strong>用「跳過 Compose 直接死磕 kind」當捷徑。</p>
+<hr>
+<h2>相關入口</h2>
+<table>
+<thead>
+<tr>
+<th>文件／腳本</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>scripts/verify-pipeline.ps1</code></td>
+<td>S0＋S3／S4 一條龍</td>
+</tr>
+<tr>
+<td><code>scripts/check-k8s.ps1</code></td>
+<td>S4</td>
+</tr>
+<tr>
+<td><code>scripts/smoke-distributed.ps1</code></td>
+<td>S3 煙霧</td>
+</tr>
+<tr>
+<td><a href="./deploy-readme.html">deploy/README</a></td>
+<td>K8s 短操作</td>
+</tr>
+<tr>
+<td><a href="./k8s-tips.html">K8s跑通與驗證技巧</a></td>
+<td>S5 故障排除</td>
+</tr>
+<tr>
+<td><a href="../architecture/distributed.html">分散式系統落地</a></td>
+<td>分散式敘事</td>
+</tr>
+<tr>
+<td><code>TradingKubernetes/scripts/start-local.ps1</code></td>
+<td>kind 權威啟動</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>與 SPEC Phase（P0 骨架…P10 Compose/k8s）互補：SPEC 講「做什麼功能」；本文講「部署成熟度怎麼一層層打通」。</em></p>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

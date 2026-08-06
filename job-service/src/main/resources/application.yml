@@ -1,0 +1,28 @@
+# =============================================================================
+# job-service — application.yml
+# 【職責】排程工作者：定時呼叫 order-service（例如逾時取消）；自帶 token 防誤觸
+# 【技巧】無 DB：只當 HTTP 客戶端＋@Scheduled；埠 8083 與業務 MS 分離
+# 【概念】把「時間驅動」從請求路徑拆出，避免 API 執行緒做批次清理
+# =============================================================================
+
+server:
+  port: 8083
+
+spring:
+  application:
+    name: job-service
+
+fintech:
+  # 【技巧】目標 order 基底 URL；compose／K8s 改成服務名
+  order-url: http://localhost:8081
+  job:
+    # 【概念】簡單共享密鑰（Demo）；呼叫內部 API 時帶上，降低被外部誤打風險
+    token: demo-job-token
+    # 【技巧】每分鐘第 0 秒觸發（Spring 六欄 cron）
+    cancel-cron: "0 */1 * * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

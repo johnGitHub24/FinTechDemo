@@ -1,0 +1,550 @@
+/*
+ * 【職責】定義 FinTechDemo 的全域視覺主題與可重用元件樣式。
+ * 【概念】 :root 內的 CSS 變數集中管理背景、表面、文字、狀態色、陰影與圓角，
+ * 讓各頁面以 var(...) 共用一致的配色與設計語言。
+ */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+TC:wght@400;500;700&display=swap");
+
+:root {
+  --bg0: #e8eef5;
+  --bg1: #d4e4ef;
+  --surface: #ffffff;
+  --surface2: #f4f8fb;
+  --border: #c9d8e6;
+  --text: #1a2b3c;
+  --muted: #5a738a;
+  --accent: #0f766e;
+  --accent-hover: #0d9488;
+  --accent-soft: #ccfbf1;
+  --ok: #047857;
+  --ok-bg: #d1fae5;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+  --info: #1d4ed8;
+  --info-bg: #dbeafe;
+  --shadow: 0 10px 30px rgba(26, 43, 60, 0.08);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "DM Sans", "Noto Sans TC", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #b8e4dc 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #c5d9f0 0%, transparent 50%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+a { color: var(--accent); text-decoration: none; }
+a.router-link-active { color: var(--accent); font-weight: 600; }
+
+.app-shell { min-height: 100vh; }
+
+nav.app-nav {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.5rem;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+nav.app-nav .brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-right: 1rem;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+nav.app-nav .brand span {
+  color: var(--accent);
+}
+
+nav.app-nav a {
+  color: var(--muted);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+nav.app-nav a:hover,
+nav.app-nav a.router-link-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+nav.app-nav .user-chip {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.88rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+main.page {
+  padding: 1.5rem 1.25rem 3rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.65rem;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.35rem;
+}
+
+.page-sub {
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.card h3 {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.metric {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+
+.metric small {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 0.35rem;
+}
+
+label {
+  display: block;
+  margin: 0.55rem 0 0.3rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+input, select, button {
+  font: inherit;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* number／select 在窄欄（story 雙欄）易因原生 spinner／min-content 溢出 */
+input, select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+input:focus, select:focus {
+  outline: 2px solid rgba(15, 118, 110, 0.25);
+  border-color: var(--accent);
+  background: #fff;
+}
+
+button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+button:hover { background: var(--accent-hover); }
+button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+button.secondary {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+button.secondary:hover { background: var(--surface2); }
+
+button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+button.sm {
+  margin-top: 0;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th, td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0.45rem;
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+tbody tr:hover { background: var(--surface2); }
+
+.error { color: var(--danger); margin-top: 0.5rem; font-size: 0.9rem; }
+.ok { color: var(--ok); margin-top: 0.5rem; font-size: 0.9rem; }
+
+.row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.row > * { flex: 1 1 8rem; min-width: 0; }
+
+/* 下單表單：雙欄避免數量／價格在 story 半寬擠爆 */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-PENDING { background: var(--warn-bg); color: var(--warn); }
+.badge-ACCEPTED { background: var(--ok-bg); color: var(--ok); }
+.badge-REJECTED { background: var(--danger-bg); color: var(--danger); }
+.badge-CANCELLED { background: #e5e7eb; color: #4b5563; }
+.badge-BUY { background: var(--info-bg); color: var(--info); }
+.badge-SELL { background: #ffedd5; color: #c2410c; }
+
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.75rem 1.6rem 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.login-card .logo {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.login-card .logo span { color: var(--accent); }
+
+.actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.actions button { margin-top: 0; }
+
+@media (max-width: 640px) {
+  nav.app-nav .user-chip { margin-left: 0; width: 100%; order: 3; }
+}
+
+/* Backend Story Panel */
+.story-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .story-layout { grid-template-columns: 1fr; }
+}
+
+.story-panel h3 { margin-bottom: 0.35rem; }
+.story-sub {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.story-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.story-note {
+  margin: 0.5rem 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 10px 10px 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.story-note strong { color: var(--text); }
+.story-note p { margin: 0.35rem 0 0; }
+.story-note ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.15rem;
+}
+.story-note li { margin: 0.2rem 0; }
+.story-note code {
+  font-size: 0.78em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.flow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.flow-list li {
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.55rem 0.7rem;
+  border-radius: 0 10px 10px 0;
+}
+.flow-list li.fail {
+  border-left-color: var(--danger);
+  background: var(--danger-bg);
+}
+.flow-who { font-weight: 700; font-size: 0.92rem; }
+.flow-purpose { font-size: 0.88rem; margin-top: 0.15rem; }
+.flow-state { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+.lamp-row, .stage-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  background: var(--surface2);
+}
+.lamp .dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+.lamp.up .dot { background: var(--ok); }
+.lamp.down .dot { background: var(--danger); }
+.stage-chip {
+  margin-top: 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.stage-chip.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.stage-chip.pinned {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* 系統運作藍圖 */
+.blueprint {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.blueprint table {
+  width: 100%;
+}
+
+.stack-group table {
+  table-layout: fixed;
+  margin: 0;
+}
+.stack-group table th:nth-child(1),
+.stack-group table td:nth-child(1) { width: 10rem; }
+.stack-group table th:nth-child(2),
+.stack-group table td:nth-child(2) { width: 12rem; word-break: break-word; }
+.stack-group table td:nth-child(3) {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.stack-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.stack-group {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border-left-width: 4px;
+}
+
+.stack-group.tone-front { border-left-color: #0f766e; }
+.stack-group.tone-back { border-left-color: #1d4ed8; }
+.stack-group.tone-infra { border-left-color: #b45309; }
+.stack-group.tone-job { border-left-color: #7c3aed; }
+
+.stack-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.85rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.stack-group-head strong {
+  font-size: 0.95rem;
+}
+
+.stack-group-head span {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.stack-group th,
+.stack-group td {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+.stack-group tbody tr:last-child td {
+  border-bottom: none;
+}
+.blueprint h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+.blueprint .card { margin-bottom: 1rem; }
+.blueprint-lead {
+  color: var(--muted);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.blueprint-guest-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.blueprint-guest-bar .brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.blueprint-guest-bar .brand span { color: var(--accent); }
+
+.blueprint-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  align-items: center;
+}
+.blueprint-toc .toc-label {
+  font-weight: 700;
+  margin-right: 0.35rem;
+}
+.blueprint-toc .toc-sep {
+  color: var(--muted);
+  user-select: none;
+}
+.blueprint-toc a { font-size: 0.9rem; }
+
+.blueprint-howto { margin-bottom: 1rem; }
+
+.mermaid-wrap {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  min-height: 4rem;
+}
+
+.mermaid-wrap svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.login-blueprint-link {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.login-blueprint-link a { font-weight: 600; }
+
+.blueprint .story-note ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+.blueprint .story-note li { margin: 0.25rem 0; }
+
+

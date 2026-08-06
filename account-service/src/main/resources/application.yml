@@ -1,0 +1,80 @@
+# =============================================================================
+# account-service — 預設 application.yml（local／test 基線）
+# 【職責】帳務／持倉：H2、JWT、Kafka／Redis（預設關）、Actuator
+# 【技巧】排除 RedisAutoConfiguration → 本機無 Redis 也能啟動
+# 【概念】「可選基礎設施」：enabled=false＋排除 autoconfig；demo profile 再打開
+# =============================================================================
+
+server:
+  port: 8084
+
+spring:
+  application:
+    name: account-service
+  autoconfigure:
+    # 【技巧】exclude 完整類名字串：關掉 Spring Boot 自動 Redis 連線
+    # 【概念】redis 預設關閉：避免本機無 Redis 時啟動失敗
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:accountdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  data:
+    redis:
+      # 【技巧】占位主機；fintech.redis.enabled=false 時通常不會真連
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    consumer:
+      group-id: fintech-account
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.fintech.demo.common.event"
+        # 【技巧】指定預設事件型別，簡化 consumer 反序列化
+        spring.json.value.default.type: com.fintech.demo.common.event.TradeExecutedEvent
+    listener:
+      auto-startup: ${fintech.kafka.enabled:false}
+
+app:
+  jwt:
+    # 【概念】與 order-service 同密鑰：跨服務驗證同一 JWT（Demo 簡化；正式可走 JWKS）
+    secret: "fintech-demo-dev-secret-key-32bytes!!"
+    expiration-ms: 86400000
+
+fintech:
+  kafka:
+    enabled: false
+  redis:
+    enabled: false
+  job:
+    token: demo-job-token
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  health:
+    redis:
+      enabled: false
+    kafka:
+      enabled: false
+  endpoint:
+    health:
+      show-details: when_authorized

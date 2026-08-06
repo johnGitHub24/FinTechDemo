@@ -1,0 +1,21 @@
+flowchart TD
+  A["① 登入 Login<br/>Vue → Order :8081<br/>Spring Security + JWT<br/>JJWT 0.12.5 簽驗 · RBAC"]
+  B["② 下單 Create<br/>Vue → Order<br/>JPA 持久化<br/>狀態 PENDING"]
+  C{"③ 路徑？"}
+  D["③a 經 Gateway :8080<br/>Gateway MVC 轉發<br/>標頭 X-Demo-Via-Gateway"]
+  E["③b 直連 Order :8081<br/>Demo 最短路徑"]
+  F["④ 點擊成交 Execute<br/>Order 啟動成交流程"]
+  G["⑤ Feign → Risk :8082<br/>名目金額風控檢查"]
+  H{"⑥ 風控結果"}
+  I["通過 → ACCEPTED<br/>訂單狀態機終態之一"]
+  J["拒絕 → REJECTED<br/>名目超限等"]
+  K["⑦ 可選 Account :8084<br/>apply-trade<br/>Redis 快取 · Kafka 事件"]
+  L["⑧ 可選 Job :8083<br/>逾時未成交<br/>PENDING → CANCELLED"]
+
+  A --> B --> C
+  C -->|分散式敘事| D --> F
+  C -->|最短可成交| E --> F
+  F --> G --> H
+  H -->|ok| I --> K
+  H -->|fail| J
+  B -.-> L

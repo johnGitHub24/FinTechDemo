@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>architecture</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/architecture/architecture.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — Architecture（模組化 × 分散式）</h1>
+<blockquote>
+<p><strong>為什麼長這樣</strong>：<a href="../guides/why.html"><code>技術次序與架構為什麼</code></a> · 視覺 <a href="../portals/codeGraphic.html"><code>codeGraphic</code></a> · 落地細節 <a href="./distributed.html"><code>分散式系統落地</code></a><br><strong>定位</strong>：展示用 <strong>Distributed System Demo</strong> — 進階功能刻意不做，但<strong>模組邊界與事件鏈必須完整可講、可跑</strong>。</p>
+</blockquote>
+<hr>
+<h2>1. 設計原則（這份作品的價值）</h2>
+<table>
+<thead>
+<tr>
+<th>原則</th>
+<th>本倉怎麼落地</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>模組化</strong></td>
+<td>一職責一可部署單元：order／risk／account／job／gateway／frontend／common</td>
+</tr>
+<tr>
+<td><strong>分散式</strong></td>
+<td>同步用 Feign；非同步用 Kafka topic；快取用 Redis；入口用 Gateway</td>
+</tr>
+<tr>
+<td><strong>可降級學習</strong></td>
+<td>預設 kafka／redis 關閉 → 單機仍可學劇情；<code>demo</code> profile 才開完整鏈</td>
+</tr>
+<tr>
+<td><strong>不堆進階</strong></td>
+<td>不做 Eureka／Config／部分成交／行情流 — 把力氣留在「邊界清楚」</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. 邏輯架構（完整系統）</h2>
+<div class="mermaid">flowchart TB
+  subgraph Client
+    Vue["Vue :5173"]
+  end
+
+  subgraph Edge["Middleware"]
+    GW["gateway :8080"]
+  end
+
+  subgraph Biz["Business Microservices ≥3"]
+    ORD["order-service :8081<br/>JWT / Orders / Audit / Kafka Producer"]
+    RSK["risk-service :8082<br/>Notional Risk"]
+    ACC["account-service :8084<br/>Cash / Positions / Redis / Kafka Consumer"]
+  end
+
+  subgraph Support["Support"]
+    JOB["job-service :8083<br/>Stale cancel scheduler"]
+  end
+
+  subgraph Infra["Infrastructure"]
+    K[[Kafka<br/>order-events / trade-events]]
+    RD[(Redis cache)]
+    H2[(H2 per service<br/>Demo; PG optional)]
+  end
+
+  Vue -->|/api| GW
+  GW -->|/api/accounts /positions| ACC
+  GW -->|/api/** else| ORD
+  ORD -->|Feign| RSK
+  ORD -->|Feign optional sync| ACC
+  ORD -->|produce| K
+  K -->|order-events consume| ORD
+  K -->|trade-events consume| ACC
+  ACC --> RD
+  ORD --> H2
+  ACC --> H2
+  JOB -->|HTTP cancel-stale| ORD
+</div>
+<hr>
+<h2>3. 模組職責矩陣（對齊 Trading* 次序）</h2>
+<table>
+<thead>
+<tr>
+<th>模組</th>
+<th>埠</th>
+<th>產品職責</th>
+<th>技術職責</th>
+<th>為何獨立</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>frontend</code></td>
+<td>5173</td>
+<td>登入／前台下單／後台查詢</td>
+<td>Vue Router、JWT、分頁</td>
+<td>現場可見劇情</td>
+</tr>
+<tr>
+<td><code>gateway</code></td>
+<td>8080</td>
+<td>唯一 API 入口</td>
+<td>Path 路由到 order／account</td>
+<td>Middleware</td>
+</tr>
+<tr>
+<td><code>order-service</code></td>
+<td>8081</td>
+<td>訂單生命週期、登入、審計</td>
+<td>JWT、JPA、Kafka <strong>Producer</strong>、AOP、Feign</td>
+<td>交易編排</td>
+</tr>
+<tr>
+<td><code>risk-service</code></td>
+<td>8082</td>
+<td>名義金額風控</td>
+<td>無狀態規則服務</td>
+<td>與下單生命週期分離</td>
+</tr>
+<tr>
+<td><code>account-service</code></td>
+<td>8084</td>
+<td>餘額／持倉</td>
+<td>JPA 帳本、Kafka <strong>Consumer</strong>、<strong>Redis</strong></td>
+<td>第三業務 MS；帳本邊界</td>
+</tr>
+<tr>
+<td><code>job-service</code></td>
+<td>8083</td>
+<td>逾時取消觸發</td>
+<td><code>@Scheduled</code> → HTTP</td>
+<td>排程與請求路徑分離</td>
+</tr>
+<tr>
+<td><code>common</code></td>
+<td>—</td>
+<td>契約</td>
+<td>DTO、Topic、事件</td>
+<td>跨服務不漂移</td>
+</tr>
+<tr>
+<td><code>loadtest</code></td>
+<td>—</td>
+<td>壓測</td>
+<td>Locust</td>
+<td>證明層</td>
+</tr>
+<tr>
+<td><code>deploy</code></td>
+<td>—</td>
+<td>Compose + K8s</td>
+<td>infra／overlay（含 <strong>account</strong>）</td>
+<td>上雲路徑</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. 事件與同步路徑（分散式核心）</h2>
+<pre><code class="language-text">【非同步 Demo — kafka.enabled=true】
+POST /api/orders
+  → produce order-events
+  → order Consumer：Feign risk → 訂單 ACCEPTED
+  → produce trade-events
+  → account Consumer：入帳 + Redis evict
+
+【同步學習 — kafka=false】
+POST /api/orders/{id}/execute
+  → Feign risk → 本機帳本（standalone）
+  → 可選 feign-sync → account-service（雙寫；預設關）
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Producer</th>
+<th>Consumer</th>
+<th>觸發的「其他服務」</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>order-events</code></td>
+<td>order</td>
+<td>order</td>
+<td><strong>risk-service</strong>（Feign）</td>
+</tr>
+<tr>
+<td><code>trade-events</code></td>
+<td>order</td>
+<td><strong>account</strong></td>
+<td>Redis cache 失效</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. 資料與快取邊界</h2>
+<table>
+<thead>
+<tr>
+<th>資料</th>
+<th>擁有者</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>users / orders / audit_log</td>
+<td>order-service</td>
+<td>登入與委託真相</td>
+</tr>
+<tr>
+<td>accounts / positions</td>
+<td><strong>account-service</strong>（正式敘事）</td>
+<td>現金／持倉；Redis 快取讀路徑</td>
+</tr>
+<tr>
+<td>order 內 H2 帳本</td>
+<td>order（standalone 便道）</td>
+<td>方便只起一個服務學習；可說明「正式走 account」</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. 流量模式</h2>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>路徑</th>
+<th>何時用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Minimal 學習</td>
+<td>Vue → order:8081</td>
+<td>先跑通前後台劇情</td>
+</tr>
+<tr>
+<td>Distributed Demo</td>
+<td>Vue → Gateway → order／account + Kafka + Redis</td>
+<td>主打分散式</td>
+</tr>
+<tr>
+<td>Job</td>
+<td>job → order internal cancel-stale</td>
+<td>排程示範</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. 刻意不做（保持架構乾淨）</h2>
+<ul>
+<li>Eureka／Config Server（固定 URL；口述可換 <code>lb://</code>）</li>
+<li>部分成交／Level-2／出入金／KYC</li>
+<li>把帳本再拆第五個業務服務、或上 CQRS 全套</li>
+</ul>
+<hr>
+<h2>8. 設定入口</h2>
+<ul>
+<li><strong>統一學習入口（書櫃）</strong>：<a href="../index.html">docs/index.html</a></li>
+<li><strong>學習導引地圖（雙軌路線）</strong>：<a href="../portals/learning-map.html">learning-map.html</a>（請用 ASCII 網址）</li>
+<li><strong>MD 閱讀器</strong>：<a href="../md-reader.html">md-reader.html</a></li>
+<li>埠與變數：<a href="./engineering-config.html"><code>engineering-config</code></a></li>
+<li>API 互動：<a href="../portals/swagger.html"><code>swagger</code></a></li>
+<li>驗證：<code>.\scripts\check.ps1</code>、<code>.\scripts\check-k8s.ps1</code>、<code>.\scripts\smoke-distributed.ps1</code></li>
+<li>K8s 跑通／故障排除：<a href="../deploy/k8s-tips.html"><code>K8s跑通與驗證技巧</code></a></li>
+<li>上線部署階段層次：<a href="../portals/stages.html"><code>上線部署階段層次</code></a></li>
+<li>啟動：<code>.\scripts\start-demo.ps1</code></li>
+</ul>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# =============================================================================
+# gateway — application.yml
+# 【職責】API 入口設定：埠 8080、下游 order／risk／account URL、精簡 Actuator
+# 【技巧】fintech.services.*-url → 綁定 Java record ServiceUrlsProperties（constructor binding）
+#         環境變數覆寫例：FINTECH_SERVICES_ORDER_URL（compose／K8s）
+# 【概念】為何 Properties 用 record？組態啟動後不可變；GatewayRouteConfig 注入後用
+#         urls.orderUrl()／accountUrl()（非 getXxx）。Entity／需 setXxx 的 Request 才用 class+Lombok。
+# =============================================================================
+
+server:
+  # 【技巧】對外慣用 8080；前端 nginx／瀏覽器打這裡（或經 frontend 反代）
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+
+# 【概念】鍵名 order-url 鬆散綁定到 record 元件 orderUrl；學習重點是「URL 對應微服務」
+fintech:
+  services:
+    # → ServiceUrlsProperties.orderUrl()；路由：GatewayRouteConfig.orderRoutes
+    order-url: http://localhost:8081
+    # → ServiceUrlsProperties.riskUrl()（預留／文件對照）
+    risk-url: http://localhost:8082
+    # → ServiceUrlsProperties.accountUrl()；路由：GatewayRouteConfig.accountRoutes
+    account-url: http://localhost:8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 【技巧】探針夠用即可；gateway 通常不暴露 prometheus（可依需求加）
+        include: health,info

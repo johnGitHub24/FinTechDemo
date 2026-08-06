@@ -1,0 +1,108 @@
+# =============================================================================
+# order-service — 預設 application.yml（local／test 基線）
+# 【職責】下單服務的埠、H2、JPA、Kafka（預設關）、JWT、下游 URL、Actuator／OpenAPI
+# 【技巧】Spring Boot 鬆散綁定：環境變數 FINTECH_KAFKA_ENABLED ↔ fintech.kafka.enabled
+# 【概念】預設「可單機啟動」：H2 in-mem、Kafka listener 不 auto-startup；compose 用 demo profile 打開
+# =============================================================================
+
+server:
+  # 【技巧】各 MS 固定埠，方便本機並行＋文件對照（gateway 8080／order 8081／risk 8082／job 8083／account 8084）
+  port: 8081
+
+spring:
+  application:
+    # 【技巧】出現在日誌、Actuator、追蹤；建議與模組名一致
+    name: order-service
+  datasource:
+    # 【技巧】jdbc:h2:mem + MODE=PostgreSQL：記憶體庫但 SQL 方言靠近 Postgres，方便日後切真庫
+    # 【概念】DB_CLOSE_DELAY=-1：JVM 活著就保留 mem DB（否則連線關可能清掉）
+    url: jdbc:h2:mem:fintechdemo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      # 【技巧】ddl-auto: update＝依實體自動改 schema（Demo 方便；正式多用 migration）
+      ddl-auto: update
+    # 【技巧】open-in-view: false＝避免請求結束前懶加載「開著 Session」的陷阱
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  h2:
+    console:
+      # 【概念】開發可開 /h2-console 看表；正式環境應關閉
+      enabled: true
+      path: /h2-console
+  kafka:
+    # 【技巧】${ENV:default}：有環境變數用環境變數，否則本機連 compose 對外 19092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    consumer:
+      group-id: fintech-order
+      # 【技巧】earliest：新 consumer group 從最早訊息讀（教學易重播；prod 常 latest）
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # 【技巧】trusted.packages：JsonDeserializer 反序列化允許的套件（安全邊界）
+        spring.json.trusted.packages: "com.fintech.demo.common.event"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      # 【概念】與 fintech.kafka.enabled 聯動：預設 false → 沒有 broker 也能開機
+      auto-startup: ${fintech.kafka.enabled:false}
+
+app:
+  jwt:
+    # 【技巧】Demo 密鑰寫死方便學習；正式必須來自 Secret／環境變數，且夠長
+    secret: "fintech-demo-dev-secret-key-32bytes!!"
+    # 【技巧】86400000 ms＝24h
+    expiration-ms: 86400000
+
+fintech:
+  kafka:
+    enabled: false
+  account:
+    # 【概念】false 時可走事件／非同步對帳路徑；true 則 Feign 同步打 account
+    feign-sync: false
+  services:
+    # 【技巧】本機預設 localhost；compose／K8s 用環境變數覆寫成服務名
+    risk-url: http://localhost:8082
+    account-url: http://localhost:8084
+    gateway-url: http://localhost:8080
+    job-url: http://localhost:8083
+    order-self-url: http://localhost:8081
+    order-self-port: 8081
+  job:
+    stale-order-minutes: 30
+    # 【技巧】Spring @Scheduled cron：秒 分 時 日 月 週（六欄，注意與 Linux cron 五欄不同）
+    cancel-cron: "0 */1 * * * *"
+    token: demo-job-token
+
+startup:
+  info:
+    # 【概念】啟動時印教學用端點提示（本專案自訂）
+    enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 【技巧】暴露 health／info／prometheus 供探針與監控抓取
+        include: health,info,prometheus
+  health:
+    kafka:
+      # 【概念】Kafka 預設關 → health 也不要因連不上 broker 變 DOWN
+      enabled: false
+  endpoint:
+    health:
+      show-details: when_authorized

@@ -1,0 +1,64 @@
+# =============================================================================
+# FinTechDemo K8s — overlays/dev
+# 【職責】開發環境覆寫：引用 base、標 environment=dev、映像 tag=local、replicas=1
+# 【技巧】resources: ../../base → 組合 base；images／patches 只改差異，不複製整份 Deployment
+# 【概念】GitOps 常見模式：同一 base，多 overlay；避免「每個環境一份完整 YAML」漂移
+# 驗證：kubectl kustomize deploy/k8s/overlays/dev  或  .\scripts\check-k8s.ps1
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fintech-demo
+
+# 【技巧】指向 base 目錄（其內另有 kustomization.yaml）
+resources:
+  - ../../base
+
+# 【技巧】替所有資源加上 environment=dev（含 selectors，方便依環境過濾）
+labels:
+  - pairs:
+      environment: dev
+    includeSelectors: true
+
+# 【技巧】images：依「原 name」改 newTag／newName，不必手改每份 Deployment 的 image 字串
+images:
+  - name: fintech-demo/gateway
+    newTag: local
+  - name: fintech-demo/order-service
+    newTag: local
+  - name: fintech-demo/risk-service
+    newTag: local
+  - name: fintech-demo/account-service
+    newTag: local
+
+# 【技巧】patches：JSON Patch（op/path/value）精準改欄位；target 用 kind+name 選資源
+# 【概念】dev 強制單副本，省資源、行為簡單；prod overlay 可改成更高 replicas
+patches:
+  - target:
+      kind: Deployment
+      name: gateway
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: order-service
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: risk-service
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: account-service
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1

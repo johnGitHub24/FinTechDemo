@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FinTechDemo — 啟動與 Demo 運作流程</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    /* 柔和淺色閱讀主題：低對比紙感，長文不刺眼 */
+    :root {
+      --bg:#f5f7fa; --surface:#ffffff; --surface2:#eef2f6; --border:#d5dde6;
+      --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --ok:#047857; --warn:#b45309;
+      --code-bg:#e8eef3; --code-fg:#0f4c5c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+    .layout { display:flex; min-height:100vh; }
+    nav { width:260px; background:var(--surface); border-right:1px solid var(--border); padding:1.5rem 1rem; position:sticky; top:0; height:100vh; overflow-y:auto; flex-shrink:0; }
+    nav .brand { font-size:0.8rem; color:var(--accent); font-weight:600; }
+    nav h2 { font-size:0.7rem; text-transform:uppercase; color:var(--muted); margin:1.1rem 0 0.45rem; letter-spacing:0.06em; }
+    nav a { display:block; color:var(--muted); text-decoration:none; padding:0.35rem 0.75rem; border-radius:6px; font-size:0.85rem; }
+    nav a:hover { background:var(--surface2); color:var(--accent); }
+    main { flex:1; padding:2rem 2.5rem 4rem; max-width:960px; }
+    .hero { background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:2rem; }
+    .hero h1 { font-size:1.65rem; margin-bottom:0.5rem; color:var(--text); }
+    .subtitle { color:var(--muted); }
+    .one-liner { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--ok); border-radius:10px; padding:1rem 1.25rem; margin:1rem 0 1.5rem; }
+    section { margin-bottom:2.5rem; scroll-margin-top:1rem; }
+    section h2 { font-size:1.25rem; border-bottom:2px solid var(--accent); padding-bottom:0.5rem; margin-bottom:1rem; }
+    section h3 { font-size:1rem; color:var(--accent); margin:1.25rem 0 0.5rem; }
+    p, li { color:#334155; margin-bottom:0.5rem; }
+    ul, ol { padding-left:1.25rem; margin-bottom:0.75rem; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:1rem 0; background:var(--surface); }
+    th, td { border:1px solid var(--border); padding:0.5rem 0.75rem; text-align:left; vertical-align:top; }
+    th { background:var(--surface2); color:var(--accent); }
+    code { background:var(--code-bg); padding:0.15rem 0.4rem; border-radius:4px; color:var(--code-fg); font-size:0.85em; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:1rem; overflow-x:auto; font-size:0.82rem; color:var(--code-fg); margin:1rem 0; white-space:pre-wrap; }
+    .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1rem; margin:1rem 0; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .badge { display:inline-block; background:var(--surface2); border:1px solid var(--border); padding:0.2rem 0.65rem; border-radius:999px; font-size:0.78rem; color:var(--ok); margin-right:0.35rem; }
+    @media (max-width:900px) { .layout{flex-direction:column;} nav{width:100%;height:auto;position:relative;max-height:40vh;} }
+  </style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="brand">FinTechDemo</div>
+  <h2>流程</h2>
+  <a href="#s1">1. 30 秒目標</a>
+  <a href="#s2">2. 最短啟動（展示用）</a>
+  <a href="#s3">3. 前後台操作劇本</a>
+  <a href="#s4">4. API／Swagger 驗證</a>
+  <a href="#s5">5. 測試與 Pipeline</a>
+  <a href="#s6">6. 分散式加強（可選）</a>
+  <h2>文件</h2>
+  <a href="swagger.html">Swagger API</a>
+  <a href="handbook.html">完整學習手冊</a>
+  <a href="codeGraphic.html">CodeGraphic</a>
+  <a href="boot-entrypoint.html">從執行到 Entry Point</a>
+</nav>
+<main>
+  <header class="hero">
+    <h1>啟動與 Demo 運作流程</h1>
+    <p class="subtitle">對齊 TradingCRUD「啟動流程」手冊風格 — 目標：10 分鐘進入可展示狀態。</p>
+    <p style="margin-top:0.75rem">
+      <span class="badge">order:8081</span>
+      <span class="badge">Vue:5173</span>
+      <span class="badge">trader1 / password</span>
+    </p>
+  </header>
+
+  <div class="one-liner">
+    <b>一句話：</b>先起 <code>order-service</code> + 前端 → 登入 → 前台下單 → 後台看餘額／歷史。分散式（Gateway／Kafka／Redis）是加分展示，不是入場門檻。
+  </div>
+
+  <section id="s1">
+    <h2>1. 30 秒目標</h2>
+    <div class="mermaid">
+flowchart LR
+  A[啟動後端] --> B[啟動前端]
+  B --> C[登入]
+  C --> D[前台下單]
+  D --> E[後台查歷史餘額]
+    </div>
+  </section>
+
+  <section id="s2">
+    <h2>2. 最短啟動（展示用）</h2>
+    <h3>終端 A — 後端</h3>
+    <pre>cd D:\ClaudeCode\FinTechDemo
+.\gradlew.bat :order-service:bootRun</pre>
+    <p>看到 <code>Started OrderServiceApplication</code> → 開 <a href="http://localhost:8081/swagger-ui.html" target="_blank">http://localhost:8081/swagger-ui.html</a></p>
+
+    <h3>終端 B — 前端</h3>
+    <pre>cd D:\ClaudeCode\FinTechDemo\frontend
+npm install
+npm run dev</pre>
+    <p>瀏覽器：<a href="http://localhost:5173" target="_blank">http://localhost:5173</a>（會導向登入）</p>
+
+    <h3>種子帳號</h3>
+    <table>
+      <tr><th>帳號</th><th>密碼</th><th>角色</th><th>展示重點</th></tr>
+      <tr><td><code>trader1</code></td><td><code>password</code></td><td>USER</td><td>下單、自己的歷史／餘額／持倉</td></tr>
+      <tr><td><code>admin</code></td><td><code>password</code></td><td>ADMIN</td><td>全站訂單 + 審計頁</td></tr>
+    </table>
+  </section>
+
+  <section id="s3">
+    <h2>3. 前後台操作劇本（Demo 現場）</h2>
+    <ol>
+      <li>用 <code>trader1</code> 登入 → 進入 <b>/trade</b></li>
+      <li>選 symbol（如 MSFT）、數量 1、下單 → 列表出現 PENDING</li>
+      <li>點執行（若 UI 有）或用 Swagger <code>POST /api/orders/{id}/execute</code></li>
+      <li>進 <b>/portal</b>：餘額減少、持倉／歷史更新</li>
+      <li>登出，用 <code>admin</code> 登入 → <b>/portal/audit</b> 看審計</li>
+      <li>（加分）未登入開瀏覽器隱私模式打 API → 401</li>
+    </ol>
+    <div class="mermaid">
+sequenceDiagram
+  actor U as 使用者
+  participant FE as Vue:5173
+  participant API as order:8081
+  U->>FE: 登入
+  FE->>API: POST /api/auth/login
+  API-->>FE: JWT
+  U->>FE: /trade 下單
+  FE->>API: POST /api/orders + Bearer
+  U->>FE: /portal 查餘額歷史
+  FE->>API: GET /api/accounts/me 、 /api/orders
+    </div>
+  </section>
+
+  <section id="s4">
+    <h2>4. API／Swagger 驗證</h2>
+    <ol>
+      <li>開 <a href="swagger.html">docs/swagger.html</a> 或 Runtime Swagger</li>
+      <li><code>POST /api/auth/login</code> → 複製 token</li>
+      <li>右上 Authorize：<code>Bearer &lt;token&gt;</code></li>
+      <li>試 <code>GET /api/orders</code>、<code>GET /api/accounts/me</code></li>
+    </ol>
+    <pre># PowerShell 快速煙霧
+$login = Invoke-RestMethod http://localhost:8081/api/auth/login -Method POST `
+  -ContentType application/json -Body '{"username":"trader1","password":"password"}'
+$h = @{ Authorization = "Bearer $($login.token)" }
+Invoke-RestMethod http://localhost:8081/api/accounts/me -Headers $h
+Invoke-RestMethod "http://localhost:8081/api/orders?page=0&size=5" -Headers $h</pre>
+  </section>
+
+  <section id="s5">
+    <h2>5. 測試與 Pipeline</h2>
+    <pre>.\scripts\verify-pipeline.ps1     # 單元+整合 + compose + k8s
+.\scripts\check.ps1               # 僅 gradlew check</pre>
+    <p>綠燈 = 可安心 Demo。細節見學習手冊「測試」章。</p>
+  </section>
+
+  <section id="s6">
+    <h2>6. 分散式加強（可選，進階加分）</h2>
+    <pre>.\scripts\verify-pipeline.ps1 -Up
+# 或分開起：risk / account(demo) / order(demo) / gateway</pre>
+    <p>講法：固定 URL Feign + Kafka <code>order-events</code>→<code>trade-events</code> + Redis cache；Eureka 可口述升級 <code>lb://</code>。</p>
+    <p>詳見 <a href="../architecture/distributed.html">分散式系統落地.md</a>、<a href="../architecture/architecture.html">architecture.md</a>。</p>
+  </section>
+
+  <footer style="color:var(--muted);font-size:0.85rem;margin-top:2rem;border-top:1px solid var(--border);padding-top:1rem;">
+    FinTechDemo · 對齊 TradingCRUD 啟動手冊風格 · 快速進入展示狀態
+  </footer>
+</main>
+</div>
+<script>mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+# =============================================================================
+# FinTechDemo K8s — account-service Deployment
+# 【職責】帳務／持倉；示意環境關閉 Kafka／Redis，避免強依賴尚未部署的 infra
+# 【技巧】仍保留 REDIS_HOST／KAFKA_BOOTSTRAP 字串：程式可讀到預設，但 enabled=false 不連
+# 【概念】「設定齊全但功能開關關閉」＝學習 graceful degrade／profile 思維
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-service
+  labels:
+    app: account-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: account-service
+  template:
+    metadata:
+      labels:
+        app: account-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: account-service
+          # 【技巧】本機：docker build --build-arg MODULE=account-service -t fintech-demo/account-service:local .
+          image: fintech-demo/account-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8084
+              name: http
+          env:
+            - name: FINTECH_KAFKA_ENABLED
+              value: "false"
+            - name: FINTECH_REDIS_ENABLED
+              value: "false"
+            # 【技巧】即使 enabled=false，主機名仍寫 redis／redpanda 供日後打開時對齊 compose
+            - name: SPRING_DATA_REDIS_HOST
+              value: redis
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: redpanda:9092
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70.0"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            periodSeconds: 5
+            failureThreshold: 36
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            periodSeconds: 20
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

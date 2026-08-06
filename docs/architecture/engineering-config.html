@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — engineering-config</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>engineering-config</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/architecture/engineering-config.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>engineering-config（eos-minimal）</h1>
+<pre><code class="language-yaml">project: FinTechDemo
+language: Java 21
+framework: Spring Boot 3.x
+database_dev: H2
+database_prod: PostgreSQL   # optional; Demo 預設 H2 per service
+messaging: Kafka (Redpanda localhost:19092)
+cache: Redis (localhost:6379)  # account-service；demo profile
+test: JUnit 5 + MockMvc
+coverage_target: 80
+logging: Logback
+backend_ports:
+  gateway: 8080
+  order-service: 8081
+  risk-service: 8082
+  job-service: 8083
+  account-service: 8084
+frontend_port: 5173
+optional_frontend: yes
+node_bff: no   # 統一打 Spring Cloud Gateway
+kafka_topics:
+  - order-events
+  - trade-events
+modules:
+  business:
+    - order-service
+    - risk-service
+    - account-service
+  edge:
+    - gateway
+  support:
+    - job-service
+    - common
+    - frontend
+    - loadtest
+    - deploy
+scheduler:
+  pool_size: 4
+  thread_name_prefix: fintech-job-
+ai_tools:
+  - Cursor
+eos_version: 0.1.9
+eos_path: d:\ClaudeCode\EngineeringOS\eos-minimal
+apply: HOW_TO_APPLY.md
+</code></pre>
+<p>變數替換與檢查表：<code>eos-minimal/templates/spring-boot/docs/apply-checklist-zh.md</code>。</p>
+<p>架構權威圖：<a href="./architecture.html"><code>architecture</code></a> · <a href="./distributed.html"><code>分散式系統落地</code></a></p>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

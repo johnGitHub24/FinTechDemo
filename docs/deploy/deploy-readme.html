@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — deploy/README</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>deploy/README</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/deploy/deploy-readme.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo deploy（P10）</h1>
+<p>本機基礎設施：根目錄 <code>docker-compose.yml</code>（Redpanda :19092、Redis :6379）。</p>
+<h2>跑通規則／故障排除（必讀）</h2>
+<p>完整驗證分層、kind 連線 refused、Compose vs K8s、映像 load／apply 技巧：</p>
+<p>→ <strong><a href="./k8s-tips.html"><code>K8s跑通與驗證技巧</code></a></strong></p>
+<p>統一學習入口（設定／K8s／教學／API 連結）：</p>
+<p>→ <strong><a href="../index.html"><code>docs/index.html</code></a></strong></p>
+<p>逐層打通到上線（S0→S6）：</p>
+<p>→ <strong><a href="./stages-doc.html"><code>上線部署階段層次（MD）</code></a></strong> · <a href="../portals/stages.html">互動 HTML</a></p>
+<p>通用解法（為什麼這樣執行、故障→修復）：</p>
+<p>→ <strong><a href="../portals/loop-guide.html"><code>部署跑通 · Loop Engineering</code></a></strong></p>
+<h2>K8s overlay（模組化示意）</h2>
+<p>Deployment＋Service：<strong>gateway、order-service、risk-service、account-service</strong>（三業務 MS + 入口）。</p>
+<p>映像為 placeholder（<code>fintech-demo/*:local</code>）；本機 build 後再 apply。</p>
+<pre><code class="language-powershell">.\scripts\check-k8s.ps1
+kubectl kustomize deploy/k8s/overlays/dev
+kubectl apply -k deploy/k8s/overlays/dev
+</code></pre>
+<pre><code class="language-text">deploy/k8s/
+  base/
+    gateway-* / order-* / risk-* / account-*
+  overlays/dev/
+</code></pre>
+<p>架構說明：<code>docs/architecture.md</code>。</p>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

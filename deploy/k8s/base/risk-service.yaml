@@ -1,0 +1,20 @@
+# =============================================================================
+# FinTechDemo K8s — risk-service Service
+# 【職責】提供 risk-service:8082 穩定端點給 order／gateway
+# 【技巧】ClusterIP + selector.app=risk-service
+# 【概念】服務發現：程式碼寫死主機名「risk-service」，由叢集 DNS 解析到此 Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: risk-service
+  labels:
+    app: risk-service
+spec:
+  type: ClusterIP
+  selector:
+    app: risk-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082

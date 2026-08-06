@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FinTechDemo — API 文件（Swagger UI）</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui.css"/>
+  <style>
+    :root { --bg:#0f1419; --surface:#1a2332; --surface2:#243044; --border:#2d3a4f; --text:#e6edf3; --muted:#8b9cb3; --accent:#3b82f6; --accent2:#10b981; --warn:#f59e0b; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#fafafa; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; }
+    header.intro { background:linear-gradient(135deg,#1e3a5f 0%,#0f1419 70%); color:var(--text); padding:1.5rem 2rem; line-height:1.6; }
+    header.intro h1 { font-size:1.4rem; margin:0 0 0.25rem; }
+    header.intro .sub { color:var(--muted); font-size:0.9rem; margin:0 0 1rem; }
+    header.intro .links a { color:var(--accent); text-decoration:none; margin-right:1rem; font-size:0.9rem; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0.75rem; margin-top:0.5rem; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.8rem 1rem; font-size:0.85rem; }
+    .card h2 { font-size:0.85rem; color:var(--accent2); margin:0 0 0.5rem; }
+    .card table { width:100%; border-collapse:collapse; }
+    .card td { padding:0.15rem 0.3rem 0.15rem 0; color:#c9d4e3; vertical-align:top; }
+    .card td:first-child { color:var(--muted); white-space:nowrap; }
+    .card code { background:#0d1117; color:#79c0ff; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; }
+    .card ul { margin:0; padding-left:1.1rem; color:#c9d4e3; }
+    .card li { margin-bottom:0.2rem; }
+    .note { margin-top:0.75rem; background:var(--surface2); border-left:3px solid var(--warn); padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--muted); border-radius:0 8px 8px 0; }
+    .note code { background:#0d1117; color:#79c0ff; padding:0.1rem 0.35rem; border-radius:4px; }
+    #swagger-ui { max-width:1200px; margin:0 auto; padding:0 1rem 2rem; }
+    .swagger-hint {
+      max-width:1200px; margin:0.75rem auto 0; padding:0.75rem 1rem;
+      background:#fff8e6; border-left:4px solid #b45309; border-radius:0 8px 8px 0;
+      font-size:0.88rem; color:#334155; line-height:1.55;
+    }
+    .swagger-hint strong { color:#0f4c5c; }
+    .swagger-hint code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; }
+  </style>
+</head>
+<body>
+<header class="intro">
+  <h1>FinTechDemo — API 文件</h1>
+  <p class="sub">JWT · Vue · Gateway · order／risk／account · Kafka／Redis · Spring Boot 3 · Java 21</p>
+  <p class="links">
+    <a href="../index.html">統一學習入口</a>
+    <a href="learning-map.html">學習導引地圖</a>
+    <a href="../md-reader.html">MD 閱讀器</a>
+    <a href="codeGraphic.html">CodeGraphic</a>
+    <a href="handbook.html">完整學習手冊</a>
+    <a href="demo-flow.html">啟動與 Demo 流程</a>
+    <a href="../architecture/api-spec.html">API 規格書</a>
+    <a href="http://localhost:8081/swagger-ui.html" target="_blank">Runtime Swagger（:8081）</a>
+  </p>
+  <div class="cards">
+    <div class="card">
+      <h2>啟動與位址</h2>
+      <table>
+        <tr><td>最短啟動</td><td><code>.\gradlew.bat :order-service:bootRun</code> + <code>cd frontend; npm run dev</code></td></tr>
+        <tr><td>前端</td><td><code>http://localhost:5173</code></td></tr>
+        <tr><td>order</td><td><code>:8081</code> · Swagger <code>/swagger-ui.html</code></td></tr>
+        <tr><td>account</td><td><code>:8084</code></td></tr>
+        <tr><td>Gateway</td><td><code>:8080</code></td></tr>
+        <tr><td>驗證</td><td><code>.\scripts\verify-pipeline.ps1</code></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>API 分組</h2>
+      <ul>
+        <li><b>Auth</b>：<code>POST /api/auth/login</code></li>
+        <li><b>Orders</b>：CRUD／execute／cancel</li>
+        <li><b>Account</b>：<code>/api/accounts/me</code>、<code>/api/positions</code></li>
+        <li><b>Portal</b>：audit（ADMIN）、symbols</li>
+        <li><b>Risk</b>：內部 Feign <code>/api/risk/check</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>認證與 Demo 流程</h2>
+      <ul>
+        <li>帳號 <code>trader1</code>／<code>admin</code>，密碼 <code>password</code></li>
+        <li>login → 複製 token → Authorize → <code>Bearer &lt;token&gt;</code></li>
+        <li>前台：下單／取消 · 後台：餘額／持倉／歷史</li>
+        <li>ADMIN 才能看 audit</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">本頁預設載入 <code>/docs/openapi.yaml</code>（離線可讀契約）。真正打 API 請先 <code>bootRun</code>，或開 Runtime Swagger（:8081）。</p>
+</header>
+<p class="swagger-hint">
+  <strong>怎麼用（正常流程）</strong>：
+  ① 下方綠色 <strong>Authorize</strong> 貼 JWT（先用 Auth → login）→
+  ② 點 <strong>Auth／Orders／Account…</strong> 展開 →
+  ③ 點某支 API → <strong>Try it out</strong>。<br/>
+  <strong>Servers</strong> 只是選「請求打到哪一台」（8081 order／8084 account／8080 Gateway），
+  <em>不會換頁</em>；換完後 Try it out 才打到對應埠。
+</p>
+<div id="swagger-ui"></div>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
+<script>
+  window.onload = function () {
+    window.ui = SwaggerUIBundle({
+      url: "/docs/openapi.yaml",
+      dom_id: "#swagger-ui",
+      deepLinking: true,
+      /* BaseLayout：不要 Standalone 頂部「Select a definition / Explore」易誤以為壞掉 */
+      layout: "BaseLayout",
+      docExpansion: "list",
+      defaultModelsExpandDepth: -1,
+      defaultModelExpandDepth: 1,
+      tryItOutEnabled: true,
+      filter: true,
+      presets: [SwaggerUIBundle.presets.apis],
+      plugins: [SwaggerUIBundle.plugins.DownloadUrl]
+    });
+  };
+</script>
+</body>
+</html>

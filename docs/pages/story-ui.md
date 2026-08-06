@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0; url=../guides/story-ui.html" />
+  <link rel="canonical" href="../guides/story-ui.html" />
+  <title>Redirect — guides/story-ui.html</title>
+  <script>location.replace("../guides/story-ui.html" + location.search + location.hash);</script>
+</head>
+<body>
+  <p>已改為主題目錄 HTML，請前往 <a href="../guides/story-ui.html">../guides/story-ui.html</a></p>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 技術融合對照</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>技術融合對照</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/guides/fusion.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 技術融合對照（含採納技巧）</h1>
+<blockquote>
+<p>先讀 <a href="./why.html"><code>技術次序與架構為什麼</code></a> 與 <a href="../portals/codeGraphic.html"><code>codeGraphic</code></a>。<br>本表回答：<strong>從哪個子專案抄哪招、為什麼、什麼不搬。</strong></p>
+</blockquote>
+<hr>
+<h2>按你給的次序</h2>
+<h3>1. TradingPagingList</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>伺服器端分頁</td>
+<td><code>page</code> 0-based、<code>size</code> 預設 10、後端 <code>Math.min(size,100)</code></td>
+<td><code>GET /api/orders</code></td>
+</tr>
+<tr>
+<td>Page DTO</td>
+<td><code>PageResponse</code>：content／page／size／totalElements／totalPages</td>
+<td><code>common</code> DTO</td>
+</tr>
+<tr>
+<td>Vue 換頁重打 API</td>
+<td><code>ProductTable</code> + <code>Pagination</code> emit</td>
+<td><code>frontend</code> 訂單表</td>
+</tr>
+<tr>
+<td>Vite proxy</td>
+<td><code>/api</code> → 後端，免 CORS</td>
+<td>開發時 proxy → Gateway <code>:8080</code></td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>Product Domain、DataSeeder 50 筆、<code>@CrossOrigin(*)</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>2. TradingSpringSecurity</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JWT 無狀態</td>
+<td><code>JwtTokenProvider</code> + <code>JwtAuthenticationFilter</code> + STATELESS</td>
+<td><code>order-service</code> Security</td>
+</tr>
+<tr>
+<td>角色</td>
+<td>USER／ADMIN；DELETE 限 ADMIN（規則在 FilterChain）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>登入</td>
+<td><code>AuthenticationManager</code> → 簽 Bearer</td>
+<td><code>POST /api/auth/login</code></td>
+</tr>
+<tr>
+<td>身分來源</td>
+<td><code>Authentication.getName()</code>，不信 body username</td>
+<td>Order 建立</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>教學向完整公開註冊（可用種子帳號）</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>3. TradingCRUD</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分層</td>
+<td>Controller→Service→Repo；Controller 不碰 JPA</td>
+<td>order 模組</td>
+</tr>
+<tr>
+<td>DTO／Mapper</td>
+<td>Entity 不直接出 API</td>
+<td>Request／Response 分離</td>
+</tr>
+<tr>
+<td><code>@Valid</code> + 薄 Controller</td>
+<td>寫入校驗</td>
+<td>下單／更新</td>
+</tr>
+<tr>
+<td>Axios Bearer 攔截</td>
+<td>401 統一處理</td>
+<td>frontend</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>Node Express BFF（改 Gateway）、批次 207 主軸</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>4. TradingSpringCloud（Gateway）</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定 URL 路由</td>
+<td><code>trading.services.*-url</code>／<code>@ConfigurationProperties</code></td>
+<td>gateway yml</td>
+</tr>
+<tr>
+<td>Path 對齊</td>
+<td>公開 <code>/api/**</code> 與下游一致，少 rewrite</td>
+<td>簡化架構敘事</td>
+</tr>
+<tr>
+<td>（可選）Feign 聚合</td>
+<td>Dashboard 式 BFF</td>
+<td>非必須；優先透傳</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>loop-service 信任分數 Domain</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>可說明</strong></td>
+<td>正式環境可換成 MicroService 的 <code>lb://</code></td>
+<td>口述即可</td>
+</tr>
+</tbody></table>
+<h3>5. TradingMicroService</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>依職責拆服務</td>
+<td>各服務自有 API</td>
+<td><strong>order／risk／account</strong>（≥3 業務 MS）+ job</td>
+</tr>
+<tr>
+<td>Feign 契約</td>
+<td>Java interface 當跨服務 API</td>
+<td><code>RiskClient</code>、<code>AccountClient</code></td>
+</tr>
+<tr>
+<td>啟動敘事</td>
+<td>先業務再生 Gateway</td>
+<td>scripts／README</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>Eureka、Config Server、Resilience4j 示範開關</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>6. APIGatewayMQ（Kafka）</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>寫入削峰</td>
+<td>驗證→Kafka→可查狀態</td>
+<td>POST orders → <code>order-events</code></td>
+</tr>
+<tr>
+<td>Topic／key</td>
+<td>常數放 common；key＝業務鍵</td>
+<td><code>order-events</code>、<code>trade-events</code></td>
+</tr>
+<tr>
+<td>跨服務 Consumer</td>
+<td>消費後呼叫其他服務</td>
+<td>order Consumer→risk；account Consumer→入帳+Redis</td>
+</tr>
+<tr>
+<td>冪等</td>
+<td>clientOrderId</td>
+<td>orders 唯一約束</td>
+</tr>
+<tr>
+<td>local 降級</td>
+<td>enabled=false</td>
+<td>預設關 listener</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>EngineProxy 多副本 RR、R001–R010、WebFlux Gateway</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>詳述</strong></td>
+<td>—</td>
+<td><a href="../architecture/distributed.html">分散式系統落地</a></td>
+</tr>
+</tbody></table>
+<h3>7. TradingJob</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Job 薄 Service 厚</td>
+<td><code>@Scheduled</code> 只呼叫 Service</td>
+<td>job-service</td>
+</tr>
+<tr>
+<td>執行緒池</td>
+<td><code>ThreadPoolTaskScheduler</code> + pool-size≥2</td>
+<td>SchedulingConfig</td>
+</tr>
+<tr>
+<td>設定 prefix</td>
+<td><code>trading.job.*</code> + <code>@ConditionalOnProperty</code></td>
+<td>yml 可關</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>與 Engine 共庫／FailedCommand 全套</td>
+<td>先做逾時取消 1 支</td>
+</tr>
+</tbody></table>
+<h3>8. TradingIocAOP</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>成功後審計</td>
+<td><code>@AfterReturning</code> 綁下單成功</td>
+<td>AuditAspect</td>
+</tr>
+<tr>
+<td>切面順序</td>
+<td><code>@Order</code></td>
+<td>固定 audit 順序</td>
+</tr>
+<tr>
+<td><strong>升級</strong></td>
+<td>原專案是記憶體 <code>AspectRecorder</code></td>
+<td><strong>改寫 DB <code>audit_log</code></strong>（展示更有說服力）</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>mini-ioc、六切面全抄</td>
+<td>先 Audit 一條</td>
+</tr>
+</tbody></table>
+<h3>9. TradingLocustJMeter</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>baseline 一鍵</td>
+<td><code>run-baseline.ps1</code> → HTML 報告</td>
+<td><code>loadtest/</code></td>
+</tr>
+<tr>
+<td>打 Gateway</td>
+<td><code>GATEWAY_URL=http://localhost:8080</code></td>
+<td>不打內建靶場</td>
+</tr>
+<tr>
+<td>冪等鍵 uuid</td>
+<td>避免壓測被冪等短路</td>
+<td>submit block</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>FastAPI 靶場本體（可選留 JMeter 一支）</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>10. TradingPrometheusActuator</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>暴露端點</td>
+<td>health,info,metrics,prometheus</td>
+<td>各服務</td>
+</tr>
+<tr>
+<td>Counter／Timer</td>
+<td>業務 Meter 在 Service 註冊</td>
+<td>orders_created、risk_rejected</td>
+</tr>
+<tr>
+<td>共用 tag</td>
+<td><code>MeterRegistryCustomizer</code></td>
+<td>application=fintech-demo</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>無 DB 的 in-memory Trade 模型</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>11. TradingKubernetes</h3>
+<table>
+<thead>
+<tr>
+<th>採納</th>
+<th>來源技巧</th>
+<th>FinTechDemo 落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目錄三層</td>
+<td><code>apps/</code> + <code>infrastructure/</code> + <code>clusters/{env}</code></td>
+<td><code>deploy/</code></td>
+</tr>
+<tr>
+<td>overlay</td>
+<td>改 replicas／image tag，不複製三份</td>
+<td>kustomize</td>
+</tr>
+<tr>
+<td>check</td>
+<td><code>kustomize build</code> 三環境</td>
+<td><code>scripts/check.ps1</code> 一段</td>
+</tr>
+<tr>
+<td><strong>不搬</strong></td>
+<td>Argo+Flux 雙 GitOps、Canary Analysis 全集</td>
+<td>口述即可</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>一句話</h2>
+<p>子專案＝<strong>有次序的技巧教材</strong>；FinTechDemo＝<strong>依同一次序組裝的整合示範</strong>（見 codeGraphic 四個 Tab）。</p>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

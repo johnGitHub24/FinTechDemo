@@ -1,0 +1,22 @@
+# =============================================================================
+# FinTechDemo K8s — gateway Service
+# 【職責】為 gateway Pod 提供穩定虛擬 IP／DNS 名 gateway（ClusterIP）
+# 【技巧】selector.app 對上 Deployment template.labels；port→targetPort 轉進容器
+# 【概念】Pod IP 會變；客戶端應打 Service 名，不要打 Pod IP
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  # 【技巧】ClusterIP＝僅叢集內可達；對外需 Ingress／NodePort／LoadBalancer（本 Demo 從簡）
+  type: ClusterIP
+  selector:
+    app: gateway
+  ports:
+    - name: http
+      # 【技巧】port：Service 對外埠；targetPort：Pod 容器埠（可同號）
+      port: 8080
+      targetPort: 8080

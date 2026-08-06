@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 學習導引地圖（雙軌）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --ok: #047857; --warn: #b45309;
+      --hands: #0369a1; --talk: #7c3aed;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    .top {
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%);
+      padding: 1.35rem 1.5rem 0;
+    }
+    .top h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
+    .top .sub { color: var(--muted); font-size: 0.9rem; max-width: 48rem; margin-bottom: 0.75rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 0.9rem; font-size: 0.85rem; }
+    .track-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+    .track-tab {
+      appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+      padding: 0.55rem 1rem; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.88rem; border-bottom: none;
+    }
+    .track-tab.active.hands { background: var(--bg); color: var(--hands); border-color: var(--hands); box-shadow: inset 0 2px 0 var(--hands); }
+    .track-tab.active.talk { background: var(--bg); color: var(--talk); border-color: var(--talk); box-shadow: inset 0 2px 0 var(--talk); }
+    .layout { display: flex; min-height: calc(100vh - 140px); }
+    aside {
+      width: 280px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+      padding: 1rem 0.75rem; position: sticky; top: 0; height: calc(100vh - 8px); overflow-y: auto;
+    }
+    aside .phase {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+      padding: 0.65rem 0.55rem 0.25rem; font-weight: 600;
+    }
+    aside a.step {
+      display: block; text-decoration: none; color: var(--text); font-size: 0.82rem;
+      padding: 0.4rem 0.55rem; border-radius: 6px; border-left: 3px solid transparent; margin-bottom: 0.15rem;
+    }
+    aside a.step:hover { background: var(--surface2); }
+    aside a.step.active { background: #e6f3f2; border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
+    aside a.step .n { color: var(--muted); font-size: 0.75rem; margin-right: 0.25rem; }
+    main { flex: 1; padding: 1.25rem 1.5rem 3rem; max-width: 920px; min-width: 0; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .intro-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 1rem;
+    }
+    .intro-card h2 { font-size: 1.1rem; margin-bottom: 0.35rem; }
+    .intro-card p { font-size: 0.9rem; color: #334155; }
+    .gate { background: var(--surface2); border-left: 3px solid var(--ok); padding: 0.6rem 0.85rem; font-size: 0.85rem; margin: 0.75rem 0; border-radius: 0 6px 6px 0; }
+    .gate.warn { border-left-color: var(--warn); }
+    .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; overflow-x: auto; margin: 0.75rem 0 1rem; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .step-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.2rem;
+      margin-bottom: 1rem; scroll-margin-top: 1rem;
+    }
+    .step-card .label { font-size: 0.72rem; color: var(--warn); letter-spacing: 0.06em; text-transform: uppercase; }
+    .step-card h3 { font-size: 1.05rem; margin: 0.2rem 0 0.55rem; }
+    .step-card .why, .step-card .learn { font-size: 0.88rem; color: #334155; margin-bottom: 0.45rem; }
+    .step-card .why strong, .step-card .learn strong { color: var(--accent); }
+    .step-card ul { margin: 0.35rem 0 0.6rem 1.1rem; font-size: 0.86rem; color: #334155; }
+    .step-card .links { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+    .btn {
+      display: inline-block; padding: 0.32rem 0.65rem; font-size: 0.78rem; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text); text-decoration: none;
+    }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.next { background: #fff; border-color: var(--accent); color: var(--accent); }
+    .end-box {
+      margin-top: 1.5rem; padding: 1rem; border-radius: 10px; border: 1px dashed var(--border); background: #fff;
+      font-size: 0.88rem;
+    }
+    footer { padding: 0 1.5rem 2rem; color: var(--muted); font-size: 0.78rem; }
+    code { background: #e8eef3; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; color: #0f4c5c; }
+    @media (max-width: 860px) {
+      .layout { flex-direction: column; }
+      aside { width: 100%; height: auto; position: relative; max-height: 36vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>學習導引地圖 — 認識 FinTechDemo</h1>
+    <p class="sub">
+      把規格書與 <code>docs/*</code> 串成「起始 → 過程 → 結束」。
+      <strong>書櫃</strong>用 <a href="../index.html">index.html</a>；<strong>路線</strong>用本頁。可切換兩種最佳節奏。
+    </p>
+    <p class="links">
+      <a href="../index.html">統一學習入口（書櫃）</a>
+      <a href="swagger.html">API Swagger</a>
+      <a href="loop-guide.html">部署跑通</a>
+      <a href="../guides/spec.html">權威 SPEC（閱讀）</a>
+      <a href="../md-reader.html">全部 MD 閱讀器</a>
+      <a href="../guides/claude.html">CLAUDE.md</a>
+    </p>
+    <div class="track-tabs" role="tablist">
+      <button type="button" class="track-tab hands active" data-track="hands">動手優先</button>
+      <button type="button" class="track-tab talk" data-track="talk">架構敘事</button>
+    </div>
+  </header>
+
+  <!-- ========== 動手優先 ========== -->
+  <div id="panel-hands" class="panel active">
+    <div class="layout">
+      <aside id="aside-hands"></aside>
+      <main>
+        <div class="intro-card">
+          <h2>動手優先：先跑起來，再回頭理解</h2>
+          <p>適合想立刻看到畫面與 API。順序：啟動 → 打 API → 對照設定 → 再讀劇情／為什麼 → 最後部署證明。</p>
+          <div class="gate warn">請用 ASCII 網址（中文檔名在 npx serve 常 404）：<code>.\scripts\serve-docs.ps1</code> → <code>http://127.0.0.1:5500/docs/portals/learning-map.html</code></div>
+        </div>
+        <div class="mermaid">
+flowchart LR
+  A["① 啟動／Demo"] --> B["② 打 API"]
+  B --> C["③ 設定／架構"]
+  C --> D["④ 劇情／為什麼"]
+  D --> E["⑤ 部署證明"]
+  E --> F["⑥ 書櫃查缺"]
+        </div>
+        <div id="cards-hands"></div>
+        <div class="end-box">
+          <strong>結束條件（動手軌）</strong>：本機能啟動 Demo；Swagger 能 login／下單；知道設定在哪改；能口述 Compose→K8s 差異；需要查檔時回 <a href="../index.html">index.html</a>。
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ========== 架構敘事 ========== -->
+  <div id="panel-talk" class="panel">
+    <div class="layout">
+      <aside id="aside-talk"></aside>
+      <main>
+        <div class="intro-card">
+          <h2>架構敘事：先講清楚故事，再證明跑得動</h2>
+          <p>適合準備口述。順序：SPEC／劇情 → 為什麼這架構 → 模組與分散式 → API → 測試／DB → 部署階梯 → 書櫃。</p>
+          <div class="gate">開場一句話見 SPEC §0.3；技術次序見 <code>技術次序與架構為什麼.md</code>。</div>
+        </div>
+        <div class="mermaid">
+flowchart LR
+  A["① 規格／劇情"] --> B["② 為什麼"]
+  B --> C["③ 架構／分散式"]
+  C --> D["④ API／資料"]
+  D --> E["⑤ 驗證／部署"]
+  E --> F["⑥ 書櫃查缺"]
+        </div>
+        <div id="cards-talk"></div>
+        <div class="end-box">
+          <strong>結束條件（敘事軌）</strong>：能講前後台＋JWT；能畫 Gateway→MS→Kafka；能指到對應文件；能說 S0→S5 驗證指令；細節回 <a href="../index.html">index.html</a>。
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <footer>
+    設計：<code>docs/superpowers/specs/2026-08-06-learning-roadmap-design.md</code> ·
+    與書櫃分工：路線＝本頁；找檔／YAML＝<code>index.html</code>
+  </footer>
+
+  <script>
+    /**
+     * 【職責】雙軌學習路線資料：動手優先 vs 架構敘事
+     * 【技巧】每站含 phase／why／learn／docs（href+label）；側欄與卡片同源渲染
+     * 【概念】同一倉庫兩種學習節奏；文件不重複寫兩套，只換順序與敘事重點
+     */
+    const TRACKS = {
+      hands: [
+        {
+          phase: "起始",
+          title: "10 分鐘跑起來",
+          why: "沒畫面與程序，後面文件都是抽象。",
+          learn: "知道最短啟動指令、前端／各服務埠。",
+          docs: [
+            { href: "handbook.html#ch02", label: "完整學習手冊 · 啟動" },
+            { href: "demo-flow.html", label: "啟動與 Demo 流程" },
+            { href: "boot-entrypoint.html", label: "boot → EntryPoint" },
+            { href: "../architecture/engineering-config.html", label: "埠與變數（HTML 閱讀）" }
+          ]
+        },
+        {
+          phase: "起始",
+          title: "用 Swagger 走一輪業務",
+          why: "契約比讀碼快；立刻驗證 login → 下單。",
+          learn: "JWT、Orders、Account 分組；與 Runtime Swagger 差異。",
+          docs: [
+            { href: "swagger.html", label: "swagger.html" },
+            { href: "../architecture/api-spec.html", label: "API規格書（HTML 閱讀）" },
+            { href: "http://localhost:8081/swagger-ui.html", label: "Runtime :8081" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "對照模組與設定",
+          why: "改埠／URL／Kafka 開關時要知道改哪裡。",
+          learn: "gateway／order／risk／account 職責；application.yml vs demo。",
+          docs: [
+            { href: "../architecture/architecture.html", label: "architecture（HTML 閱讀）" },
+            { href: "../index.html?id=cfg-order", label: "書櫃 · order yml" },
+            { href: "../index.html?id=dc", label: "書櫃 · docker-compose" },
+            { href: "../architecture/distributed.html", label: "分散式系統落地（HTML 閱讀）" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "回頭補劇情與為什麼",
+          why: "會跑之後要能解釋「為什麼這樣設計」。",
+          learn: "前後台＋RBAC；Trading* 技術次序如何收進本倉庫。",
+          docs: [
+            { href: "../guides/story-ui.html", label: "產品劇情（前後台）" },
+            { href: "../guides/story-rbac.html", label: "劇情與 RBAC" },
+            { href: "../guides/why.html", label: "技術次序與為什麼" },
+            { href: "codeGraphic.html", label: "codeGraphic" },
+            { href: "../guides/spec.html", label: "權威 SPEC（HTML 閱讀）" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "資料、測試、融合對照",
+          why: "常會問到狀態存在哪、怎麼驗證。",
+          learn: "DB 邊界、測試層次、與子專案技巧對照。",
+          docs: [
+            { href: "../architecture/db.html", label: "資料庫設計" },
+            { href: "../architecture/verify-design.html", label: "驗證設計" },
+            { href: "../architecture/testing.html", label: "testing" },
+            { href: "../guides/fusion.html", label: "技術融合對照" }
+          ]
+        },
+        {
+          phase: "結束",
+          title: "部署證明（Compose → K8s）",
+          why: "開發綠燈 ≠ 部署成功；要有可重複關卡。",
+          learn: "S0→S6、kind≠Desktop K8s、Loop 故障排除。",
+          docs: [
+            { href: "stages.html", label: "S0→S6 HTML" },
+            { href: "../deploy/k8s-tips.html", label: "K8s 跑通技巧（HTML 閱讀）" },
+            { href: "loop-guide.html", label: "Loop Engineering 教學" },
+            { href: "../deploy/deploy-readme.html", label: "deploy README（HTML 閱讀）" }
+          ]
+        },
+        {
+          phase: "結束",
+          title: "書櫃查缺＋可選 Javadoc",
+          why: "路線走完後，細節用搜尋比線性閱讀快。",
+          learn: "用 index 找任意 yml／md；需要時進 Javadoc。",
+          docs: [
+            { href: "../index.html", label: "統一學習入口 index.html" },
+            { href: "../md-reader.html", label: "全部 MD 閱讀器" },
+            { href: "../javadoc/index.html", label: "Javadoc" }
+          ]
+        }
+      ],
+      talk: [
+        {
+          phase: "起始",
+          title: "權威規格與產品劇情",
+          why: "先對齊「這專案在幹嘛」，避免技術堆疊迷失。",
+          learn: "前後台 Demo 目標、RBAC、EOS 工程約束。",
+          docs: [
+            { href: "../guides/spec.html", label: "權威 SPEC（HTML 閱讀）" },
+            { href: "../guides/story-ui.html", label: "產品劇情（前後台）" },
+            { href: "../guides/story-rbac.html", label: "劇情與 RBAC" },
+            { href: "handbook.html", label: "完整學習手冊" }
+          ]
+        },
+        {
+          phase: "起始",
+          title: "技術次序與架構為什麼",
+          why: "展示要講清楚「為什麼 Gateway／MS／Kafka 在這層」。",
+          learn: "Trading* 堆疊如何收成一倉；請求形狀。",
+          docs: [
+            { href: "../guides/why.html", label: "技術次序與為什麼" },
+            { href: "codeGraphic.html", label: "codeGraphic" },
+            { href: "../guides/fusion.html", label: "技術融合對照" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "模組、埠、分散式落地",
+          why: "把故事落到可指認的服務與埠。",
+          learn: "order／risk／account／gateway／job；Kafka／Redis 角色。",
+          docs: [
+            { href: "../architecture/architecture.html", label: "architecture" },
+            { href: "../architecture/engineering-config.html", label: "engineering-config" },
+            { href: "../architecture/distributed.html", label: "分散式系統落地" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "啟動鏈與 API 契約",
+          why: "能 Demo、能指契約，才像可交付作品。",
+          learn: "boot 到 EntryPoint；OpenAPI／Swagger 分組。",
+          docs: [
+            { href: "boot-entrypoint.html", label: "boot → EntryPoint" },
+            { href: "demo-flow.html", label: "啟動與 Demo 流程" },
+            { href: "../architecture/api-spec.html", label: "API規格書（HTML 閱讀）" },
+            { href: "swagger.html", label: "swagger.html" }
+          ]
+        },
+        {
+          phase: "過程",
+          title: "資料與驗證設計",
+          why: "狀態真相與測試策略是成熟度信號。",
+          learn: "表／邊界；check／smoke／分層測試。",
+          docs: [
+            { href: "../architecture/db.html", label: "資料庫設計" },
+            { href: "../architecture/verify-design.html", label: "驗證設計" },
+            { href: "../architecture/testing.html", label: "testing" }
+          ]
+        },
+        {
+          phase: "結束",
+          title: "上線階梯與 Loop 跑通",
+          why: "用關卡證明「功能可部署」，不是只會講架構。",
+          learn: "S0→S6、Compose vs kind、驗證指令。",
+          docs: [
+            { href: "stages.html", label: "S0→S6" },
+            { href: "../deploy/stages-doc.html", label: "階段層次（HTML 閱讀）" },
+            { href: "../deploy/k8s-tips.html", label: "K8s 跑通" },
+            { href: "loop-guide.html", label: "Loop 教學" }
+          ]
+        },
+        {
+          phase: "結束",
+          title: "書櫃與原始設定",
+          why: "口述後若被追問設定細節，要能立刻打開檔。",
+          learn: "index 分類瀏覽 YAML／md；deploy 路徑。",
+          docs: [
+            { href: "../index.html", label: "統一學習入口" },
+            { href: "../md-reader.html", label: "全部 MD 閱讀器" },
+            { href: "../index.html?id=k-gw-d", label: "書櫃 · gateway Deployment" },
+            { href: "../deploy/deploy-readme.html", label: "deploy README（HTML 閱讀）" },
+            { href: "../javadoc/index.html", label: "Javadoc（可選）" }
+          ]
+        }
+      ]
+    };
+
+    function renderTrack(trackKey) {
+      const steps = TRACKS[trackKey];
+      const aside = document.getElementById("aside-" + trackKey);
+      const cards = document.getElementById("cards-" + trackKey);
+      aside.innerHTML = "";
+      cards.innerHTML = "";
+      let lastPhase = null;
+      steps.forEach(function (step, i) {
+        const id = trackKey + "-s" + (i + 1);
+        if (step.phase !== lastPhase) {
+          const ph = document.createElement("div");
+          ph.className = "phase";
+          ph.textContent = step.phase;
+          aside.appendChild(ph);
+          lastPhase = step.phase;
+        }
+        const a = document.createElement("a");
+        a.className = "step";
+        a.href = "#" + id;
+        a.innerHTML = '<span class="n">' + (i + 1) + ".</span>" + step.title;
+        aside.appendChild(a);
+
+        const card = document.createElement("section");
+        card.className = "step-card";
+        card.id = id;
+        let linksHtml = step.docs.map(function (d) {
+          return '<a class="btn" href="' + d.href + '" target="_blank" rel="noopener">' + d.label + "</a>";
+        }).join("");
+        const next = steps[i + 1];
+        if (next) {
+          linksHtml += '<a class="btn next" href="#' + trackKey + "-s" + (i + 2) + '">下一站 → ' + next.title + "</a>";
+        }
+        card.innerHTML =
+          '<div class="label">' + step.phase + " · 第 " + (i + 1) + " 站</div>" +
+          "<h3>" + step.title + "</h3>" +
+          '<p class="why"><strong>為什麼讀：</strong>' + step.why + "</p>" +
+          '<p class="learn"><strong>讀完學到：</strong>' + step.learn + "</p>" +
+          '<div class="links">' + linksHtml + "</div>";
+        cards.appendChild(card);
+      });
+    }
+
+    renderTrack("hands");
+    renderTrack("talk");
+
+    document.querySelectorAll(".track-tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const track = btn.getAttribute("data-track");
+        document.querySelectorAll(".track-tab").forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+        document.getElementById("panel-" + track).classList.add("active");
+        // re-init mermaid in visible panel
+        if (window.mermaid) {
+          mermaid.run({ nodes: document.querySelectorAll("#panel-" + track + " .mermaid") });
+        }
+      });
+    });
+
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+
+    // deep link ?track=talk
+    const params = new URLSearchParams(location.search);
+    const t = params.get("track");
+    if (t === "talk" || t === "hands") {
+      document.querySelector('.track-tab[data-track="' + t + '"]').click();
+    }
+  </script>
+</body>
+</html>

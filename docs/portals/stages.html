@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 上線部署階段層次（逐層打通）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --ok: #047857; --warn: #b45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .top { border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%); padding: 1.5rem 2rem 0; }
+    .top h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+    .top .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 1rem; font-size: 0.85rem; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+    .tab { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.82rem; border-bottom: none; }
+    .tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 1.15rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
+    .blurb { color: #334155; font-size: 0.92rem; margin-bottom: 1rem; }
+    .blurb li { margin-left: 1.1rem; margin-bottom: 0.25rem; }
+    .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; overflow-x: auto; margin-bottom: 0.75rem; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .gate { background: var(--surface2); border-left: 3px solid var(--ok); padding: 0.65rem 0.9rem; font-size: 0.88rem; margin: 0.75rem 0; }
+    .warn { border-left-color: var(--warn); }
+    code { background: #e8eef3; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; color: #0f4c5c; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--surface); margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.45rem 0.6rem; text-align: left; vertical-align: top; }
+    th { background: var(--surface2); color: var(--accent); }
+    footer { padding: 0 2rem 2rem; color: var(--muted); font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>上線部署階段層次 — 逐層打通</h1>
+    <p class="sub">前一層未綠燈，不要跳下一層。完整文字版見 <code>上線部署階段層次.md</code>。</p>
+    <p class="links">
+      <a href="../deploy/stages-doc.html">Markdown 全文</a>
+      <a href="../deploy/k8s-tips.html">K8s 故障排除</a>
+      <a href="../architecture/distributed.html">分散式落地</a>
+      <a href="../deploy/deploy-readme.html">deploy README</a>
+    </p>
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="map">總覽</button>
+      <button type="button" class="tab" data-tab="s0">S0 建置</button>
+      <button type="button" class="tab" data-tab="s1">S1 單機</button>
+      <button type="button" class="tab" data-tab="s2">S2 成交</button>
+      <button type="button" class="tab" data-tab="s3">S3 Compose</button>
+      <button type="button" class="tab" data-tab="s4">S4 Kustomize</button>
+      <button type="button" class="tab" data-tab="s5">S5 Kind</button>
+      <button type="button" class="tab" data-tab="s6">S6 上雲</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="panel-map" class="panel active">
+      <h2>總覽：部署成熟度階梯</h2>
+      <ul class="blurb">
+        <li>S0～S2：本機開發／Demo 最短路徑</li>
+        <li>S3：容器化準上線（日常首選）</li>
+        <li>S4～S5：K8s 契約 → 真叢集</li>
+        <li>S6：生產差異清單（示意＋口述）</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  S0["S0 工程可建置"] --> S1["S1 單機 Demo"]
+  S1 --> S2["S2 + Risk 可成交"]
+  S2 --> S3["S3 Compose 分散式"]
+  S3 --> S4["S4 Kustomize 渲染"]
+  S4 --> S5["S5 Kind 真部署"]
+  S5 --> S6["S6 上雲就緒示意"]
+      </div>
+      <div class="gate warn">規則：禁止跳過 S3 直接死磕 kind；connection refused 先修 Docker／kubeconfig。</div>
+    </section>
+
+    <section id="panel-s0" class="panel" hidden>
+      <h2>S0 — 工程可建置</h2>
+      <ul class="blurb">
+        <li>閘門：<code>.\scripts\check.ps1</code> 綠燈</li>
+        <li>證明：測試與編譯通過，可進入任何部署討論</li>
+      </ul>
+      <div class="mermaid">
+flowchart LR
+  A[改碼] --> B[gradlew check]
+  B -->|紅| A
+  B -->|綠| C[進入 S1]
+      </div>
+      <div class="gate">通過標準：BUILD SUCCESSFUL</div>
+    </section>
+
+    <section id="panel-s1" class="panel" hidden>
+      <h2>S1 — 單機可 Demo</h2>
+      <ul class="blurb">
+        <li>order:8081 + Vue:5173</li>
+        <li>登入 trader1／password；劇情可走</li>
+      </ul>
+      <div class="mermaid">
+flowchart LR
+  O[OrderServiceApplication] --> API[REST :8081]
+  V[Vue npm run dev] --> API
+      </div>
+      <div class="gate">通過：可登入並下單／查詢（風控可後補）</div>
+    </section>
+
+    <section id="panel-s2" class="panel" hidden>
+      <h2>S2 — 最短可成交</h2>
+      <ul class="blurb">
+        <li>加開 Risk:8082；Feign 風控鏈通</li>
+      </ul>
+      <div class="mermaid">
+sequenceDiagram
+  participant U as 前端
+  participant O as order:8081
+  participant R as risk:8082
+  U->>O: 成交／下單路徑
+  O->>R: Feign /api/risk/check
+  R-->>O: allowed / reject
+      </div>
+      <div class="gate">通過：風控通過與拒絕行為正確</div>
+    </section>
+
+    <section id="panel-s3" class="panel" hidden>
+      <h2>S3 — 分散式 Compose（準上線）</h2>
+      <ul class="blurb">
+        <li>指令：<code>.\scripts\verify-pipeline.ps1 -Up -Smoke</code></li>
+        <li>前置：Docker 引擎 Server Version</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  subgraph INFRA["infra"]
+    K[Redpanda]
+    RD[Redis]
+  end
+  subgraph MS["services"]
+    G[gateway:8080]
+    O[order:8081]
+    R[risk:8082]
+    A[account:8084]
+  end
+  G --> O
+  G --> A
+  O --> R
+  O --> K
+  A --> K
+  A --> RD
+      </div>
+      <div class="gate">通過：容器健康 + Smoke API。日常上線演練停在這層也夠強。</div>
+    </section>
+
+    <section id="panel-s4" class="panel" hidden>
+      <h2>S4 — K8s 清單可渲染</h2>
+      <ul class="blurb">
+        <li><code>.\scripts\check-k8s.ps1</code>＝只 kustomize，不連 API</li>
+        <li>證明 deploy/k8s 契約正確</li>
+      </ul>
+      <div class="mermaid">
+flowchart LR
+  B[base/*.yaml] --> D[overlays/dev]
+  D --> K[kubectl kustomize]
+  K --> Y[完整 YAML]
+      </div>
+      <div class="gate">通過：輸出含 gateway／order／risk／account</div>
+    </section>
+
+    <section id="panel-s5" class="panel" hidden>
+      <h2>S5 — 本機叢集可部署</h2>
+      <ul class="blurb">
+        <li>Docker Ready → kind recreate → build/load 映像 → apply -k</li>
+        <li>細節：<a href="../deploy/k8s-tips.html">K8s跑通與驗證技巧.md</a></li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  D[Docker Ready] --> K[kind trading-local]
+  K --> API[kubectl readyz]
+  API --> IMG[docker build + kind load]
+  IMG --> APP[kubectl apply -k overlays/dev]
+  APP --> OK[Pods Ready + health]
+      </div>
+      <div class="gate">通過：fintech-demo namespace 四 Deployment Ready</div>
+    </section>
+
+    <section id="panel-s6" class="panel" hidden>
+      <h2>S6 — 上雲就緒示意</h2>
+      <ul class="blurb">
+        <li>多環境 overlay、Secret、Ingress、託管 DB／Kafka、觀測、GitOps</li>
+        <li>本 Demo 可骨架＋口述；與 S5 差異表要講得出來</li>
+      </ul>
+      <table>
+        <tr><th>Demo（S5）</th><th>上雲（S6）</th></tr>
+        <tr><td>H2／明文 secret</td><td>Postgres + Secret／外掛密鑰</td></tr>
+        <tr><td>ClusterIP</td><td>Ingress + TLS</td></tr>
+        <tr><td>手動 apply</td><td>Argo CD／Flux</td></tr>
+        <tr><td>Actuator</td><td>Prometheus 告警</td></tr>
+      </table>
+      <div class="gate">通過：能講清 S0→S5 路徑 + prod 差異清單</div>
+    </section>
+  </main>
+
+  <footer>FinTechDemo · 部署成熟度 S0–S6 · 與 SPEC Phase 互補（功能 vs 上線層次）</footer>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.getAttribute("data-tab");
+        document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+        document.querySelectorAll(".panel").forEach((p) => {
+          const on = p.id === "panel-" + id;
+          p.classList.toggle("active", on);
+          p.hidden = !on;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

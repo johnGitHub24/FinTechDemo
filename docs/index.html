@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 統一學習入口</title>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --ok: #047857; --warn: #b45309;
+      --sidebar-w: 300px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+    header.top {
+      flex: 0 0 auto; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%);
+      padding: 1rem 1.25rem 0.85rem;
+    }
+    header.top h1 { font-size: 1.25rem; margin-bottom: 0.2rem; }
+    header.top .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 0.65rem; max-width: 56rem; }
+    header.top .links a { color: var(--accent); text-decoration: none; margin-right: 0.9rem; font-size: 0.85rem; }
+    header.top .links a:hover { text-decoration: underline; }
+    .layout { flex: 1; display: flex; min-height: 0; }
+    aside {
+      width: var(--sidebar-w); flex: 0 0 var(--sidebar-w); border-right: 1px solid var(--border);
+      background: var(--surface); display: flex; flex-direction: column; min-height: 0;
+    }
+    .search-wrap { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    .search-wrap input {
+      width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .nav { overflow-y: auto; flex: 1; padding: 0.5rem 0 1rem; }
+    .group-title {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+      padding: 0.65rem 0.9rem 0.25rem; font-weight: 600;
+    }
+    .nav-item {
+      display: block; width: 100%; text-align: left; border: none; background: transparent;
+      padding: 0.4rem 0.9rem; font-size: 0.82rem; color: var(--text); cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: var(--surface2); }
+    .nav-item.active { background: #e6f3f2; border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .nav-item .badge {
+      display: inline-block; font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 4px;
+      background: var(--surface2); color: var(--muted); margin-left: 0.35rem; vertical-align: middle;
+    }
+    .nav-item .badge.api { background: #dbeafe; color: #1d4ed8; }
+    .nav-item .badge.link { background: #d1fae5; color: #047857; }
+    .nav-item .badge.yaml { background: #fef3c7; color: #b45309; }
+    main.viewer { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .viewer-head {
+      padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface);
+    }
+    .viewer-head h2 { font-size: 1.05rem; margin-bottom: 0.25rem; }
+    .viewer-head .meta { font-size: 0.8rem; color: var(--muted); word-break: break-all; }
+    .viewer-head .actions { margin-top: 0.55rem; display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .btn {
+      display: inline-block; padding: 0.35rem 0.7rem; font-size: 0.8rem; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text); text-decoration: none; cursor: pointer;
+    }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .viewer-body { margin:0; flex: 1; overflow: auto; padding: 1rem 1.25rem 2rem; }
+    .gate {
+      background: var(--surface2); border-left: 3px solid var(--ok); padding: 0.65rem 0.9rem;
+      font-size: 0.85rem; margin-bottom: 0.85rem; border-radius: 0 6px 6px 0;
+    }
+    .gate.warn { border-left-color: var(--warn); }
+    .gate.bad { border-left-color: #b91c1c; }
+    pre.content {
+      background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px;
+      font-size: 0.78rem; line-height: 1.45; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+      font-family: Consolas, "Courier New", monospace;
+    }
+    .welcome ul { margin: 0.5rem 0 0 1.1rem; font-size: 0.9rem; color: #334155; }
+    .welcome li { margin-bottom: 0.3rem; }
+    .empty { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; }
+      aside { width: 100%; flex: 0 0 auto; max-height: 40vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo — 統一學習入口</h1>
+    <p class="sub">
+      一個入口看齊：應用／Compose／K8s 設定、教學 HTML、架構文件。API 請走 Swagger（不在此重做）。
+      請用下方<strong>絕對路徑</strong>連結（避免 <code>/docs</code> 無尾斜線時相對連結變 404）。
+    </p>
+    <p class="links">
+      <a href="/docs/portals/learning-map.html">學習導引地圖（雙軌）</a>
+      <a href="/docs/md-reader.html">MD 閱讀器</a>
+      <a href="/docs/portals/swagger.html">API（Swagger）</a>
+      <a href="/docs/portals/loop-guide.html">部署跑通教學</a>
+      <a href="/docs/portals/stages.html">S0→S6</a>
+      <a href="/docs/portals/handbook.html">完整學習手冊</a>
+      <a href="/docs/architecture/architecture.html">Architecture</a>
+      <a href="/docs/guides/claude.html">CLAUDE</a>
+    </p>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="搜尋標題或路徑…" autocomplete="off" />
+      </div>
+      <nav id="nav" class="nav" aria-label="目錄"></nav>
+    </aside>
+    <main class="viewer">
+      <div class="viewer-head">
+        <h2 id="title">歡迎</h2>
+        <div class="meta" id="meta">從左側選一項開始；API 請點「API（Swagger）」。</div>
+        <div class="actions" id="actions"></div>
+      </div>
+      <div class="viewer-body" id="body">
+        <div class="welcome">
+          <div class="gate">
+            <strong>正確開啟方式</strong>（擇一）：
+            <ol style="margin:0.4rem 0 0 1.1rem;">
+              <li>專案根執行 <code>.\scripts\serve-docs.ps1</code></li>
+              <li>瀏覽器開 <code>http://127.0.0.1:5500/docs/index.html</code>（務必含 <code>index.html</code>）</li>
+            </ol>
+          </div>
+          <p style="font-size:0.9rem;color:#334155;">學習路徑（點連結，勿手打相對檔名）：</p>
+          <ul>
+            <li>不知道從哪讀起 → <a href="/docs/portals/learning-map.html">/docs/portals/learning-map.html</a></li>
+            <li>舒適讀 MD → <a href="/docs/md-reader.html">/docs/md-reader.html</a></li>
+            <li>教學 →
+              <a href="/docs/portals/loop-guide.html">loop-guide</a> ·
+              <a href="/docs/portals/stages.html">stages</a> ·
+              <a href="/docs/portals/handbook.html">handbook</a> ·
+              <a href="/docs/portals/boot-entrypoint.html">boot-entrypoint</a>
+            </li>
+            <li>架構 → <a href="/docs/architecture/architecture.html">architecture.html</a> · 為什麼 → <a href="/docs/guides/why.html">guides/why.html</a></li>
+            <li>對照左側「應用設定」與「Compose／K8s」</li>
+            <li>打 API → <a href="/docs/portals/swagger.html">/docs/portals/swagger.html</a></li>
+          </ul>
+          <div class="gate warn" style="margin-top:0.75rem">
+            <strong>404 常見原因</strong>：開了 <code>/docs</code>（無 <code>/</code> 或無 <code>index.html</code>），
+            相對連結會變成 <code>http://127.0.0.1:5500/learning-map.html</code> 而找不到。
+            請固定用 <code>/docs/index.html</code>，或點本頁上方絕對路徑連結。
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /**
+     * 【職責】統一學習入口的目錄清單
+     * 【技巧】path 一律用站台絕對路徑（/docs/...、/gateway/...），避免 /docs 無尾斜線時相對連結 404
+     * 【概念】API＝Swagger；YAML＝設定預覽；教學／架構＝HTML 入口
+     */
+    function absDocs(p) {
+      if (!p) return p;
+      if (/^https?:\/\//i.test(p) || p.startsWith("/")) return p;
+      if (p.startsWith("../")) return "/" + p.slice(3);
+      return "/docs/" + p.replace(/^\.\//, "");
+    }
+
+    const CATALOG = [
+      { id: "api-swagger", group: "API", title: "Swagger UI（互動文件）", kind: "link", path: "/docs/portals/swagger.html", badge: "api", note: "OpenAPI 互動瀏覽；Try it out 需後端" },
+      { id: "api-runtime", group: "API", title: "Runtime Swagger（:8081）", kind: "link", path: "http://localhost:8081/swagger-ui.html", badge: "api", note: "order-service 啟動後才有" },
+      { id: "api-openapi", group: "API", title: "openapi.yaml", kind: "viewer", path: "/docs/openapi.yaml", badge: "yaml", note: "契約原始檔" },
+      { id: "api-spec-md", group: "API", title: "API規格書（HTML）", kind: "link", path: "/docs/architecture/api-spec.html", badge: "link" },
+
+      { id: "cfg-gw", group: "應用設定", title: "gateway · application.yml", kind: "viewer", path: "/gateway/src/main/resources/application.yml", badge: "yaml" },
+      { id: "cfg-order", group: "應用設定", title: "order-service · application.yml", kind: "viewer", path: "/order-service/src/main/resources/application.yml", badge: "yaml" },
+      { id: "cfg-order-demo", group: "應用設定", title: "order-service · application-demo.yml", kind: "viewer", path: "/order-service/src/main/resources/application-demo.yml", badge: "yaml" },
+      { id: "cfg-risk", group: "應用設定", title: "risk-service · application.yml", kind: "viewer", path: "/risk-service/src/main/resources/application.yml", badge: "yaml" },
+      { id: "cfg-account", group: "應用設定", title: "account-service · application.yml", kind: "viewer", path: "/account-service/src/main/resources/application.yml", badge: "yaml" },
+      { id: "cfg-account-demo", group: "應用設定", title: "account-service · application-demo.yml", kind: "viewer", path: "/account-service/src/main/resources/application-demo.yml", badge: "yaml" },
+      { id: "cfg-job", group: "應用設定", title: "job-service · application.yml", kind: "viewer", path: "/job-service/src/main/resources/application.yml", badge: "yaml" },
+      { id: "cfg-eng", group: "應用設定", title: "engineering-config（HTML）", kind: "link", path: "/docs/architecture/engineering-config.html", badge: "link" },
+
+      { id: "dc", group: "Compose／K8s", title: "docker-compose.yml", kind: "viewer", path: "/docker-compose.yml", badge: "yaml" },
+      { id: "k-ns", group: "Compose／K8s", title: "k8s · namespace.yaml", kind: "viewer", path: "/deploy/k8s/base/namespace.yaml", badge: "yaml" },
+      { id: "k-base", group: "Compose／K8s", title: "k8s · base/kustomization.yaml", kind: "viewer", path: "/deploy/k8s/base/kustomization.yaml", badge: "yaml" },
+      { id: "k-dev", group: "Compose／K8s", title: "k8s · overlays/dev/kustomization.yaml", kind: "viewer", path: "/deploy/k8s/overlays/dev/kustomization.yaml", badge: "yaml" },
+      { id: "k-gw-d", group: "Compose／K8s", title: "k8s · gateway Deployment", kind: "viewer", path: "/deploy/k8s/base/gateway-deployment.yaml", badge: "yaml" },
+      { id: "k-gw-s", group: "Compose／K8s", title: "k8s · gateway Service", kind: "viewer", path: "/deploy/k8s/base/gateway-service.yaml", badge: "yaml" },
+      { id: "k-ord-d", group: "Compose／K8s", title: "k8s · order Deployment", kind: "viewer", path: "/deploy/k8s/base/order-deployment.yaml", badge: "yaml" },
+      { id: "k-ord-s", group: "Compose／K8s", title: "k8s · order Service", kind: "viewer", path: "/deploy/k8s/base/order-service.yaml", badge: "yaml" },
+      { id: "k-risk-d", group: "Compose／K8s", title: "k8s · risk Deployment", kind: "viewer", path: "/deploy/k8s/base/risk-deployment.yaml", badge: "yaml" },
+      { id: "k-risk-s", group: "Compose／K8s", title: "k8s · risk Service", kind: "viewer", path: "/deploy/k8s/base/risk-service.yaml", badge: "yaml" },
+      { id: "k-acc-d", group: "Compose／K8s", title: "k8s · account Deployment", kind: "viewer", path: "/deploy/k8s/base/account-deployment.yaml", badge: "yaml" },
+      { id: "k-acc-s", group: "Compose／K8s", title: "k8s · account Service", kind: "viewer", path: "/deploy/k8s/base/account-service.yaml", badge: "yaml" },
+      { id: "k-readme", group: "Compose／K8s", title: "deploy README（HTML）", kind: "link", path: "/docs/deploy/deploy-readme.html", badge: "link" },
+
+      { id: "h-roadmap", group: "教學 HTML", title: "學習導引地圖（雙軌）", kind: "link", path: "/docs/portals/learning-map.html", badge: "link" },
+      { id: "h-md-reader", group: "教學 HTML", title: "MD 閱讀器", kind: "link", path: "/docs/md-reader.html", badge: "link" },
+      { id: "h-loop", group: "教學 HTML", title: "部署跑通 · Loop Engineering", kind: "link", path: "/docs/portals/loop-guide.html", badge: "link" },
+      { id: "h-s0", group: "教學 HTML", title: "上線部署階段層次（S0→S6）", kind: "link", path: "/docs/portals/stages.html", badge: "link" },
+      { id: "h-boot", group: "教學 HTML", title: "啟動流程 · EntryPoint", kind: "link", path: "/docs/portals/boot-entrypoint.html", badge: "link" },
+      { id: "h-demo", group: "教學 HTML", title: "啟動與 Demo 運作流程", kind: "link", path: "/docs/portals/demo-flow.html", badge: "link" },
+      { id: "h-book", group: "教學 HTML", title: "完整學習手冊", kind: "link", path: "/docs/portals/handbook.html", badge: "link" },
+      { id: "h-cg", group: "教學 HTML", title: "CodeGraphic", kind: "link", path: "/docs/portals/codeGraphic.html", badge: "link" },
+      { id: "h-javadoc", group: "教學 HTML", title: "Javadoc 總入口", kind: "link", path: "/docs/javadoc/index.html", badge: "link" },
+
+      { id: "m-arch", group: "架構／設計", title: "architecture（HTML）", kind: "link", path: "/docs/architecture/architecture.html", badge: "link" },
+      { id: "m-dist", group: "架構／設計", title: "分散式系統落地", kind: "link", path: "/docs/architecture/distributed.html", badge: "link" },
+      { id: "m-k8s", group: "架構／設計", title: "K8s跑通與驗證技巧", kind: "link", path: "/docs/deploy/k8s-tips.html", badge: "link" },
+      { id: "m-stage", group: "架構／設計", title: "上線部署階段層次（MD）", kind: "link", path: "/docs/deploy/stages-doc.html", badge: "link" },
+      { id: "m-why", group: "架構／設計", title: "技術次序與架構為什麼", kind: "link", path: "/docs/guides/why.html", badge: "link" },
+      { id: "m-test", group: "架構／設計", title: "testing", kind: "link", path: "/docs/architecture/testing.html", badge: "link" },
+      { id: "m-verify", group: "架構／設計", title: "驗證設計", kind: "link", path: "/docs/architecture/verify-design.html", badge: "link" },
+      { id: "m-db", group: "架構／設計", title: "資料庫設計", kind: "link", path: "/docs/architecture/db.html", badge: "link" },
+      { id: "m-fusion", group: "架構／設計", title: "技術融合對照", kind: "link", path: "/docs/guides/fusion.html", badge: "link" },
+      { id: "m-story", group: "架構／設計", title: "產品劇情-前台與後台", kind: "link", path: "/docs/guides/story-ui.html", badge: "link" },
+      { id: "m-rbac", group: "架構／設計", title: "產品劇情與RBAC", kind: "link", path: "/docs/guides/story-rbac.html", badge: "link" },
+      { id: "m-spec", group: "架構／設計", title: "FinTechDemo SPEC", kind: "link", path: "/docs/guides/spec.html", badge: "link" },
+      { id: "m-portal-spec", group: "架構／設計", title: "本入口設計 spec", kind: "link", path: "/docs/architecture/portal-design.html", badge: "link" }
+    ];
+
+    const GROUP_ORDER = ["API", "應用設定", "Compose／K8s", "教學 HTML", "架構／設計"];
+
+    const navEl = document.getElementById("nav");
+    const searchEl = document.getElementById("search");
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const actionsEl = document.getElementById("actions");
+    const bodyEl = document.getElementById("body");
+
+    let activeId = null;
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function filtered() {
+      const q = (searchEl.value || "").trim().toLowerCase();
+      if (!q) return CATALOG.slice();
+      return CATALOG.filter(function (item) {
+        return (item.title + " " + item.path + " " + item.group).toLowerCase().indexOf(q) >= 0;
+      });
+    }
+
+    function renderNav() {
+      const items = filtered();
+      navEl.innerHTML = "";
+      GROUP_ORDER.forEach(function (group) {
+        const inGroup = items.filter(function (i) { return i.group === group; });
+        if (!inGroup.length) return;
+        const gt = document.createElement("div");
+        gt.className = "group-title";
+        gt.textContent = group;
+        navEl.appendChild(gt);
+        inGroup.forEach(function (item) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "nav-item" + (item.id === activeId ? " active" : "");
+          btn.innerHTML = escapeHtml(item.title) +
+            '<span class="badge ' + escapeHtml(item.badge || "") + '">' + escapeHtml(item.kind) + "</span>";
+          btn.addEventListener("click", function () { selectItem(item.id); });
+          navEl.appendChild(btn);
+        });
+      });
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.style.padding = "0.75rem 0.9rem";
+        empty.textContent = "沒有符合的項目";
+        navEl.appendChild(empty);
+      }
+    }
+
+    function selectItem(id) {
+      const item = CATALOG.find(function (i) { return i.id === id; });
+      if (!item) return;
+      activeId = id;
+      renderNav();
+      const href = absDocs(item.path);
+      titleEl.textContent = item.title;
+      metaEl.textContent = (item.note ? item.note + " · " : "") + href;
+      actionsEl.innerHTML = "";
+
+      const openBtn = document.createElement("a");
+      openBtn.className = "btn primary";
+      openBtn.href = href;
+      openBtn.target = "_blank";
+      openBtn.rel = "noopener";
+      openBtn.textContent = item.kind === "link" ? "開啟頁面" : "原始檔另開";
+      actionsEl.appendChild(openBtn);
+
+      if (item.kind === "link") {
+        // 同頁導向，避免使用者再踩相對路徑
+        bodyEl.innerHTML =
+          '<div class="gate">即將開啟：<code>' + escapeHtml(href) + "</code></div>" +
+          '<p class="empty"><a class="btn primary" href="' + escapeHtml(href) + '">點此前往</a></p>';
+        return;
+      }
+
+      bodyEl.innerHTML = '<div class="gate">載入中…</div>';
+      fetch(href)
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        })
+        .then(function (text) {
+          bodyEl.innerHTML = "<pre class=\"content\">" + escapeHtml(text) + "</pre>";
+        })
+        .catch(function (err) {
+          bodyEl.innerHTML =
+            '<div class="gate bad"><strong>無法載入檔案</strong>（' + escapeHtml(String(err.message || err)) + "）</div>" +
+            '<div class="gate warn">請在專案根執行 <code>.\\scripts\\serve-docs.ps1</code>，' +
+            "再開 <code>http://127.0.0.1:5500/docs/index.html</code>。</div>";
+        });
+    }
+
+    searchEl.addEventListener("input", renderNav);
+    renderNav();
+
+    const params = new URLSearchParams(location.search);
+    const want = params.get("id");
+    if (want && CATALOG.some(function (i) { return i.id === want; })) {
+      selectItem(want);
+    }
+  </script>
+</body>
+</html>

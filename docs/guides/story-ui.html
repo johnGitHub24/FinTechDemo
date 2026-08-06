@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 產品劇情-前台與後台</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>產品劇情-前台與後台</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/guides/story-ui.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 產品劇情：交易前台 × 帳戶後台</h1>
+<blockquote>
+<p><strong>先有合理的交易故事，再導入 Gateway／Kafka／K8s。</strong><br>前端技巧對齊 TradingCRUD：<code>Vue Router</code> + <code>meta.requiresAuth</code> + Axios Bearer。<br>視覺：<a href="../portals/codeGraphic.html"><code>codeGraphic</code></a> Tab「⑤ 前台×後台」</p>
+</blockquote>
+<hr>
+<h2>1. 一句話劇情</h2>
+<p>使用者先<strong>登入（JWT）</strong> → 在<strong>交易前台</strong>下單並看交易訊息 → 到<strong>帳戶後台</strong>查<strong>自己的成交／下單歷史（分頁）<strong>與</strong>餘額／持倉</strong>。<br>系統技術（Gateway、微服務、Kafka…）是為了支撐這條故事，不是反過來。</p>
+<div class="mermaid">flowchart LR
+  Login[登入 JWT] --> Trade[交易前台<br/>下單／訊息]
+  Trade --> Portal[帳戶後台<br/>歷史分頁／餘額]
+  Portal -. 再下單 .-> Trade
+</div>
+<hr>
+<h2>2. 兩個畫面，同一套身分</h2>
+<table>
+<thead>
+<tr>
+<th>區域</th>
+<th>路由（Vue）</th>
+<th>誰用</th>
+<th>做什麼</th>
+<th>對應後端 API</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>登入</td>
+<td><code>/login</code></td>
+<td>訪客</td>
+<td>帳密換 JWT</td>
+<td><code>POST /api/auth/login</code></td>
+</tr>
+<tr>
+<td><strong>交易前台</strong></td>
+<td><code>/trade</code></td>
+<td>USER／ADMIN</td>
+<td>下單、看狀態／拒絕訊息</td>
+<td><code>POST /api/orders</code>、訂閱或輪詢狀態</td>
+</tr>
+<tr>
+<td><strong>帳戶後台</strong></td>
+<td><code>/portal</code></td>
+<td>同一使用者</td>
+<td><strong>我的</strong>歷史分頁、餘額、持倉</td>
+<td><code>GET /api/orders?mine</code>、<code>GET /api/account/balance</code>、<code>GET /api/positions</code></td>
+</tr>
+<tr>
+<td>管理（可選）</td>
+<td><code>/admin</code></td>
+<td>僅 ADMIN</td>
+<td>全站訂單、audit</td>
+<td><code>GET /api/admin/orders</code>、<code>GET /api/admin/audit-logs</code></td>
+</tr>
+</tbody></table>
+<p><strong>關鍵合理性</strong>：前台產生交易資料 → 後台用**同一 userId（來自 JWT）**讀歷史與餘額；沒有「兩個無關系統」。</p>
+<hr>
+<h2>3. Vue Router + JWT（抄 TradingCRUD 技巧）</h2>
+<p>來源：<code>TradingCRUD/frontend/src/router/index.js</code>、<code>api/client.js</code>、<code>stores/auth.js</code></p>
+<table>
+<thead>
+<tr>
+<th>技巧</th>
+<th>作法</th>
+<th>為什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>meta.requiresAuth</code></td>
+<td><code>/trade</code>、<code>/portal</code>、<code>/admin</code> 需登入</td>
+<td>UX 擋未登入；<strong>真授權仍在後端 Security</strong></td>
+</tr>
+<tr>
+<td><code>meta.guest</code></td>
+<td><code>/login</code>；已登入則導向 <code>/trade</code></td>
+<td>避免重複登入</td>
+</tr>
+<tr>
+<td><code>beforeEach</code> + <code>unref(isLoggedIn)</code></td>
+<td>守衛讀 computed 要用 unref</td>
+<td>否則守衛失效</td>
+</tr>
+<tr>
+<td>Axios Request Interceptor</td>
+<td>自動 <code>Authorization: Bearer</code></td>
+<td>頁面不手動帶 token</td>
+</tr>
+<tr>
+<td>Response 401（排除 login）</td>
+<td>清 session → <code>/login</code></td>
+<td>Token 過期體驗一致</td>
+</tr>
+<tr>
+<td>Vite proxy</td>
+<td><code>/api</code> → Gateway <code>:8080</code></td>
+<td>開發免 CORS；正式也不直連多服務</td>
+</tr>
+</tbody></table>
+<div class="mermaid">sequenceDiagram
+  participant U as 使用者
+  participant V as Vue Router
+  participant A as Axios
+  participant S as Spring Security
+  U->>V: 開 /portal
+  V->>V: requiresAuth？無 JWT → /login
+  U->>A: POST /api/auth/login
+  A->>S: 帳密驗證
+  S-->>A: JWT
+  A->>V: setSession → /trade
+  U->>A: POST /api/orders（Bearer）
+  A->>S: Filter 還原身分（getName 當下單者）
+</div>
+<hr>
+<h2>4. 端到端劇情（Happy Path）</h2>
+<div class="mermaid">sequenceDiagram
+  actor Trader as 交易者
+  participant Front as 交易前台 /trade
+  participant Back as 帳戶後台 /portal
+  participant API as Backend via Gateway
+  participant DB as PostgreSQL
+
+  Trader->>API: 登入 → JWT
+  Trader->>Front: 下單 BUY AAPL 10 @ 100
+  Front->>API: POST /api/orders
+  API->>DB: 扣凍結／寫 PENDING（簡化：檢查餘額）
+  API-->>Front: 202／狀態訊息「已受理」
+  API->>API: （之後）Kafka→Risk→成交
+  API-->>Front: 訊息「ACCEPTED／REJECTED」
+  Trader->>Back: 打開後台
+  Back->>API: GET /api/orders?page&size（僅本人）
+  Back->>API: GET /api/account/balance
+  Back->>API: GET /api/positions
+  API-->>Back: 歷史列表＋餘額＋持倉
+</div>
+<h3>餘額怎麼合理（精簡版）</h3>
+<table>
+<thead>
+<tr>
+<th>動作</th>
+<th>餘額／持倉</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>種子帳號</td>
+<td><code>cash_balance</code> 初始例如 1_000_000</td>
+</tr>
+<tr>
+<td>買單 ACCEPTED／FILLED</td>
+<td>現金減少 <code>qty * price</code>；持倉增加</td>
+</tr>
+<tr>
+<td>賣單 ACCEPTED／FILLED</td>
+<td>持倉減少；現金增加</td>
+</tr>
+<tr>
+<td>風控拒絕／餘額不足</td>
+<td>不改餘額；前台顯示訊息</td>
+</tr>
+</tbody></table>
+<p>不做多幣別、保證金、部分成交 — Demo 故事夠用即可。</p>
+<hr>
+<h2>5. 前後端功能對照（都要有）</h2>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>前端</th>
+<th>後端</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>登入</td>
+<td>LoginView + auth store</td>
+<td>JWT FilterChain；公開 <code>/api/auth/**</code></td>
+</tr>
+<tr>
+<td>下單</td>
+<td>TradeView 表單＋訊息區</td>
+<td>Order CRUD；身分綁 JWT user</td>
+</tr>
+<tr>
+<td>交易訊息</td>
+<td>Toast／狀態列（PENDING→…）</td>
+<td>status 欄位；可選 SSE／輪詢</td>
+</tr>
+<tr>
+<td>歷史紀錄</td>
+<td>Portal 分頁表（PagingList）</td>
+<td><code>PageResponse</code> + <code>user_id</code> 過濾</td>
+</tr>
+<tr>
+<td>餘額查詢</td>
+<td>Portal 餘額卡片</td>
+<td><code>accounts.cash_balance</code> API</td>
+</tr>
+<tr>
+<td>持倉</td>
+<td>Portal 持倉表</td>
+<td><code>positions</code></td>
+</tr>
+<tr>
+<td>權限</td>
+<td>router meta；ADMIN 顯示管理選單</td>
+<td>USER 只能看自己；ADMIN 可全站</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. 技術導入時機（劇情優先）</h2>
+<table>
+<thead>
+<tr>
+<th>劇情已經通了之後</th>
+<th>才導入</th>
+<th>為什麼這時加</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>單機 JWT＋CRUD＋前台後台頁</td>
+<td>—</td>
+<td><strong>P1–P2＋早期 Vue</strong>：先有故事</td>
+</tr>
+<tr>
+<td>前端不該直連多埠</td>
+<td>Gateway</td>
+<td>Middleware</td>
+</tr>
+<tr>
+<td>風控與下單分離</td>
+<td>risk-service</td>
+<td>Microservice</td>
+</tr>
+<tr>
+<td>下單尖峰／「入隊≠成交」</td>
+<td>Kafka</td>
+<td>前台訊息改為「已受理，處理中」更合理</td>
+</tr>
+<tr>
+<td>逾時單</td>
+<td>Job</td>
+<td>後台歷史會看到 CANCELLED</td>
+</tr>
+<tr>
+<td>審計</td>
+<td>AOP → audit_log</td>
+<td>後台／ADMIN 可查</td>
+</tr>
+<tr>
+<td>證明</td>
+<td>Locust／Prom／K8s</td>
+<td>故事可跑後再證明</td>
+</tr>
+</tbody></table>
+<p><strong>實作調整</strong>：Vue 前台×後台與 Paging／CRUD／JWT <strong>同一階段就該有雛形</strong>（不要等到全部後端分散式做完才做 UI）— 對齊你說的「先做 Paging／CRUD／JWT，才有被 Gateway 保護的東西」，且 <strong>front-backend 一起</strong>。</p>
+<p>建議 Phase：</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0</td>
+<td>骨架</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Order CRUD + 分頁 + <strong>Account 餘額</strong> + users</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>JWT；USER 只能看自己的單／餘額</td>
+</tr>
+<tr>
+<td><strong>P2b</strong></td>
+<td><strong>Vue：login／trade／portal</strong>（Router+JWT，對齊 CRUD）</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Gateway 接上（前端 proxy → Gateway）</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>Kafka（前台訊息改為非同步語意）</td>
+</tr>
+<tr>
+<td>…</td>
+<td>Job／AOP／觀測／壓測／K8s</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. 種子帳號（Demo 劇情用）</h2>
+<table>
+<thead>
+<tr>
+<th>username</th>
+<th>role</th>
+<th>初始餘額</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>trader</code></td>
+<td>USER</td>
+<td>1,000,000</td>
+<td>前台下單＋後台查自己</td>
+</tr>
+<tr>
+<td><code>admin</code></td>
+<td>ADMIN</td>
+<td>—</td>
+<td>可看全站／audit（可選）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. 相關文件</h2>
+<ul>
+<li><a href="../portals/codeGraphic.html"><code>codeGraphic</code></a> — 含前台×後台 Tab  </li>
+<li><a href="../architecture/db.html"><code>資料庫設計</code></a> — 含 <code>accounts</code>  </li>
+<li><a href="./why.html"><code>技術次序與架構為什麼</code></a> — 技術層為什麼  </li>
+<li>TradingCRUD 範例：<code>frontend/src/router/index.js</code>、<code>api/client.js</code></li>
+</ul>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

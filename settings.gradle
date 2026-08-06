@@ -1,0 +1,8 @@
+rootProject.name = 'fintech-demo'
+
+include 'common'
+include 'order-service'
+include 'risk-service'
+include 'account-service'
+include 'job-service'
+include 'gateway'

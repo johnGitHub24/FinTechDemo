@@ -1,0 +1,131 @@
+<template>
+  <div class="story-panel card">
+    <div class="row" style="align-items:center;margin-bottom:0.5rem">
+      <h3 style="margin:0;flex:2">後端過程（PROCESS FLOW）</h3>
+      <button class="secondary" type="button" @click="refresh">刷新拓撲</button>
+    </div>
+    <p class="story-meta" v-if="story.state.lastTrace">
+      動作 <strong>{{ story.state.lastTrace.action }}</strong>
+      <span v-if="story.state.lastTrace.orderId"> · 訂單 #{{ story.state.lastTrace.orderId }}</span>
+      <span v-if="story.state.lastTrace.orderStatus"> · 狀態 {{ story.state.lastTrace.orderStatus }}</span>
+      <span v-if="story.state.lastTrace.viaGateway"> · via Gateway</span>
+    </p>
+    <p class="story-meta" v-else>尚無操作 trace — 請先下單／成交／取消。</p>
+
+    <ol class="flow-list">
+      <li
+        v-for="(step, idx) in story.flowSteps.value"
+        :key="idx"
+        :class="{ fail: !step.ok }"
+      >
+        <div class="flow-who">{{ step.title }}</div>
+        <div class="flow-purpose">{{ step.purpose }}</div>
+        <div class="flow-state">{{ step.stateHint }}</div>
+      </li>
+    </ol>
+    <p v-if="!story.flowSteps.value.length" class="story-meta">（等待第一次帶 demoTrace 的 API）</p>
+
+    <h4 class="story-sub">服務儀表板</h4>
+    <div class="lamp-row">
+      <div
+        v-for="s in services"
+        :key="s.id"
+        class="lamp"
+        :class="{ up: s.up, down: !s.up }"
+        :title="s.url"
+      >
+        <span class="dot"></span>
+        {{ s.label }}:{{ s.port }}
+      </div>
+    </div>
+    <p v-if="story.state.topologyError" class="error">{{ story.state.topologyError }}</p>
+
+    <h4 class="story-sub">部署階梯（敘事）</h4>
+    <div class="stage-row">
+      <button
+        v-for="s in stages"
+        :key="s"
+        type="button"
+        class="stage-chip"
+        :class="{ active: displayStage === s, pinned: story.state.pinStage === s }"
+        @click="togglePin(s)"
+      >
+        {{ s }}
+      </button>
+      <button class="secondary" type="button" @click="story.setPinStage(null)">清除釘住</button>
+    </div>
+    <p class="story-meta">目前顯示：{{ displayStage }}（點階段可釘住講解；清除後跟拓撲事實）</p>
+    <aside class="story-note">
+      <strong>NOTE · 部署階梯是什麼？</strong>
+      <p>回答「環境開到哪」——依上方<strong>服務儀表板</strong>綠燈推斷，不是訂單狀態。</p>
+      <ul>
+        <li><strong>S1</strong>：僅 <code>Order:8081</code>（可登入／建 PENDING；成交尚缺風控）</li>
+        <li><strong>S2</strong>：<code>Order:8081</code> + <code>Risk:8082</code>（最短可成交：Feign 名目風控）</li>
+        <li><strong>S3</strong>：S2 再加 <code>Gateway:8080</code> <em>或</em> <code>Account:8084</code>（統一入口／帳務敘事）</li>
+      </ul>
+      <p>
+        <code>Job:8083</code> 為可選排程，<strong>不進</strong> S1–S3 公式。
+        S4–S6（K8s 等）請用文件講解，面板不自動宣稱已上叢集。
+        「釘住」只改講解焦點，不改變真實 health。
+      </p>
+    </aside>
+
+    <h4 class="story-sub">訂單狀態機</h4>
+    <div class="stage-row">
+      <span
+        v-for="st in orderStates"
+        :key="st"
+        class="stage-chip"
+        :class="{ active: currentOrderStatus === st }"
+      >{{ st }}</span>
+    </div>
+    <aside class="story-note">
+      <strong>NOTE · 這一筆單子到哪？</strong>
+      <ul>
+        <li><strong>PENDING</strong>：已建立，尚未成交／取消</li>
+        <li><strong>ACCEPTED</strong>：點「成交」且 Risk 通過 → 接受</li>
+        <li><strong>REJECTED</strong>：成交時風控拒絕（名目超限等）</li>
+        <li><strong>CANCELLED</strong>：使用者取消或排程逾時取消</li>
+      </ul>
+      <p>與部署階梯無關：訂單狀態跟<strong>這一筆業務結果</strong>；S 階跟<strong>哪些服務在跑</strong>。</p>
+    </aside>
+  </div>
+</template>
+
+<script setup>
+/**
+ * 【職責】展演用後端過程儀表板：PROCESS FLOW／服務燈／S 階／訂單狀態。
+ * 【頁面角色】嵌在 Trade／Portal，不另開路由。
+ * 【與後端關係】讀 demoTrace（經 API client）與 GET /api/demo/topology。
+ */
+import { computed, onMounted, onUnmounted } from 'vue';
+import { useDemoStoryStore } from '../stores/demoStory';
+
+const story = useDemoStoryStore();
+const stages = ['S1', 'S2', 'S3'];
+const orderStates = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
+
+const services = computed(() => story.state.topology?.services || []);
+const displayStage = computed(() => story.displayStage.value);
+const currentOrderStatus = computed(() => story.state.lastTrace?.orderStatus || '');
+
+let timer = null;
+
+async function refresh() {
+  await story.refreshTopology();
+}
+
+function togglePin(s) {
+  if (story.state.pinStage === s) story.setPinStage(null);
+  else story.setPinStage(s);
+}
+
+onMounted(async () => {
+  await refresh();
+  timer = setInterval(refresh, 5000);
+});
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer);
+});
+</script>

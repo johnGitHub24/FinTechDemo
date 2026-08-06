@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FinTechDemo — 完整學習手冊</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    /* 柔和淺色閱讀主題：低對比紙感，長文不刺眼 */
+    :root {
+      --bg:#f5f7fa; --surface:#ffffff; --surface2:#eef2f6; --border:#d5dde6;
+      --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --accent2:#0f766e; --warn:#b45309; --vue:#0d7377;
+      --code-bg:#e8eef3; --code-fg:#0f4c5c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+    .layout { display:flex; min-height:100vh; }
+    nav.sidebar { width:280px; background:var(--surface); border-right:1px solid var(--border); padding:1.25rem 1rem; position:sticky; top:0; height:100vh; overflow-y:auto; flex-shrink:0; }
+    nav.sidebar h1 { font-size:1rem; color:var(--accent2); margin-bottom:0.25rem; }
+    nav.sidebar .nav-sub { font-size:0.75rem; color:var(--muted); margin-bottom:1rem; }
+    nav.sidebar h2 { font-size:0.7rem; text-transform:uppercase; color:var(--muted); margin:1rem 0 0.4rem; letter-spacing:0.05em; }
+    nav.sidebar a { display:block; color:var(--muted); text-decoration:none; padding:0.3rem 0.65rem; border-radius:6px; font-size:0.82rem; }
+    nav.sidebar a:hover { background:var(--surface2); color:var(--accent); }
+    main { flex:1; padding:2rem 2.5rem 5rem; max-width:960px; min-width:0; }
+    .hero { background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:2.5rem; }
+    .hero h1 { font-size:1.85rem; margin-bottom:0.5rem; color:var(--text); }
+    .hero p { color:var(--muted); }
+    .badges { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; }
+    .badge { background:var(--surface2); border:1px solid var(--border); padding:0.2rem 0.65rem; border-radius:999px; font-size:0.78rem; color:var(--accent2); }
+    .chapter { margin-bottom:3rem; scroll-margin-top:1.5rem; }
+    .chapter-header { margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid var(--accent); }
+    .chapter-label { font-size:0.75rem; color:var(--warn); text-transform:uppercase; letter-spacing:0.08em; }
+    .chapter-header h2 { font-size:1.45rem; margin-top:0.35rem; }
+    .md-content h3 { font-size:1rem; margin:1rem 0 0.5rem; color:var(--vue); }
+    .md-content p, .md-content li { color:#334155; margin-bottom:0.45rem; }
+    .md-content ul, .md-content ol { padding-left:1.5rem; margin:0.5rem 0 1rem; }
+    .md-content table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:1rem 0; background:var(--surface); }
+    .md-content th, .md-content td { border:1px solid var(--border); padding:0.45rem 0.65rem; text-align:left; vertical-align:top; }
+    .md-content th { background:var(--surface2); color:var(--accent); }
+    .md-content code { background:var(--code-bg); padding:0.12rem 0.35rem; border-radius:4px; color:var(--code-fg); font-size:0.85em; }
+    .md-content pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:1rem; overflow-x:auto; font-size:0.8rem; color:var(--code-fg); margin:1rem 0; }
+    .md-content blockquote { border-left:3px solid var(--warn); padding:0.5rem 1rem; margin:1rem 0; background:var(--surface2); color:var(--muted); font-size:0.9rem; }
+    .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1rem; margin:1rem 0; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    @media (max-width:900px) { .layout{flex-direction:column;} nav.sidebar{width:100%;height:auto;position:relative;max-height:40vh;} }
+  </style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <h1>FinTechDemo</h1>
+  <p class="nav-sub">完整學習手冊 · 快速進入 Demo</p>
+  <h2>入門</h2>
+  <a href="#ch01">第 1 章　這專案在幹嘛</a>
+  <a href="#ch02">第 2 章　10 分鐘啟動</a>
+  <a href="#ch03">第 3 章　前後台劇本</a>
+  <h2>架構</h2>
+  <a href="#ch04">第 4 章　模組與埠</a>
+  <a href="#ch05">第 5 章　分散式怎麼講</a>
+  <h2>API</h2>
+  <a href="#ch06">第 6 章　API 地圖</a>
+  <a href="swagger.html">→ 開 Swagger UI</a>
+  <h2>測試</h2>
+  <a href="#ch07">第 7 章　測試與 Pipeline</a>
+  <h2>互動</h2>
+  <a href="demo-flow.html">啟動流程 HTML</a>
+  <a href="codeGraphic.html">CodeGraphic</a>
+  <a href="../architecture/architecture.html">architecture.md</a>
+</nav>
+<main>
+<header class="hero" id="top">
+  <h1>FinTechDemo 完整學習手冊</h1>
+  <p>對齊 TradingCRUD 學習手冊風格。先會跑、會講，再深入模組。不堆 Eureka／進階複雜度。</p>
+  <div class="badges">
+    <span class="badge">Vue 3</span>
+    <span class="badge">JWT</span>
+    <span class="badge">Gateway</span>
+    <span class="badge">3 MS</span>
+    <span class="badge">Kafka</span>
+    <span class="badge">Redis</span>
+  </div>
+</header>
+
+<article class="chapter" id="ch01">
+  <header class="chapter-header">
+    <span class="chapter-label">入門</span>
+    <h2>第 1 章　這專案在幹嘛</h2>
+  </header>
+  <div class="md-content">
+    <blockquote>前後台配合的迷你券商 Demo：登入後前台下單、後台查歷史／餘額；再展示 Gateway／微服務／Kafka／Redis。</blockquote>
+    <h3>你要能講的三句</h3>
+    <ol>
+      <li>產品：JWT＋RBAC，USER／ADMIN 權限不同</li>
+      <li>架構：Vue → Gateway → order／risk／account</li>
+      <li>事件：order-events → 風控執行 → trade-events → account＋清 Redis</li>
+    </ol>
+  </div>
+</article>
+
+<article class="chapter" id="ch02">
+  <header class="chapter-header">
+    <span class="chapter-label">入門</span>
+    <h2>第 2 章　10 分鐘啟動</h2>
+  </header>
+  <div class="md-content">
+<pre>終端A: .\gradlew.bat :order-service:bootRun
+終端B: cd frontend; npm install; npm run dev
+瀏覽: http://localhost:5173
+帳密: trader1 / password</pre>
+    <p>詳細逐步：<a href="demo-flow.html">啟動與Demo運作流程.html</a></p>
+  </div>
+</article>
+
+<article class="chapter" id="ch03">
+  <header class="chapter-header">
+    <span class="chapter-label">入門</span>
+    <h2>第 3 章　前後台劇本</h2>
+  </header>
+  <div class="md-content">
+    <table>
+      <tr><th>步驟</th><th>頁面</th><th>預期</th></tr>
+      <tr><td>登入</td><td>/login</td><td>進 /trade</td></tr>
+      <tr><td>下單</td><td>/trade</td><td>PENDING 出現</td></tr>
+      <tr><td>執行／取消</td><td>/trade 或 Swagger</td><td>ACCEPTED／CANCELLED</td></tr>
+      <tr><td>後台</td><td>/portal</td><td>餘額／持倉／歷史一致</td></tr>
+      <tr><td>ADMIN</td><td>/portal/audit</td><td>看得到審計；USER 則 403</td></tr>
+    </table>
+  </div>
+</article>
+
+<article class="chapter" id="ch04">
+  <header class="chapter-header">
+    <span class="chapter-label">架構</span>
+    <h2>第 4 章　模組與埠</h2>
+  </header>
+  <div class="md-content">
+    <div class="mermaid">
+flowchart LR
+  Vue[Vue:5173] --> GW[Gateway:8080]
+  GW --> ORD[order:8081]
+  GW --> ACC[account:8084]
+  ORD --> RSK[risk:8082]
+  ORD --> K[[Kafka]]
+  K --> ACC
+  ACC --> RD[(Redis)]
+    </div>
+    <table>
+      <tr><th>模組</th><th>埠</th><th>一句話</th></tr>
+      <tr><td>gateway</td><td>8080</td><td>唯一入口</td></tr>
+      <tr><td>order</td><td>8081</td><td>登入／訂單／審計／Kafka 生產</td></tr>
+      <tr><td>risk</td><td>8082</td><td>名義金額風控</td></tr>
+      <tr><td>account</td><td>8084</td><td>餘額持倉／Redis／Kafka 消費</td></tr>
+      <tr><td>job</td><td>8083</td><td>逾時取消排程</td></tr>
+    </table>
+  </div>
+</article>
+
+<article class="chapter" id="ch05">
+  <header class="chapter-header">
+    <span class="chapter-label">架構</span>
+    <h2>第 5 章　分散式怎麼講</h2>
+  </header>
+  <div class="md-content">
+    <ul>
+      <li><b>微服務</b>：三個業務服務拆邊界（不一定要 Eureka）</li>
+      <li><b>同步</b>：Feign 叫 risk</li>
+      <li><b>非同步</b>：Kafka topic 當 event bus</li>
+      <li><b>快取</b>：account 讀路徑 Redis，入帳後 evict</li>
+      <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
+    </ul>
+  </div>
+</article>
+
+<article class="chapter" id="ch06">
+  <header class="chapter-header">
+    <span class="chapter-label">API</span>
+    <h2>第 6 章　API 地圖</h2>
+  </header>
+  <div class="md-content">
+    <p>權威互動：<a href="swagger.html">swagger.html</a> · Markdown：<a href="../architecture/api-spec.html">API規格書.md</a></p>
+    <ul>
+      <li>Auth：<code>POST /api/auth/login</code></li>
+      <li>Orders：<code>/api/orders</code> CRUD／execute</li>
+      <li>Account：<code>/api/accounts/me</code>、<code>/api/positions</code></li>
+      <li>Audit：<code>/api/audit-logs</code>（ADMIN）</li>
+    </ul>
+  </div>
+</article>
+
+<article class="chapter" id="ch07">
+  <header class="chapter-header">
+    <span class="chapter-label">測試</span>
+    <h2>第 7 章　測試與 Pipeline</h2>
+  </header>
+  <div class="md-content">
+<pre>.\scripts\verify-pipeline.ps1   # check + compose + k8s
+.\scripts\check.ps1             # 僅測試</pre>
+    <p>單元／整合在 order、account、risk、gateway、job 各模組；種子資料 trader1 餘額 85000、AAPL 持倉 100。</p>
+  </div>
+</article>
+
+<footer style="margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:0.85rem;">
+  FinTechDemo · 對齊 TradingCRUD 學習手冊 · 以可展示為優先
+</footer>
+</main>
+</div>
+<script>mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });</script>
+</body>
+</html>

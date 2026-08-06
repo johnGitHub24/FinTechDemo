@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 從執行到 Entry Point（設定檔／程式載入）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --accent2: #0f766e; --warn: #b45309;
+      --code-bg: #e8eef3; --code-fg: #0f4c5c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+    .top { border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%); padding: 1.5rem 2rem 0; }
+    .top h1 { font-size: 1.45rem; margin-bottom: 0.25rem; }
+    .top .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .top .links { margin-bottom: 1rem; font-size: 0.85rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 1rem; }
+    .top .links a:hover { text-decoration: underline; }
+    .jump { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1rem; margin: 0 2rem 1rem; max-width: 1080px; font-size: 0.88rem; }
+    .jump strong { color: var(--accent2); }
+    .jump a { color: var(--accent); margin-right: 0.85rem; white-space: nowrap; }
+    .jump .why { color: var(--muted); font-size: 0.82rem; margin-top: 0.5rem; }
+    table a { color: var(--accent); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .tab { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--muted); padding: 0.55rem 1.1rem; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.88rem; border-bottom: none; }
+    .tab:hover { color: var(--text); background: var(--surface2); }
+    .tab.active { background: var(--bg); color: var(--accent2); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1120px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 1.2rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
+    .blurb { color: #334155; font-size: 0.92rem; margin-bottom: 1rem; max-width: 54rem; }
+    .blurb li { margin-left: 1.1rem; margin-bottom: 0.3rem; }
+    .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; overflow-x: auto; margin-bottom: 0.75rem; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .note { margin-top: 0.75rem; background: var(--surface2); border-left: 3px solid var(--warn); padding: 0.65rem 0.9rem; font-size: 0.85rem; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; background: var(--surface); }
+    th, td { border: 1px solid var(--border); padding: 0.45rem 0.65rem; text-align: left; vertical-align: top; }
+    th { background: var(--surface2); color: var(--accent); }
+    code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: var(--code-fg); font-size: 0.85em; }
+    footer { padding: 0 2rem 2rem; color: var(--muted); font-size: 0.8rem; }
+    @media (max-width: 700px) {
+      .top, main, footer { padding-left: 1rem; padding-right: 1rem; }
+      .tab { flex: 1 1 auto; border-radius: 8px; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo — 從「執行」到 Entry Point</h1>
+    <p class="sub">設定檔載入 · classpath · SpringApplication.run · 進入 main／就緒。以 <strong>OrderServiceApplication</strong>（:8081）為主路徑說明。</p>
+    <p class="links">
+      <a href="demo-flow.html">啟動與 Demo 運作流程</a>
+      <a href="codeGraphic.html">CodeGraphic</a>
+      <a href="../guides/spec.html">規格書</a>
+      <a href="../architecture/architecture.html">architecture</a>
+    </p>
+    <nav class="tabs" role="tablist" aria-label="啟動載入章節">
+      <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="launch">① 你怎麼按執行</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="jvm">② JVM → main</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="config">③ 設定檔怎麼載入</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="spring">④ Spring 建置上下文</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="ready">⑤ 就緒與請求</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="gateway">⑥ Gateway 變體</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ① -->
+    <section id="panel-launch" class="panel active" role="tabpanel">
+      <h2>① 你怎麼按「執行」——三種入口殊途同歸</h2>
+      <ul class="blurb">
+        <li>最短 Demo：IntelliJ 跑 <code>OrderServiceApplication</code>（模組 <code>order-service</code>）。</li>
+        <li>或終端：<code>.\gradlew.bat :order-service:bootRun</code>。</li>
+        <li>Docker：根目錄 <code>Dockerfile</code> 的 <code>ENTRYPOINT java -jar app.jar</code>（同樣進 <code>main</code>）。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  subgraph YOU["你觸發啟動"]
+    IDE["IntelliJ Run<br/>OrderServiceApplication"]
+    GR["gradlew :order-service:bootRun"]
+    DK["docker compose / docker run<br/>java -jar app.jar"]
+  end
+
+  subgraph PREP["啟動前：類別路徑就緒"]
+    CP["Classpath 含：<br/>order-service/classes<br/>+ common.jar<br/>+ Spring Boot / 依賴 jars"]
+    RES["resources 進 classpath：<br/>application.yml<br/>application-demo.yml（若有）"]
+  end
+
+  subgraph ENTRY["Entry Point"]
+    MAIN["OrderServiceApplication.main(String[] args)"]
+  end
+
+  IDE --> CP
+  GR --> CP
+  DK --> CP
+  CP --> RES
+  RES --> MAIN
+
+  MAIN --> SAR["SpringApplication.run(<br/>OrderServiceApplication.class, args)"]
+      </div>
+      <table>
+        <thead><tr><th>方式</th><th>相關檔</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>IntelliJ</td>
+            <td><code>order-service/.../OrderServiceApplication.java</code><br/><code>.idea/workspace.xml</code> Run Configuration</td>
+            <td>模組選 <code>fintech-demo.order-service.main</code>；Working directory 通常為模組目錄</td>
+          </tr>
+          <tr>
+            <td>Gradle</td>
+            <td><code>order-service/build.gradle</code>（Spring Boot plugin）<br/><code>settings.gradle</code> include</td>
+            <td><code>bootRun</code> 組 classpath 後呼叫同一 <code>main</code></td>
+          </tr>
+          <tr>
+            <td>Docker</td>
+            <td><code>Dockerfile</code>、<code>docker-compose.yml</code></td>
+            <td><code>MODULE=order-service</code> → <code>bootJar</code> → <code>ENTRYPOINT ["java","-jar","app.jar"]</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">日誌關鍵字：出現 <code>Starting OrderServiceApplication</code> 代表已進入 Spring Boot 啟動；<code>Started OrderServiceApplication</code> 代表就緒。</p>
+    </section>
+
+    <!-- ② -->
+    <section id="panel-jvm" class="panel" role="tabpanel" hidden>
+      <h2>② JVM 載入 → 進入 main（真正的 Entry Point）</h2>
+      <ul class="blurb">
+        <li><code>public static void main</code> 是 JVM 約定的程式入口；Spring Boot 應用也不例外。</li>
+        <li><code>@SpringBootApplication</code>＝組態＋元件掃描＋自動組態的捷徑注解（此時尚未掃描，只是類別上的標記）。</li>
+        <li><code>SpringApplication.run(...)</code> 才開始建立 ApplicationContext。</li>
+      </ul>
+      <div class="mermaid">
+sequenceDiagram
+  participant JVM as JVM
+  participant CL as ClassLoader
+  participant App as OrderServiceApplication
+  participant SA as SpringApplication
+
+  JVM->>CL: 載入主類 OrderServiceApplication
+  CL-->>JVM: 解析注解中繼資料完成
+  JVM->>App: 呼叫 main(args)【Entry Point】
+  App->>SA: SpringApplication.run(App.class, args)
+  SA->>SA: 建立實例並推斷 SERVLET
+  SA->>SA: 準備 Environment / listeners
+      </div>
+      <p class="note">ClassLoader 會讀 <code>.class</code> 並解析 <code>@SpringBootApplication</code>／<code>@EnableFeignClients</code> 中繼資料；<code>main</code> 是你寫的第一行業務啟動碼，其餘 Bean 要等 <code>refresh()</code>。</p>
+      <div class="mermaid">
+flowchart LR
+  A["main()"] --> B["new SpringApplication(primarySources)"]
+  B --> C["推斷 WebApplicationType.SERVLET"]
+  C --> D["建立 ApplicationContext<br/>AnnotationConfigServletWebServer..."]
+  D --> E["refresh() 載入 Bean"]
+      </div>
+      <p class="note">對照原始碼：<code>OrderServiceApplication.java</code> 只有 <code>main</code> → <code>SpringApplication.run</code>。其餘 Controller／Service 都是 refresh 階段才變成 Bean。</p>
+    </section>
+
+    <!-- ③ -->
+    <section id="panel-config" class="panel" role="tabpanel" hidden>
+      <h2>③ 設定檔／環境變數怎麼載入（在 refresh 早期）</h2>
+      <ul class="blurb">
+        <li>Spring Boot 從 <strong>classpath 根</strong>讀 <code>application.yml</code>（以及 <code>application-{profile}.yml</code>）。</li>
+        <li>環境變數／系統屬性／命令列 <code>--key=value</code> 會覆寫 yml（鬆散綁定：<code>FINTECH_KAFKA_ENABLED</code> ↔ <code>fintech.kafka.enabled</code>）。</li>
+        <li>Demo 全棧：compose 設 <code>SPRING_PROFILES_ACTIVE=demo</code> → 再載入 <code>application-demo.yml</code>。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  subgraph SRC["設定來源（後者可覆寫前者，簡化示意）"]
+    Y1["classpath:/application.yml<br/>order-service/src/main/resources/"]
+    Y2["classpath:/application-demo.yml<br/>僅當 profile=demo"]
+    ENV["環境變數<br/>例 KAFKA_BOOTSTRAP_SERVERS<br/>FINTECH_SERVICES_RISK_URL"]
+    ARG["命令列 args<br/>--server.port=18081<br/>--spring.profiles.active=demo"]
+  end
+
+  subgraph ENVOBJ["Environment（Spring 抽象）"]
+    PROP["PropertySourcesPropertyResolver<br/>統一用 key 取值"]
+  end
+
+  Y1 --> PROP
+  Y2 --> PROP
+  ENV --> PROP
+  ARG --> PROP
+
+  PROP --> BIND["綁定到：<br/>@Value / @ConfigurationProperties<br/>server.port、spring.*、fintech.*、app.jwt.*"]
+      </div>
+      <table>
+        <thead><tr><th>檔案／來源</th><th>典型內容</th><th>何時生效</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>order-service/.../application.yml</code></td>
+            <td><code>server.port: 8081</code>、H2、Kafka（預設關）、JWT、下游 URL、Actuator</td>
+            <td>每次啟動（default profile）</td>
+          </tr>
+          <tr>
+            <td><code>application-demo.yml</code></td>
+            <td><code>fintech.kafka.enabled: true</code>、listener auto-startup</td>
+            <td><code>SPRING_PROFILES_ACTIVE=demo</code> 或 <code>--spring.profiles.active=demo</code></td>
+          </tr>
+          <tr>
+            <td><code>docker-compose.yml</code> environment</td>
+            <td><code>KAFKA_BOOTSTRAP_SERVERS=redpanda:9092</code> 等</td>
+            <td>容器啟動時注入 OS env → Spring Environment</td>
+          </tr>
+          <tr>
+            <td>K8s Deployment <code>env:</code></td>
+            <td><code>FINTECH_SERVICES_RISK_URL=http://risk-service:8082</code></td>
+            <td>Pod 環境變數（同鬆散綁定）</td>
+          </tr>
+          <tr>
+            <td><code>build.gradle</code> / Boot plugin</td>
+            <td>決定打包進 jar 的 resources</td>
+            <td>建置期；執行期讀的是 jar／classes 內副本</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">若埠被占用（例如 8081 被其他程式佔用），失敗點在「WebServer 啟動」而不是 main 進不去——設定檔其實已載入。</p>
+    </section>
+
+    <!-- ④ -->
+    <section id="panel-spring" class="panel" role="tabpanel" hidden>
+      <h2>④ Spring 建置上下文：掃描 → 自動組態 → Bean</h2>
+      <ul class="blurb">
+        <li><code>@SpringBootApplication</code> 從 <code>com.fintech.demo.order</code> 套件往下掃描 <code>@Component</code>／<code>@Service</code>／<code>@RestController</code> 等。</li>
+        <li><code>@EnableFeignClients</code> 註冊 Feign 介面（呼叫 risk／account）。</li>
+        <li>依 classpath 自動組態：Web／JPA／Security／Kafka／Actuator…（可被 yml 條件關閉）。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  RUN["SpringApplication.run"] --> REF["AbstractApplicationContext.refresh()"]
+
+  REF --> SCAN["ComponentScan<br/>套件 com.fintech.demo.order.*"]
+  REF --> AUTO["AutoConfiguration<br/>依 jar + 條件注解"]
+  REF --> PROP2["綁定 ConfigurationProperties<br/>／注入 @Value"]
+
+  SCAN --> BEANS["建立 Bean 例：<br/>OrderController<br/>TradingService<br/>JwtTokenProvider<br/>StartupInfoLogger<br/>SecurityConfig …"]
+  AUTO --> INFRA["DataSource / EntityManager<br/>Tomcat / DispatcherServlet<br/>SecurityFilterChain<br/>KafkaTemplate（若啟用）"]
+  PROP2 --> BEANS
+
+  BEANS --> WIRE["依賴注入完成<br/>構造子／欄位注入"]
+  INFRA --> WIRE
+  WIRE --> WEB["WebServer 綁定 server.port<br/>預設 8081"]
+      </div>
+      <div class="mermaid">
+flowchart LR
+  subgraph FILES["你會對到的程式／設定"]
+    APP["OrderServiceApplication.java"]
+    YML["application.yml"]
+    SEC["SecurityConfig / Jwt*"]
+    API["*Controller"]
+    SVC["*Service"]
+    ENT["*Entity + Repository"]
+    LOG["StartupInfoLogger"]
+  end
+  APP -.->|掃描起點| API
+  APP -.->|掃描起點| SVC
+  YML -.->|Environment| SEC
+  YML -.->|Environment| ENT
+  LOG -.->|ApplicationReadyEvent| LOG
+      </div>
+      <p class="note"><code>common</code> 模組的 DTO／Event 是依賴 jar，通常<strong>不會</strong>被 order 的 ComponentScan 掃成 Bean；它們是型別／契約，由 Feign／Kafka／Service 使用。</p>
+    </section>
+
+    <!-- ⑤ -->
+    <section id="panel-ready" class="panel" role="tabpanel" hidden>
+      <h2>⑤ 就緒：ApplicationReadyEvent → 可接請求</h2>
+      <ul class="blurb">
+        <li>Tomcat 開始聽埠後，發布 <code>ApplicationReadyEvent</code>。</li>
+        <li><code>StartupInfoLogger</code> 監聽此事件，印出各服務 URL（受 <code>startup.info.enabled</code> 控制）。</li>
+        <li>之後 HTTP 請求：Filter（JWT）→ Controller → Service → Repository／Feign。</li>
+      </ul>
+      <div class="mermaid">
+sequenceDiagram
+  participant Ctx as ApplicationContext
+  participant Tomcat as Tomcat :8081
+  participant SIL as StartupInfoLogger
+  participant Client as 瀏覽器／前端／curl
+
+  Ctx->>Tomcat: start WebServer
+  Tomcat-->>Ctx: 埠就緒
+  Ctx->>SIL: ApplicationReadyEvent
+  SIL->>SIL: 讀 Environment 並印 Console URL
+  Ctx-->>Ctx: 日誌 Started OrderServiceApplication
+  Client->>Tomcat: POST /api/auth/login
+  Tomcat->>Ctx: DispatcherServlet 至 AuthController
+      </div>
+      <div class="mermaid">
+flowchart TB
+  REQ["HTTP 請求"] --> FIL["JwtAuthenticationFilter<br/>（Security Filter Chain）"]
+  FIL --> CTRL["*Controller"]
+  CTRL --> SVC["*Service @Transactional"]
+  SVC --> REPO["JPA Repository / H2"]
+  SVC --> FEIGN["Feign → risk-service :8082<br/>（需 Risk 已啟動）"]
+  SVC --> KAFKA["Kafka 發布／消費<br/>（profile=demo 且 enabled）"]
+      </div>
+      <p class="note">最短可成交：除 Order(:8081) 外還需 Risk(:8082)。見 Console 的 StartupInfoLogger 提示。</p>
+    </section>
+
+    <!-- ⑥ -->
+    <section id="panel-gateway" class="panel" role="tabpanel" hidden>
+      <h2>⑥ Gateway 啟動變體（record Properties）</h2>
+      <ul class="blurb">
+        <li>入口類：<code>GatewayApplication</code>（:8080）。</li>
+        <li><code>application.yml</code> 的 <code>fintech.services.*-url</code> → 綁定 <code>ServiceUrlsProperties</code> <strong>record</strong>。</li>
+        <li><code>GatewayRouteConfig</code> 注入 Properties，用 <code>urls.orderUrl()</code>／<code>accountUrl()</code> 建路由（非 getXxx）。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  GMAIN["GatewayApplication.main"] --> GRUN["SpringApplication.run"]
+  GRUN --> GYML["載入 gateway/.../application.yml"]
+  GYML --> REC["綁定 ServiceUrlsProperties record<br/>orderUrl / riskUrl / accountUrl"]
+  REC --> ENABLE["@EnableConfigurationProperties<br/>GatewayAppConfig"]
+  ENABLE --> ROUTE["GatewayRouteConfig<br/>urls.orderUrl() / accountUrl()"]
+  ROUTE --> READY["Started GatewayApplication :8080"]
+
+  READY --> PROXY["請求 /api/** → http(orderUrl)<br/>/api/accounts/** → http(accountUrl)"]
+      </div>
+      <table>
+        <thead><tr><th>檔案</th><th>角色</th></tr></thead>
+        <tbody>
+          <tr><td><code>gateway/.../GatewayApplication.java</code></td><td>Entry Point main</td></tr>
+          <tr><td><code>gateway/.../application.yml</code></td><td>埠與下游 URL 預設值</td></tr>
+          <tr><td><code>ServiceUrlsProperties.java</code></td><td>record + @ConfigurationProperties</td></tr>
+          <tr><td><code>GatewayRouteConfig.java</code></td><td>RouterFunction；讀 record 元件存取子</td></tr>
+          <tr><td><code>GatewayAppConfig.java</code></td><td>EnableConfigurationProperties + HttpClient</td></tr>
+        </tbody>
+      </table>
+      <p class="note">為何 Properties 用 record：組態啟動後不可變。JPA Entity／需 setXxx 的 Request 仍用 class + Lombok（見各類 JavaDoc）。</p>
+    </section>
+  </main>
+
+  <footer>
+    FinTechDemo · 啟動載入圖 · 對齊 Spring Boot 3 · 雙擊本檔即可離線閱讀（需網路載入 Mermaid CDN）
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+    const tabs = document.querySelectorAll(".tab");
+    const panels = document.querySelectorAll(".panel");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.getAttribute("data-tab");
+        tabs.forEach((t) => {
+          t.classList.toggle("active", t === tab);
+          t.setAttribute("aria-selected", t === tab ? "true" : "false");
+        });
+        panels.forEach((p) => {
+          const on = p.id === "panel-" + id;
+          p.classList.toggle("active", on);
+          p.hidden = !on;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — CodeGraphic（架構為什麼）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    /* 柔和淺色閱讀主題：低對比紙感，長文不刺眼 */
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --accent2: #0f766e; --warn: #b45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+    .top { border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%); padding: 1.5rem 2rem 0; }
+    .top h1 { font-size: 1.5rem; margin-bottom: 0.25rem; color: var(--text); }
+    .top .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .top .links { margin-bottom: 1rem; font-size: 0.85rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 1rem; }
+    .top .links a:hover { text-decoration: underline; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .tab { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--muted); padding: 0.55rem 1.1rem; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.9rem; border-bottom: none; }
+    .tab:hover { color: var(--text); background: var(--surface2); }
+    .tab.active { background: var(--bg); color: var(--accent2); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 1.2rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
+    .blurb { color: #334155; font-size: 0.92rem; margin-bottom: 1rem; max-width: 52rem; }
+    .blurb li { margin-left: 1.1rem; margin-bottom: 0.25rem; }
+    .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; overflow-x: auto; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .note { margin-top: 1rem; background: var(--surface2); border-left: 3px solid var(--warn); padding: 0.65rem 0.9rem; font-size: 0.85rem; color: var(--muted); }
+    footer { padding: 0 2rem 2rem; color: var(--muted); font-size: 0.8rem; }
+    @media (max-width: 700px) {
+      .top, main, footer { padding-left: 1rem; padding-right: 1rem; }
+      .tab { flex: 1 1 auto; border-radius: 8px; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo — CodeGraphic</h1>
+    <p class="sub">為什麼這樣設計：技術次序 → 系統分層 → 請求流 → 實作／部署順序</p>
+    <p class="links">
+      <a href="../guides/why.html">技術次序與架構為什麼（md）</a>
+      <a href="../guides/spec.html">規格書</a>
+      <a href="../architecture/architecture.html">architecture</a>
+      <a href="../guides/fusion.html">技術融合對照</a>
+      <a href="boot-entrypoint.html">從執行到 Entry Point</a>
+    </p>
+    <nav class="tabs" role="tablist" aria-label="CodeGraphic 章節">
+      <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="order">① 技術次序</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="why">② 為什麼分層</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="flow">③ 請求主路徑</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="build">④ 實作與上雲</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="panel-order" class="panel active" role="tabpanel">
+      <h2>① 技術次序（你給的 Demo 堆疊）</h2>
+      <ul class="blurb">
+        <li>每個子專案解決「上一層做完後，下一個一定會被問到的問題」。</li>
+        <li>FinTechDemo 不是重做十個專案，而是把次序收成<strong>一條可演示鏈</strong>。</li>
+        <li>Demo 開場：先講這張次序圖，再講右邊系統如何對應。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  subgraph A["後端能力面"]
+    T1[1 PagingList 分頁]
+    T2[2 SpringSecurity JWT]
+    T3[3 CRUD 分層]
+  end
+  subgraph B["Middleware"]
+    T4[4 SpringCloud Gateway]
+  end
+  subgraph C["分散式"]
+    T5[5 MicroService 拆分]
+    T6[6 APIGatewayMQ Kafka]
+  end
+  subgraph D["橫切"]
+    T7[7 Job 排程]
+    T8[8 IocAOP 審計]
+  end
+  subgraph E["證明與雲"]
+    T9[9 Locust 壓測]
+    T10[10 Actuator 指標]
+    T11[11 K8s 部署]
+  end
+  A --> B --> C --> D --> E
+      </div>
+      <p class="note">對照 TradingSolution 路線：核心後端 → Gateway/MS → Kafka → 效能／維運 → 整合展示。FinTechDemo＝第⑥階段「一個倉庫講完」。</p>
+    </section>
+
+    <section id="panel-why" class="panel" role="tabpanel" hidden>
+      <h2>② 為什麼系統要這樣分層</h2>
+      <ul class="blurb">
+        <li><strong>Frontend</strong>：沒有 UI，展示只能 curl，故事弱。</li>
+        <li><strong>Gateway</strong>：前端不該知道 order/risk 幾個埠 — Middleware 存在的理由。</li>
+        <li><strong>MS + Kafka</strong>：拆服務解決邊界；Kafka 解決寫入尖峰 — 缺一就不是完整分散式敘事。</li>
+      </ul>
+      <div class="mermaid">
+flowchart LR
+  FE[Vue 前端] -->|為什麼：唯一 origin| GW[Spring Cloud Gateway]
+  GW -->|為什麼：路由／聚合入口| MS[order / risk / job]
+  MS -->|為什麼：寫入削峰| KF[Kafka]
+  KF --> MS
+  MS -->|為什麼：真相來源| DB[(PostgreSQL)]
+  MS -->|為什麼：快取狀態| RD[(Redis)]
+  MS -->|為什麼：橫切不污染業務| AUD[(audit_log)]
+      </div>
+      <p class="note">刻意不搬 Eureka／Config、Engine 多副本 Round-robin、R001–R010：次序要的是「形狀正確」，不是把練習倉全量貼上。</p>
+    </section>
+
+    <section id="panel-flow" class="panel" role="tabpanel" hidden>
+      <h2>③ 請求主路徑（demo profile）</h2>
+      <ul class="blurb">
+        <li>查詢走同步 HTTP（列表／詳情要即時）。</li>
+        <li>下單走 Kafka（可說明「入隊 ≠ 成交」；對齊 APIGatewayMQ）。</li>
+        <li>Risk 用 Feign 由 consumer／編排呼叫（對齊 MicroService）。</li>
+      </ul>
+      <div class="mermaid">
+sequenceDiagram
+  actor U as 使用者
+  participant V as Vue
+  participant G as Gateway
+  participant O as order-service
+  participant K as Kafka
+  participant R as risk-service
+  participant P as PostgreSQL
+  U->>V: 登入 / 下單 / 翻頁
+  V->>G: HTTPS /api/*
+  G->>O: 路由（JWT FilterChain）
+  U->>V: 下單
+  V->>G: POST /api/orders
+  G->>O: 寫 PENDING
+  O->>K: order-events
+  O-->>V: 202 Accepted
+  K->>O: consume
+  O->>R: Feign 風控
+  R-->>O: OK / Reject
+  O->>P: ACCEPTED + Position（AOP→audit_log）
+  U->>V: 分頁列表
+  V->>G: GET /api/orders?page&size
+  G->>O: 同步讀 DB
+  O-->>V: PageResponse
+      </div>
+      <p class="note">local 可暫同步呼叫 risk（先過 P3）；docker/demo 必須走 Kafka，否則技術次序第 6 步在現場會講空。</p>
+    </section>
+
+    <section id="panel-build" class="panel" role="tabpanel" hidden>
+      <h2>④ 實作順序＝技術次序；最後才上雲</h2>
+      <ul class="blurb">
+        <li>先做 Paging／CRUD／JWT，才有「被 Gateway 保護與路由」的東西。</li>
+        <li>Gateway＋MS 同步打通後，再接 Kafka（你說的「Kafka 先不要」＝順序，不是刪除）。</li>
+        <li>Vue 接上後才做 Job／AOP／Prom／Locust／K8s — 證明層建立在可 Demo 鏈路上。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  P1[P1 CRUD+分頁] --> P2[P2 JWT]
+  P2 --> P3[P3 Gateway+Feign]
+  P3 --> P4[P4 Kafka+Redis]
+  P4 --> P5[P5 Vue 打通]
+  P5 --> P6[P6 Job+AOP]
+  P6 --> P7[P7 Actuator]
+  P7 --> P8[P8 Locust]
+  P8 --> P9[P9 Compose→K8s apps/clusters]
+      </div>
+      <p class="note">K8s 採 TradingKubernetes 最小結構：apps + infrastructure + clusters/{dev,staging,prod}；check 用 kustomize build，不強求本機真實叢集。</p>
+    </section>
+  </main>
+
+  <footer>
+    FinTechDemo · EngineeringOS eos-minimal CodeGraphic · 權威敘事見 docs/技術次序與架構為什麼.md
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+    document.querySelectorAll(".tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-tab");
+        document.querySelectorAll(".tab").forEach(function (t) {
+          t.classList.toggle("active", t === btn);
+          t.setAttribute("aria-selected", t === btn ? "true" : "false");
+        });
+        document.querySelectorAll(".panel").forEach(function (p) {
+          var on = p.id === "panel-" + id;
+          p.classList.toggle("active", on);
+          p.hidden = !on;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

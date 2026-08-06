@@ -1,0 +1,11 @@
+# =============================================================================
+# FinTechDemo K8s — Namespace
+# 【職責】建立獨立命名空間，隔離本 Demo 的 Pod／Service／DNS
+# 【技巧】kind: Namespace；metadata.name 之後成為 *.svc.cluster.local 的一段
+# 【概念】同叢集多專案用 namespace 分租；本專案固定 fintech-demo（與 kustomization.namespace 一致）
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  # 【技巧】名稱需 DNS 相容（小寫、連字號）；Service 互叫：http://order-service.fintech-demo:8081
+  name: fintech-demo

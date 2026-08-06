@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — FinTechDemo-SPEC（權威規格）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo-SPEC（權威規格）</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/guides/spec.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 規格書（權威）</h1>
+<blockquote>
+<p><strong>路徑</strong>：<code>d:\ClaudeCode\FinTechDemo</code><br><strong>工程導入</strong>：<code>d:\ClaudeCode\EngineeringOS\eos-minimal\</code>（**HOW_TO_APPLY** — 開發一律走 EOS，勿手搓無規範專案）<br>**公版版本**：eos-minimal @ **0.1.9**（見 <code>EngineeringOS/VERSION</code>）<br><strong>視覺敘事</strong>：<a href="../portals/codeGraphic.html">codeGraphic</a> · <a href="./why.html">技術次序與架構為什麼</a> · <a href="./story-rbac.html">產品劇情與RBAC</a></p>
+</blockquote>
+<hr>
+<h2>0. 先講清楚：本專案在做什麼</h2>
+<h3>0.1 目的（為什麼存在）</h3>
+<p>做一份<strong>可現場 Demo 的金融交易作品</strong>：<br>使用者能在<strong>交易前台</strong>下單，也能在<strong>會員／營運後台</strong>登入後查自己的<strong>交易歷史、餘額、持倉</strong>；前後台共用同一套 JWT／RBAC 與後端 API。<br>各 Trading* 子專案是<strong>導入技術的運用模組</strong>（技巧教材），不是十個要分別展示的產品 — <strong>收進本倉庫、掛在合理劇情上</strong>才有意義。</p>
+<h3>0.2 三層規劃（開發前必須對齊）</h3>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>是什麼</th>
+<th>不是什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>產品劇情層</strong></td>
+<td>前台交易 ↔ 後台查詢；登入 → RBAC → 才能看歷史／餘額</td>
+<td>不是先堆 Kafka／K8s</td>
+</tr>
+<tr>
+<td><strong>技術導入層</strong></td>
+<td>按次序把 Paging／JWT／CRUD／Gateway／MS／Kafka…掛上劇情</td>
+<td>不是平鋪技術清單</td>
+</tr>
+<tr>
+<td><strong>工程導入層</strong></td>
+<td>用 <strong>EngineeringOS eos-minimal</strong> 建置／分層／文件／測試／註解／上船</td>
+<td>不是脫離公版各自發明結構</td>
+</tr>
+</tbody></table>
+<p><strong>原則</strong>：流程要順暢、前後台要配合；<strong>沒有登入與角色，後台查詢不開放</strong>。技術為劇情服務；<strong>實作服從 EOS</strong>。<br><strong>完整度</strong>：對齊「一般交易系統前後台配合」的<strong>精簡可 Demo 版</strong>（§1.5）— 夠講、夠串，<strong>不追求券商級完美</strong>。</p>
+<h3>0.3 一句話 Demo 開場</h3>
+<p>「這是一個前後台配合的迷你券商 Demo：JWT＋RBAC 登入後，前台下單、後台查歷史與餘額；用 EngineeringOS 規範建置，再按次序導入 Gateway、微服務、Kafka 等。」</p>
+<h3>0.4 EngineeringOS 導入開發（強制）</h3>
+<p>本專案<strong>不是</strong>從空白亂長；開發入口與約束如下：</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>路徑／規則</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>套用手冊</td>
+<td><code>EngineeringOS/eos-minimal/HOW_TO_APPLY.md</code></td>
+</tr>
+<tr>
+<td>全域規則</td>
+<td><code>EngineeringOS/eos-minimal/CLAUDE.md</code>（Controller／Service／Repo 分層、測試三層、註解、安全）</td>
+</tr>
+<tr>
+<td>模板</td>
+<td><code>templates/spring-boot/</code>（多模組對齊 <code>module-skeleton</code>）</td>
+</tr>
+<tr>
+<td>前端</td>
+<td><code>templates/spring-boot/optional-frontend/</code>（Vue；<strong>本專案不採用 Node BFF</strong>，改打 Gateway）</td>
+</tr>
+<tr>
+<td>檢查表</td>
+<td><code>templates/spring-boot/docs/apply-checklist-zh.md</code>（P0 打勾）</td>
+</tr>
+<tr>
+<td>文件標準</td>
+<td><code>knowledge/documentation.md</code>（SPEC／architecture／testing／DB／<strong>驗證設計</strong>／codeGraphic）</td>
+</tr>
+<tr>
+<td>測試標準</td>
+<td><code>knowledge/testing.md</code>（Unit↔Integration 成對；本專案有壓測 → Performance）</td>
+</tr>
+<tr>
+<td>排程</td>
+<td><code>templates/spring-boot/docs/scheduling-task.md</code>（Job 薄、Service 厚、ThreadPoolTaskScheduler）</td>
+</tr>
+<tr>
+<td>驗證設計</td>
+<td><code>knowledge/validation-design.md</code> → 本倉 <code>docs/驗證設計.md</code>（JWT／RBAC）</td>
+</tr>
+<tr>
+<td>DB 設計</td>
+<td><code>knowledge/database-design.md</code> → 本倉 <code>docs/資料庫設計.md</code></td>
+</tr>
+<tr>
+<td>薄規則</td>
+<td>本倉 <code>CLAUDE.md</code> 只寫<strong>與公版差異</strong>，禁止整份複製 eos 後漂移</td>
+</tr>
+<tr>
+<td>回寫</td>
+<td>公版問題 → <code>eos-minimal/feedback/SYNC_LOG.md</code></td>
+</tr>
+</tbody></table>
+<p><strong>P0 套用步驟（對齊 HOW_TO_APPLY）</strong></p>
+<ol>
+<li>多模組目錄約定（gateway／order／risk／job／common／frontend）對齊 skeleton  </li>
+<li>填 <code>docs/engineering-config.md</code>（port、DB、coverage、scheduler）  </li>
+<li>需要的 <code>.template</code> 自 <code>templates/spring-boot/files/</code> 複製並替換 <code>{{...}}</code>  </li>
+<li><code>apply-checklist-zh.md</code> 打勾（含 Vue：<code>router</code> + <code>unref(isLoggedIn)</code> + Axios 401 排除 login）  </li>
+<li>文件缺口：可跑 <code>hooks/apply-tech-docs-standard.ps1 -Report</code>  </li>
+<li>驗證入口：<code>.\scripts\check.ps1</code> → <code>gradlew check</code>（無測試的變更不算完成）</li>
+</ol>
+<div class="mermaid">flowchart LR
+  EOS[EngineeringOS eos-minimal] -->|HOW_TO_APPLY| P0[P0 骨架/文件/check]
+  P0 --> STORY[P1-P3 劇情+RBAC+Vue]
+  STORY --> TECH[P4+ 運用模組導入]
+  TRADING[Trading* 技巧教材] -.->|採納招式| TECH
+</div>
+<hr>
+<h2>1. 產品劇情（流程必須順）</h2>
+<h3>1.1 角色（RBAC）</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>代碼</th>
+<th>能做什麼</th>
+<th>不能做什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>訪客</td>
+<td>（未登入）</td>
+<td>只看登入頁</td>
+<td>任何交易／查詢 API</td>
+</tr>
+<tr>
+<td>交易用戶</td>
+<td><code>USER</code></td>
+<td>前台下單、取消自己的單；後台看<strong>自己的</strong>歷史／餘額／持倉</td>
+<td>看別人的單、刪任意單、系統管理</td>
+</tr>
+<tr>
+<td>管理員</td>
+<td><code>ADMIN</code></td>
+<td>USER 能力 + 後台看<strong>全站</strong>訂單（分頁）、強制取消、看 audit 摘要</td>
+<td>（本 Demo 不做）改風控參數 UI</td>
+</tr>
+</tbody></table>
+<p>對應技巧來源：TradingSpringSecurity（FilterChain 角色）+ TradingCRUD（<code>@PreAuthorize</code>／前端 router guard）。</p>
+<h3>1.2 前台 × 後台分工</h3>
+<pre><code class="language-text">┌─────────────────────────────┐     同一 JWT / 同一 Gateway      ┌─────────────────────────────┐
+│ 交易前台 Trade Desk         │ ◄─────────────────────────────► │ 會員後台 Portal             │
+│ /trade                      │                                 │ /portal                     │
+│ · 下單（買/賣、數量、價格）  │                                 │ · 登入後才能進               │
+│ · 看自己進行中訂單狀態       │                                 │ · 交易歷史（分頁）           │
+│ · 簡易成交回饋（狀態變化）   │                                 │ · 餘額查詢                   │
+│                             │                                 │ · 持倉一覽                   │
+│                             │                                 │ · ADMIN：全站訂單監察        │
+└─────────────────────────────┘                                 └─────────────────────────────┘
+                │                                                              │
+                └──────────────────────┬───────────────────────────────────────┘
+                                       ▼
+                         Spring Security JWT + RBAC
+                         （未帶 Token / 角色不符 → 401／403）
+</code></pre>
+<h3>1.3 標準用戶旅程（Demo 劇本，務必可現場走完）</h3>
+<div class="mermaid">sequenceDiagram
+  actor U as 使用者
+  participant FE as Vue 前台/後台
+  participant GW as Gateway
+  participant API as 後端服務
+  participant DB as DB
+
+  U->>FE: 打開站點 → 導向 /login（無 JWT 不可進 /trade／portal）
+  U->>FE: 輸入帳密
+  FE->>GW: POST /api/auth/login
+  GW->>API: 驗證 → 簽 JWT（含 roles）
+  API-->>FE: token + role
+  FE->>FE: auth store 存 token；依角色進首頁
+
+  rect rgb(232,245,244)
+    U->>FE: 【前台】/trade 下單
+    FE->>GW: POST /api/orders + Bearer
+    GW->>API: 校驗角色 USER/ADMIN
+    API->>DB: 寫訂單（再經 Kafka/風控）
+    API-->>FE: 202/201 + 訂單狀態
+  end
+
+  rect rgb(240,248,240)
+    U->>FE: 【後台】/portal/history（須已登入）
+    FE->>GW: GET /api/orders?page&size（自己的）
+    GW->>API: JWT → 只回該 user（ADMIN 可全站）
+    U->>FE: /portal/balance
+    FE->>GW: GET /api/accounts/me
+    API-->>FE: 餘額 + 持倉摘要
+  end
+</div>
+<p><strong>劇情合理性檢查清單</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 未登入進 <code>/trade</code> 或 <code>/portal/*</code> → 被 Vue Router 趕到 <code>/login</code>  </li>
+<li><input disabled="" type="checkbox"> 繞過前端直接打 API → 後端仍 401（前端守衛 ≠ 後端授權）  </li>
+<li><input disabled="" type="checkbox"> USER 打別人的訂單 id → 403 或 404（不可洩漏）  </li>
+<li><input disabled="" type="checkbox"> 前台下的單，後台歷史<strong>立刻／刷新後</strong>看得到（同一 <code>orders</code> 真相）  </li>
+<li><input disabled="" type="checkbox"> 成交／接受後，餘額與持倉與訂單狀態一致（簡化規則見 §4）</li>
+</ul>
+<h3>1.4 Vue 前端結構（對齊 TradingCRUD 範例）</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>規格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路由</td>
+<td><code>vue-router</code>：<code>/login</code>（guest）、<code>/trade</code>（requiresAuth）、<code>/portal/*</code>（requiresAuth）</td>
+</tr>
+<tr>
+<td>守衛</td>
+<td><code>beforeEach</code>：<code>requiresAuth &amp;&amp; !loggedIn → /login</code>；已登入進 guest → 導向 <code>/trade</code></td>
+</tr>
+<tr>
+<td>狀態</td>
+<td><code>auth</code> store：token、username、roles（localStorage）；<code>unref(isLoggedIn)</code> 給守衛用</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>Axios：Request 加 <code>Authorization: Bearer</code>；非登入請求 401 → 清 session 回 <code>/login</code></td>
+</tr>
+<tr>
+<td>分頁</td>
+<td>歷史列表用 <code>page</code>／<code>size</code> + <code>PageResponse</code>（PagingList 技巧）</td>
+</tr>
+<tr>
+<td>Proxy</td>
+<td>Vite <code>/api</code> → Gateway <code>:8080</code>（正式不走 Node BFF；Gateway 即統一入口）</td>
+</tr>
+</tbody></table>
+<p>頁面（精簡完整即可）：</p>
+<table>
+<thead>
+<tr>
+<th>路由</th>
+<th>名稱</th>
+<th>誰用</th>
+<th>對應 §1.5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/login</code></td>
+<td>登入</td>
+<td>全員</td>
+<td>F0</td>
+</tr>
+<tr>
+<td><code>/trade</code></td>
+<td>交易前台（下單＋進行中訂單＋參考價）</td>
+<td>USER／ADMIN</td>
+<td>F1～F4</td>
+</tr>
+<tr>
+<td><code>/portal</code></td>
+<td>後台首頁（餘額／持倉摘要卡）</td>
+<td>USER／ADMIN</td>
+<td>B1～B2</td>
+</tr>
+<tr>
+<td><code>/portal/history</code></td>
+<td>交易歷史分頁（可篩 status）</td>
+<td>USER＝自己；ADMIN＝可全站</td>
+<td>B3</td>
+</tr>
+<tr>
+<td><code>/portal/positions</code></td>
+<td>持倉明細</td>
+<td>USER／ADMIN</td>
+<td>B2</td>
+</tr>
+<tr>
+<td><code>/portal/audit</code></td>
+<td>審計摘要（可極簡表格）</td>
+<td><strong>ADMIN</strong></td>
+<td>B4</td>
+</tr>
+</tbody></table>
+<h3>1.5 一般交易前後台配合 — 精簡功能範圍（本 Demo 要做／不做）</h3>
+<blockquote>
+<p>目標：<strong>較為完整的功能配合</strong>，不是完美交易系統。下列「要做」必須能現場串起來；「不做」可一句帶過。</p>
+</blockquote>
+<h4>交易前台（Front Office）— 要做</h4>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>一般系統常見能力</th>
+<th>本 Demo 精簡做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>F0</td>
+<td>登入後才能交易</td>
+<td>JWT；router 守衛</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>下單（買／賣）</td>
+<td>表單：symbol／side／qty／price → <code>POST /api/orders</code></td>
+</tr>
+<tr>
+<td>F2</td>
+<td>看進行中訂單（Order Blotter）</td>
+<td>同頁列表：非終態訂單；可手動刷新</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>取消未完成單</td>
+<td><code>DELETE /api/orders/{id}</code>（自己的）</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>參考行情</td>
+<td><strong>靜態／種子參考價</strong>（下拉選 symbol 帶預設價）；不做即時行情流</td>
+</tr>
+</tbody></table>
+<h4>會員／營運後台（Back Office）— 要做（<strong>必須已登入</strong>）</h4>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>一般系統常見能力</th>
+<th>本 Demo 精簡做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B1</td>
+<td>資金／餘額查詢</td>
+<td><code>GET /api/accounts/me</code> → 現金餘額卡片</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>持倉查詢</td>
+<td><code>GET /api/positions</code> → symbol／qty／均價</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>成交／委託歷史</td>
+<td><code>GET /api/orders?page&amp;size&amp;status</code> 分頁（PagingList）</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>操作稽核（監察）</td>
+<td>ADMIN 看 <code>audit_log</code> 摘要列表</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>全站委託監察</td>
+<td>ADMIN 歷史可不限 user（可選 <code>userId</code>）</td>
+</tr>
+</tbody></table>
+<h4>前後台「配合點」（一定要通）</h4>
+<table>
+<thead>
+<tr>
+<th>配合</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同一身分</td>
+<td>前台下的單＝後台歷史同一 <code>orders</code>／同一 <code>user_id</code></td>
+</tr>
+<tr>
+<td>同一授權</td>
+<td>無 JWT 前後台都不能查；USER 只看自己</td>
+</tr>
+<tr>
+<td>狀態一致</td>
+<td>前台取消／Job 逾時 → 後台歷史看到 <code>CANCELLED</code></td>
+</tr>
+<tr>
+<td>帳務一致</td>
+<td>接受後餘額／持倉變動 → 後台 B1／B2 刷新可見</td>
+</tr>
+<tr>
+<td>角色分流</td>
+<td>USER：自己的交易與查詢；ADMIN：加 B4／B5</td>
+</tr>
+</tbody></table>
+<div class="mermaid">flowchart LR
+  subgraph FO["前台 /trade"]
+    A[下單 F1]
+    B[進行中 F2]
+    C[取消 F3]
+  end
+  subgraph BO["後台 /portal 需登入"]
+    D[餘額 B1]
+    E[持倉 B2]
+    F[歷史分頁 B3]
+    G[審計 B4 ADMIN]
+  end
+  A --> O[(orders)]
+  B --> O
+  C --> O
+  O --> F
+  O --> D
+  O --> E
+  A -.AOP.-> G
+</div>
+<h4>明確不做（避免完美主義）</h4>
+<table>
+<thead>
+<tr>
+<th>一般系統還有…</th>
+<th>本 Demo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>即時 Level-2／WebSocket 行情</td>
+<td>✗ 種子參考價即可</td>
+</tr>
+<tr>
+<td>改單（Amend）複雜流程</td>
+<td>✗ 只做取消</td>
+</tr>
+<tr>
+<td>部分成交／撮合簿／多市場</td>
+<td>✗ 一筆接受≈成交</td>
+</tr>
+<tr>
+<td>出入金、結算、對帳、報表匯出</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>客戶開戶 KYC、多角色（券商櫃檯十種）</td>
+<td>✗ 只 USER／ADMIN</td>
+</tr>
+<tr>
+<td>強制平倉、保證金試算 UI</td>
+<td>✗ 一條風控規則在服務端</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. 技術導入層（子專案＝運用模組）</h2>
+<blockquote>
+<p>完整「採納哪招／不搬什麼」見 <a href="./fusion.html">技術融合對照</a>。</p>
+</blockquote>
+<h3>2.1 次序（不可顛倒故事）</h3>
+<pre><code class="language-text">① PagingList → ② SpringSecurity(JWT/RBAC) → ③ CRUD
+    → ④ SpringCloud Gateway → ⑤ MicroService → ⑥ APIGatewayMQ(Kafka)
+    → ⑦ Job → ⑧ IocAOP → ⑨ Locust → ⑩ Actuator → ⑪ Kubernetes
+</code></pre>
+<h3>2.2 模組如何「掛上」劇情</h3>
+<table>
+<thead>
+<tr>
+<th>次序</th>
+<th>運用模組</th>
+<th>掛在劇情的哪一點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>PagingList</td>
+<td>後台「交易歷史」伺服器端分頁</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SpringSecurity</td>
+<td>登入簽 JWT、RBAC；保護前台下單與後台查詢</td>
+</tr>
+<tr>
+<td>3</td>
+<td>CRUD</td>
+<td>訂單／帳戶資料的分層寫讀</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Gateway</td>
+<td>前台＋後台只打一個 origin（Middleware）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>MicroService</td>
+<td>下單編排 vs 風控規則拆服務</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Kafka</td>
+<td>前台送單削峰；後台查詢仍同步讀</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Job</td>
+<td>逾時未成交單自動取消（歷史會看到 CANCELLED）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>IocAOP</td>
+<td>關鍵交易寫 <code>audit_log</code>（ADMIN 可掃）</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Locust</td>
+<td>壓前台下單＋後台列表</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Actuator</td>
+<td>健康與業務 Counter</td>
+</tr>
+<tr>
+<td>11</td>
+<td>K8s</td>
+<td>Compose → 叢集示意</td>
+</tr>
+</tbody></table>
+<h3>2.3 技術鏈路（產品跑在這條路上）</h3>
+<pre><code class="language-text">Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / job(:8083)
+                    ↑                ↓ Kafka topics
+              JWT 檢查點        order-events → trade-events
+                                      ↓
+                                   Redis (account cache)
+</code></pre>
+<ul>
+<li><strong>不做</strong>：Eureka／Config（固定 URL；可口述改 <code>lb://</code>）  </li>
+<li><strong>Kafka</strong>：demo／docker <strong>必開</strong>；local 可暫同步風控（先把前後台劇情跑順）</li>
+</ul>
+<hr>
+<h2>3. 後端模組與埠</h2>
+<table>
+<thead>
+<tr>
+<th>模組</th>
+<th>埠</th>
+<th>產品職責</th>
+<th>技術職責</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>frontend</code></td>
+<td>5173</td>
+<td>前台 <code>/trade</code> + 後台 <code>/portal</code> + <code>/login</code></td>
+<td>Vue Router、JWT store、分頁表</td>
+</tr>
+<tr>
+<td><code>gateway</code></td>
+<td>8080</td>
+<td>唯一 API 入口</td>
+<td>Spring Cloud Gateway、Actuator</td>
+</tr>
+<tr>
+<td><code>order-service</code></td>
+<td>8081</td>
+<td>登入、訂單、歷史、審計</td>
+<td>JWT／RBAC、JPA、Kafka Producer、AOP</td>
+</tr>
+<tr>
+<td><code>risk-service</code></td>
+<td>8082</td>
+<td>（系統內）名義金額風控</td>
+<td>Feign 被呼叫；一條規則</td>
+</tr>
+<tr>
+<td><code>account-service</code></td>
+<td>8084</td>
+<td>餘額／持倉（第三業務 MS）</td>
+<td>Redis cache、Kafka Consumer <code>trade-events</code></td>
+</tr>
+<tr>
+<td><code>job-service</code></td>
+<td>8083</td>
+<td>逾時取消等</td>
+<td><code>@Scheduled</code> + ThreadPool</td>
+</tr>
+<tr>
+<td><code>common</code></td>
+<td>—</td>
+<td>契約</td>
+<td>DTO、Topic 名、事件</td>
+</tr>
+<tr>
+<td><code>loadtest</code></td>
+<td>—</td>
+<td>壓測劇本</td>
+<td>Locust／JMeter</td>
+</tr>
+<tr>
+<td><code>deploy</code></td>
+<td>—</td>
+<td>部署示意</td>
+<td>Compose + k8s overlay</td>
+</tr>
+</tbody></table>
+<p>三業務微服務：<strong>order + risk + account</strong>（job／gateway 為基礎設施角色）。<br>詳見 <a href="../architecture/distributed.html">分散式系統落地</a>。</p>
+<hr>
+<h2>4. 業務規則（保持簡單、但前後台一致）</h2>
+<h3>4.1 帳戶與餘額</h3>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>規則（精簡）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>種子用戶</td>
+<td>例如 <code>trader1</code>／<code>admin</code>；USER 初始現金餘額（如 100,000）</td>
+</tr>
+<tr>
+<td>下單（買）</td>
+<td>風控檢查名義金額 ≤ 餘額與限額；接受後凍結或扣減現金（Demo 採：<strong>ACCEPTED／FILLED 時扣減</strong> <code>price * qty</code>）</td>
+</tr>
+<tr>
+<td>下單（賣）</td>
+<td>持倉數量足夠才接受；接受後減少持倉、增加現金</td>
+</tr>
+<tr>
+<td>拒絕</td>
+<td>餘額／持倉／風控不符 → <code>REJECTED</code>，餘額不變</td>
+</tr>
+<tr>
+<td>查詢</td>
+<td><code>GET /api/accounts/me</code> → <code>{ cashBalance, currency }</code>；持倉另 API</td>
+</tr>
+</tbody></table>
+<h3>4.2 訂單狀態</h3>
+<p><code>PENDING</code> → <code>ACCEPTED</code>｜<code>REJECTED</code>｜<code>CANCELLED</code>（可選終態 <code>FILLED</code>＝簡化成交）</p>
+<ul>
+<li>前台：顯示進行中與結果  </li>
+<li>後台歷史：同一狀態機、可分頁篩選  </li>
+<li>Job：逾時 <code>PENDING</code> → <code>CANCELLED</code></li>
+</ul>
+<h3>4.3 資料歸屬</h3>
+<ul>
+<li>USER：只能 CRUD／查<strong>自己的</strong> orders、positions、account  </li>
+<li>ADMIN：可查全站 orders（歷史監察）；刪除／強制取消走 ADMIN</li>
+</ul>
+<hr>
+<h2>5. 資料表（最小）</h2>
+<table>
+<thead>
+<tr>
+<th>表</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>users</code></td>
+<td>帳號、密碼雜湊、角色（USER／ADMIN）</td>
+</tr>
+<tr>
+<td><code>accounts</code></td>
+<td>每用戶一筆現金餘額</td>
+</tr>
+<tr>
+<td><code>orders</code></td>
+<td>交易訂單（歷史來源）</td>
+</tr>
+<tr>
+<td><code>positions</code></td>
+<td>持倉（symbol + qty + avg_price）</td>
+</tr>
+<tr>
+<td><code>audit_log</code></td>
+<td>AOP 審計</td>
+</tr>
+</tbody></table>
+<p>詳見 <a href="../architecture/db.html">資料庫設計</a>。</p>
+<hr>
+<h2>6. API 契約（經 Gateway，前綴 <code>/api</code>）</h2>
+<h3>6.1 認證（公開）</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>body: username/password → <code>{ token, username, roles }</code></td>
+</tr>
+</tbody></table>
+<h3>6.2 交易前台（需 JWT；USER／ADMIN）</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/orders</code></td>
+<td>下單；demo 路徑可 202＋Kafka</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/orders/{id}</code></td>
+<td>查自己的單</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/orders/{id}</code></td>
+<td>限非終態（精簡可只支援取消欄位）</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/orders/{id}</code></td>
+<td>USER 取消自己的；ADMIN 可強制</td>
+</tr>
+</tbody></table>
+<h3>6.3 後台查詢（需 JWT；登入後才有意義）</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/api/orders?page&amp;size&amp;status</code></td>
+<td>歷史分頁；USER＝自己；ADMIN＝可加 <code>userId</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/accounts/me</code></td>
+<td>餘額（B1）</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/positions</code></td>
+<td>持倉列表（B2）</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/audit-logs?page&amp;size</code></td>
+<td>審計摘要（<strong>ADMIN</strong>，B4）</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/market/symbols</code></td>
+<td>前台參考價清單（F4，可公開或需登入）</td>
+</tr>
+</tbody></table>
+<h3>6.4 觀測</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/actuator/health</code></td>
+<td>健康</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/actuator/prometheus</code></td>
+<td>指標</td>
+</tr>
+</tbody></table>
+<p>錯誤：未登入 <strong>401</strong>；角色／資源不符 <strong>403</strong>；風控／餘額不足 <strong>422</strong>（或業務體 REJECTED）；分頁參數非法 <strong>400</strong>。</p>
+<hr>
+<h2>7. 測試金字塔</h2>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>最低門檻（對齊劇情）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Unit</td>
+<td>Auth、Order 歸屬、餘額／持倉增減、Risk 通過／拒絕</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>401；USER 隔離；<strong>前台下單→後台歷史／餘額一致</strong>；ADMIN 可看 audit；取消反映在歷史</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Locust：login＋下單＋歷史分頁</td>
+</tr>
+</tbody></table>
+<p><code>.\scripts\check.ps1</code> → <code>gradlew check</code>。</p>
+<hr>
+<h2>8. 開發階段（先劇情、再導入技術）</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>內容</th>
+<th>完成時可演示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P0</strong></td>
+<td><strong>依 EOS <code>HOW_TO_APPLY</code></strong>：多模組骨架、薄 CLAUDE、engineering-config、check 腳本、apply-checklist</td>
+<td>倉庫可 <code>check</code>／可建置</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Order CRUD + 分頁 + Account／Position 表（EOS 分層）</td>
+<td>API 可查歷史／餘額</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>JWT + <strong>RBAC</strong>（對齊 <code>docs/驗證設計.md</code>）</td>
+<td>無 token 401；USER／ADMIN 不同</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>Vue：<code>/login</code>、<code>/trade</code>、<code>/portal/*</code>（optional-frontend 約定；checklist 的 router／Axios）</td>
+<td><strong>前後台劇情順完</strong></td>
+</tr>
+<tr>
+<td>P4</td>
+<td>Gateway 統一入口</td>
+<td>Middleware</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>risk-service + Feign</td>
+<td>風控服務</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>Kafka + Redis</td>
+<td>分散式寫入</td>
+</tr>
+<tr>
+<td>P7</td>
+<td>Job（eos scheduling-task）+ AOP <code>audit_log</code></td>
+<td>CANCELLED／審計</td>
+</tr>
+<tr>
+<td>P8</td>
+<td>Actuator／Prometheus</td>
+<td>觀測</td>
+</tr>
+<tr>
+<td>P9</td>
+<td>Locust baseline</td>
+<td>壓測報告</td>
+</tr>
+<tr>
+<td>P10</td>
+<td>Compose + k8s overlay</td>
+<td>上雲示意</td>
+</tr>
+</tbody></table>
+<p><strong>硬約束</strong></p>
+<ol>
+<li><strong>開發必須經 EngineeringOS</strong>（HOW_TO_APPLY／分層／測試成對／文件標準）；禁止脫離公版另起一套結構。  </li>
+<li><strong>P1–P3 先把「登入 → 前台下單 → 後台查歷史／餘額」跑順</strong>，再導入 Gateway／Kafka…  </li>
+<li>「Kafka 先不要」＝不要插在 P1–P3 之前；<strong>不是刪除 Kafka</strong>。  </li>
+<li>後台任一查詢頁：<strong>無登入不得進入（前端）且無 JWT 不得取數（後端）</strong>。</li>
+</ol>
+<hr>
+<h2>9. 成功標準（展示）</h2>
+<p><strong>產品劇情（精簡完整）</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 登入 → 前台下單／看進行中／取消 → 後台歷史＋餘額＋持倉數字合理  </li>
+<li><input disabled="" type="checkbox"> 說明 RBAC：USER vs ADMIN（含 audit／全站歷史）  </li>
+<li><input disabled="" type="checkbox"> 強調：router guard＝UX；授權在 Spring Security  </li>
+<li><input disabled="" type="checkbox"> 能指 §1.5：做了哪些配合、刻意沒做哪些（展現範圍判斷）</li>
+</ul>
+<p><strong>技術導入</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Vue → Gateway → MS → Kafka → DB  </li>
+<li><input disabled="" type="checkbox"> 分頁／JWT／Kafka／Job／audit／Prometheus／壓測／K8s 對應運用模組  </li>
+<li><input disabled="" type="checkbox"> <code>check</code> 綠燈；demo 可走 Kafka</li>
+</ul>
+<hr>
+<h2>10. 明確不做</h2>
+<ul>
+<li>§1.5「明確不做」表（行情流、改單、部分成交、出入金、KYC…）  </li>
+<li>R001～R010 全套；本 Demo <strong>一條</strong>風控規則  </li>
+<li>Eureka／Config、Node BFF、mini-ioc  </li>
+<li>華麗 UI；<strong>前後台配合跑通優先於完美</strong>  </li>
+<li>展示主敘事散落各 Trading* 練習倉</li>
+</ul>
+<hr>
+<h2>11. 文件地圖</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>本 SPEC</strong></td>
+<td>權威：目的、劇情、RBAC、EOS、API、Phase</td>
+</tr>
+<tr>
+<td><a href="./claude.html">CLAUDE.md</a></td>
+<td>薄規則（繼承 eos-minimal @ 0.1.9）</td>
+</tr>
+<tr>
+<td><a href="../architecture/engineering-config.html">engineering-config</a></td>
+<td>EOS 變數／埠</td>
+</tr>
+<tr>
+<td><a href="./story-rbac.html">產品劇情與RBAC</a></td>
+<td>前後台劇本與權限矩陣</td>
+</tr>
+<tr>
+<td><a href="../architecture/verify-design.html">驗證設計</a></td>
+<td>JWT／RBAC（EOS Security 必備文）</td>
+</tr>
+<tr>
+<td><a href="./why.html">技術次序與架構為什麼</a></td>
+<td>運用模組次序與為什麼</td>
+</tr>
+<tr>
+<td><a href="./fusion.html">技術融合對照</a></td>
+<td>各運用模組採納技巧</td>
+</tr>
+<tr>
+<td><a href="../architecture/architecture.html">architecture</a></td>
+<td>部署／模組職責</td>
+</tr>
+<tr>
+<td><a href="../architecture/db.html">資料庫設計</a></td>
+<td>ER</td>
+</tr>
+<tr>
+<td><a href="../architecture/testing.html">testing</a></td>
+<td>測試案例</td>
+</tr>
+<tr>
+<td><a href="../portals/codeGraphic.html">codeGraphic</a></td>
+<td>Mermaid／HTML 總覽</td>
+</tr>
+<tr>
+<td><code>EngineeringOS/eos-minimal/HOW_TO_APPLY.md</code></td>
+<td><strong>開發套用入口</strong></td>
+</tr>
+</tbody></table>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

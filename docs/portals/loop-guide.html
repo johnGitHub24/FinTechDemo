@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>部署跑通 — Loop Engineering 通用教學指導</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --ok: #047857; --warn: #b45309; --bad: #b91c1c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    .top { border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%); padding: 1.5rem 2rem 0; }
+    .top h1 { font-size: 1.45rem; margin-bottom: 0.35rem; }
+    .top .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 1rem; max-width: 52rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 1rem; font-size: 0.85rem; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+    .tab { appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.82rem; border-bottom: none; }
+    .tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 1.15rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
+    .panel h3 { font-size: 1rem; margin: 1.1rem 0 0.45rem; color: #0f4c5c; }
+    .blurb { color: #334155; font-size: 0.92rem; margin-bottom: 1rem; }
+    .blurb li, ol.steps li { margin-left: 1.15rem; margin-bottom: 0.35rem; }
+    ol.steps { margin: 0.5rem 0 1rem; font-size: 0.92rem; }
+    .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; overflow-x: auto; margin-bottom: 0.75rem; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    .gate { background: var(--surface2); border-left: 3px solid var(--ok); padding: 0.65rem 0.9rem; font-size: 0.88rem; margin: 0.75rem 0; }
+    .gate.warn { border-left-color: var(--warn); }
+    .gate.bad { border-left-color: var(--bad); }
+    code, pre { font-family: Consolas, "Courier New", monospace; }
+    code { background: #e8eef3; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; color: #0f4c5c; }
+    pre { background: #1e293b; color: #e2e8f0; padding: 0.9rem 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.8rem; margin: 0.6rem 0 1rem; line-height: 1.45; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--surface); margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.45rem 0.6rem; text-align: left; vertical-align: top; }
+    th { background: var(--surface2); color: var(--accent); }
+    .why { background: #fff; border: 1px dashed var(--border); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.88rem; margin: 0.5rem 0 1rem; }
+    .why strong { color: var(--accent); }
+    footer { padding: 0 2rem 2rem; color: var(--muted); font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>部署跑通 — Loop Engineering 通用教學指導</h1>
+    <p class="sub">
+      目標不是「程式能編譯」而已，而是<strong>功能可部署成功</strong>：Compose 健康 +（若要 K8s）Pod Ready + health UP。
+      本頁是可重複使用的通用解法：遇到同類問題，照關卡與症狀表執行即可。
+    </p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="learning-map.html">學習導引地圖</a>
+      <a href="../deploy/k8s-tips.html">K8s 故障排除</a>
+      <a href="stages.html">S0→S6 階段層次</a>
+      <a href="../architecture/distributed.html">分散式落地</a>
+      <a href="../deploy/deploy-readme.html">deploy README</a>
+    </p>
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="mind">心法</button>
+      <button type="button" class="tab" data-tab="ladder">關卡順序</button>
+      <button type="button" class="tab" data-tab="compose">Compose 跑通</button>
+      <button type="button" class="tab" data-tab="k8s">Kind 部署</button>
+      <button type="button" class="tab" data-tab="verify">驗證指令</button>
+      <button type="button" class="tab" data-tab="fix">常見故障</button>
+      <button type="button" class="tab" data-tab="checklist">一鍵核對清單</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 心法 -->
+    <section id="panel-mind" class="panel active">
+      <h2>心法：為什麼要這樣執行？</h2>
+      <ul class="blurb">
+        <li><strong>開發綠燈 ≠ 部署成功</strong>：<code>gradlew check</code> 只證明測試；Compose／K8s 才證明「程序能起來並被探測到」。</li>
+        <li><strong>先窄後寬</strong>：先修引擎（Docker）→ 再修契約（kustomize）→ 再真跑（compose／kind）。跳關會把時間花在假問題上。</li>
+        <li><strong>Loop Engineering</strong>：每關失敗就診斷 → 修最小根因 → 重跑同一關 → 綠燈才進下一關。禁止「一次改十處猜」。</li>
+        <li><strong>證據優先</strong>：用 <code>docker info</code>、<code>kubectl get --raw=/readyz</code>、<code>describe</code>、<code>logs</code>、<code>exit code</code> 說話，不要先改業務 Java。</li>
+      </ul>
+      <div class="mermaid">
+flowchart LR
+  A["症狀"] --> B["定位層級<br/>L0~L4"]
+  B --> C["最小證據<br/>info / logs / describe"]
+  C --> D["修根因"]
+  D --> E["重跑同一關"]
+  E -->|紅燈| C
+  E -->|綠燈| F["下一關"]
+      </div>
+      <div class="gate warn">禁止：看到 <code>connection refused</code> 就改 Spring 設定；那通常是 Docker／kubeconfig／叢集死掉。</div>
+    </section>
+
+    <!-- 關卡 -->
+    <section id="panel-ladder" class="panel">
+      <h2>關卡順序（通用）</h2>
+      <table>
+        <thead>
+          <tr><th>關</th><th>指令</th><th>通過標準</th><th>為什麼先做這關</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>L0</td>
+            <td><code>.\gradlew.bat check</code></td>
+            <td>BUILD SUCCESSFUL</td>
+            <td>映像／叢集之前，邏輯與測試必須過</td>
+          </tr>
+          <tr>
+            <td>L1</td>
+            <td><code>docker info</code></td>
+            <td>有 Server Version</td>
+            <td>沒引擎就沒 compose／kind 節點</td>
+          </tr>
+          <tr>
+            <td>L2</td>
+            <td><code>.\scripts\check-k8s.ps1</code></td>
+            <td>kustomize 成功</td>
+            <td>只驗證 YAML 契約，不連 API</td>
+          </tr>
+          <tr>
+            <td>L3</td>
+            <td><code>docker compose up -d --build</code> + smoke</td>
+            <td>全服務 healthy + <code>SMOKE_DISTRIBUTED_OK</code></td>
+            <td><strong>日常「功能可部署」首選</strong>；含 Kafka／Redis</td>
+          </tr>
+          <tr>
+            <td>L4</td>
+            <td>kind 活著 → load 映像 → apply → Pod 1/1</td>
+            <td>四 Deployment Ready + health UP</td>
+            <td>證明 K8s 敘事真的能跑，不是只 render</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="gate">FinTechDemo 對應腳本：<code>verify-pipeline.ps1</code>（L0～L3）、<code>smoke-distributed.ps1</code>、<code>check-k8s.ps1</code>。階段敘事見 S0→S6 HTML。</div>
+    </section>
+
+    <!-- Compose -->
+    <section id="panel-compose" class="panel">
+      <h2>Compose 跑通（L3）— 為什麼這樣做</h2>
+      <div class="why"><strong>為什麼先 Compose？</strong> 同一份 Dockerfile／埠號／healthcheck，失敗成本低；Kafka＋Redis 已編排好。K8s overlay 示意常<strong>不含</strong> infra，不適合當「業務可 Demo」唯一路徑。</div>
+      <ol class="steps">
+        <li>確認引擎：<code>docker info</code>（必須看到 Server Version）。</li>
+        <li>建並起核心服務：
+<pre>cd D:\ClaudeCode\FinTechDemo
+docker compose up -d --build
+docker compose ps</pre>
+        </li>
+        <li>等到全部 <code>(healthy)</code>（含 gateway）。</li>
+        <li>煙霧：<code>.\scripts\smoke-distributed.ps1 -SkipCompose</code> → 看到 <code>SMOKE_DISTRIBUTED_OK</code>。</li>
+      </ol>
+      <div class="gate">通過＝「功能可部署成功」的最低線。日常 Demo 到這裡通常就夠。</div>
+    </section>
+
+    <!-- K8s -->
+    <section id="panel-k8s" class="panel">
+      <h2>Kind 真部署（L4）— 為什麼這樣做</h2>
+      <div class="why"><strong>為什麼分四步？</strong> kind 節點看不見本機 Docker 映像庫，必須 <code>kind load</code>；沒 load 會 <code>ErrImageNeverPull</code>。沒活 API 就 apply 會 <code>connection refused</code>。</div>
+      <div class="mermaid">
+sequenceDiagram
+  participant D as Docker
+  participant K as kind trading-local
+  participant A as kubectl apply
+  participant P as Pods
+  D->>D: docker info OK
+  D->>K: kind create / recreate
+  K->>K: readyz = ok
+  D->>K: kind load docker-image *:local
+  A->>P: apply overlays/dev
+  P->>P: startupProbe 通過
+  P->>P: Ready 1/1
+      </div>
+      <h3>標準指令（可複製）</h3>
+<pre># 0) Docker Ready
+docker info
+
+# 1) 重建／修復 kind（叢集名 trading-local）
+$Kind = "D:\ClaudeCode\TradingKubernetes\tools\kind.exe"
+& $Kind delete cluster --name trading-local
+& $Kind create cluster --name trading-local
+& $Kind export kubeconfig --name trading-local
+kubectl config use-context kind-trading-local
+kubectl get --raw=/readyz
+kubectl get nodes   # STATUS 必須 Ready
+
+# 2) 映像（若 compose 已 build 過可跳過 docker build）
+cd D:\ClaudeCode\FinTechDemo
+# docker build --build-arg MODULE=gateway -t fintech-demo/gateway:local .
+# … order-service / risk-service / account-service …
+
+& $Kind load docker-image fintech-demo/gateway:local --name trading-local
+& $Kind load docker-image fintech-demo/order-service:local --name trading-local
+& $Kind load docker-image fintech-demo/risk-service:local --name trading-local
+& $Kind load docker-image fintech-demo/account-service:local --name trading-local
+
+# 3) 套用並等 Ready
+kubectl apply -k deploy/k8s/overlays/dev
+kubectl -n fintech-demo rollout status deploy/risk-service --timeout=240s
+kubectl -n fintech-demo rollout status deploy/account-service --timeout=240s
+kubectl -n fintech-demo rollout status deploy/order-service --timeout=240s
+kubectl -n fintech-demo rollout status deploy/gateway --timeout=240s
+kubectl -n fintech-demo get pods,svc
+
+# 4) 健康探測（port-forward）
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
+# 另開終端：Invoke-WebRequest http://127.0.0.1:18080/actuator/health</pre>
+      <h3>為什麼要改 probe／記憶體？（本專案實戰根因）</h3>
+      <ul class="blurb">
+        <li>症狀：Pod <code>Running</code> 但 <code>0/1</code>、重啟多次、terminated <code>Exit Code 137</code>。</li>
+        <li>證據：Events 有 <code>Liveness probe failed</code> → <code>Killing</code>；log 顯示 Spring Boot 啟動 &gt; 40s。</li>
+        <li>根因：四個 JVM 同節點搶 CPU／RAM；liveness 太早；limit 512Mi 易被壓死。</li>
+        <li>解法（通用）：加 <code>startupProbe</code>（啟動期不殺）、提高 memory limit、<code>JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70.0</code>。</li>
+      </ul>
+      <div class="gate warn">記住：liveness 是「救死鎖」，不是「催促啟動」。慢啟動用 <code>startupProbe</code>。</div>
+    </section>
+
+    <!-- 驗證指令 -->
+    <section id="panel-verify" class="panel">
+      <h2>部署後驗證指令（必跑）</h2>
+      <p class="blurb">apply 完成後，用下面三行確認「真的跑在 kind、Pod 都 Ready」。任意終端（PowerShell）即可。</p>
+
+      <h3>1) 一次核對：Pod ＋ Node ＋ Context</h3>
+<pre># 建議一次貼上三行（順序隨意）
+kubectl -n fintech-demo get pods
+kubectl get nodes
+kubectl config current-context</pre>
+
+      <h3>2) 通過時應長這樣（實跑範例）</h3>
+<pre>NAME                               READY   STATUS    RESTARTS   AGE
+account-service-...                1/1     Running   ...        ...
+gateway-...                        1/1     Running   ...        ...
+order-service-...                  1/1     Running   ...        ...
+risk-service-...                   1/1     Running   ...        ...
+
+NAME                          STATUS   ROLES           AGE   VERSION
+trading-local-control-plane   Ready    control-plane   ...   v1.32.2
+
+kind-trading-local</pre>
+      <div class="gate">
+        通過標準：四 Pod 皆 <code>1/1 Running</code>；node <code>Ready</code>；
+        current-context 必須是 <code>kind-trading-local</code>（不是 <code>docker-desktop</code>）。
+      </div>
+
+      <h3>3) 補充：API／Service／健康</h3>
+<pre># API 活著
+kubectl get --raw=/readyz
+# 應輸出：ok
+
+# Pod + Service 一覽
+kubectl -n fintech-demo get pods,svc
+
+# 進容器打 health（不需 port-forward）
+kubectl -n fintech-demo exec deploy/gateway -- wget -qO- http://127.0.0.1:8080/actuator/health
+kubectl -n fintech-demo exec deploy/order-service -- wget -qO- http://127.0.0.1:8081/actuator/health
+kubectl -n fintech-demo exec deploy/risk-service -- wget -qO- http://127.0.0.1:8082/actuator/health
+kubectl -n fintech-demo exec deploy/account-service -- wget -qO- http://127.0.0.1:8084/actuator/health
+# 應看到 {"status":"UP",...}
+
+# 或 port-forward 用瀏覽器／Invoke-WebRequest
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
+# 另開終端：
+Invoke-WebRequest http://127.0.0.1:18080/actuator/health -UseBasicParsing</pre>
+
+      <h3>4) Compose 對照（分散式 Demo）</h3>
+<pre>cd D:\ClaudeCode\FinTechDemo
+docker compose ps
+.\scripts\smoke-distributed.ps1 -SkipCompose
+# 通過：SMOKE_DISTRIBUTED_OK</pre>
+
+      <h3>5) kind ≠ Docker Desktop「Enable Kubernetes」</h3>
+      <div class="why">
+        <strong>為什麼 Desktop 勾選後看不到 FinTechDemo？</strong>
+        本專案預設部署在 <strong>kind</strong> 叢集 <code>trading-local</code>（context：<code>kind-trading-local</code>）。
+        Docker Desktop Settings → Kubernetes → Enable Kubernetes 是<strong>另一套</strong>叢集（context 常為 <code>docker-desktop</code>）。
+        兩邊互不相通；看不到 Pod 是正常的，不是部署失敗。
+      </div>
+      <table>
+        <thead>
+          <tr><th>項目</th><th>本專案（預設）</th><th>Docker Desktop K8s</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>怎麼起叢集</td>
+            <td><code>kind.exe create --name trading-local</code></td>
+            <td>Desktop UI「Enable Kubernetes」</td>
+          </tr>
+          <tr>
+            <td>kubectl context</td>
+            <td><code>kind-trading-local</code></td>
+            <td><code>docker-desktop</code></td>
+          </tr>
+          <tr>
+            <td>節點名</td>
+            <td><code>trading-local-control-plane</code></td>
+            <td>通常 <code>docker-desktop</code></td>
+          </tr>
+          <tr>
+            <td>FinTechDemo Pod</td>
+            <td><code>kubectl -n fintech-demo get pods</code></td>
+            <td>預設<strong>沒有</strong>（除非改 context 再 apply）</td>
+          </tr>
+          <tr>
+            <td>Desktop 開關要不要開</td>
+            <td><strong>可不開</strong>（省資源）</td>
+            <td>只用 Desktop K8s 時才開</td>
+          </tr>
+        </tbody>
+      </table>
+<pre># 列出所有 context，確認自己連哪一套
+kubectl config get-contexts
+kubectl config current-context
+
+# 若誤切到 docker-desktop，切回 kind：
+kubectl config use-context kind-trading-local
+kubectl -n fintech-demo get pods</pre>
+      <div class="gate warn">
+        規則：驗證前先看 <code>kubectl config current-context</code>。
+        看到 <code>kind-trading-local</code> 才去找 FinTechDemo；不要在 Desktop Kubernetes UI 裡找。
+      </div>
+    </section>
+
+    <!-- 故障 -->
+    <section id="panel-fix" class="panel">
+      <h2>常見故障 → 通用處理</h2>
+      <table>
+        <thead>
+          <tr><th>症狀</th><th>先查</th><th>解法方向</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>connection refused</code> 打高位埠</td>
+            <td><code>docker info</code>、<code>kubectl get --raw=/readyz</code></td>
+            <td>重開 Docker → recreate kind → export kubeconfig</td>
+          </tr>
+          <tr>
+            <td><code>kind</code> 不是 Cmdlet</td>
+            <td>PATH</td>
+            <td>用 <code>TradingKubernetes\tools\kind.exe</code> 完整路徑</td>
+          </tr>
+          <tr>
+            <td><code>check-k8s</code> OK 但 get nodes 掛</td>
+            <td>心態</td>
+            <td>正常：L2 不連 API；要 L4 才修叢集</td>
+          </tr>
+          <tr>
+            <td>Desktop Enable K8s 看不到 Pod</td>
+            <td><code>kubectl config current-context</code></td>
+            <td>應為 <code>kind-trading-local</code>；見「驗證指令」分頁</td>
+          </tr>
+          <tr>
+            <td><code>ImagePullBackOff</code> / NeverPull</td>
+            <td><code>describe pod</code></td>
+            <td><code>kind load</code> + <code>imagePullPolicy: IfNotPresent</code></td>
+          </tr>
+          <tr>
+            <td>Exit 137 + Liveness Killing</td>
+            <td>Events + 啟動耗時</td>
+            <td><code>startupProbe</code>、加記憶體、<code>MaxRAMPercentage</code></td>
+          </tr>
+          <tr>
+            <td>Compose healthy 但 smoke 失敗</td>
+            <td>各服務 <code>/actuator/health</code>、log</td>
+            <td>先修單一服務；再跑 <code>smoke-distributed.ps1</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <pre># 診斷三件套（任何 CrashLoop 先跑）
+kubectl -n fintech-demo get pods
+kubectl -n fintech-demo describe pod &lt;name&gt;
+kubectl -n fintech-demo logs deploy/&lt;name&gt; --tail=100</pre>
+    </section>
+
+    <!-- checklist -->
+    <section id="panel-checklist" class="panel">
+      <h2>一鍵核對清單（部署 SUCCESS）</h2>
+      <p class="blurb">全部勾完才算「基本功能可部署成功」。可列印或複製到 PR 描述。</p>
+      <table>
+        <thead><tr><th>☐</th><th>項目</th><th>預期</th></tr></thead>
+        <tbody>
+          <tr><td>☐</td><td><code>gradlew check</code></td><td>exit 0</td></tr>
+          <tr><td>☐</td><td><code>docker info</code></td><td>Server Version 存在</td></tr>
+          <tr><td>☐</td><td><code>check-k8s.ps1</code></td><td>overlay OK</td></tr>
+          <tr><td>☐</td><td>compose <code>ps</code></td><td>gateway／order／risk／account／redis／kafka 皆 healthy</td></tr>
+          <tr><td>☐</td><td><code>smoke-distributed.ps1 -SkipCompose</code></td><td><code>SMOKE_DISTRIBUTED_OK</code></td></tr>
+          <tr><td>☐</td><td><code>kubectl config current-context</code></td><td><code>kind-trading-local</code></td></tr>
+          <tr><td>☐</td><td><code>kubectl get nodes</code></td><td><code>trading-local-control-plane</code> Ready</td></tr>
+          <tr><td>☐</td><td><code>kubectl get --raw=/readyz</code></td><td><code>ok</code></td></tr>
+          <tr><td>☐</td><td><code>kubectl -n fintech-demo get pods</code></td><td>四個皆 <code>1/1 Running</code></td></tr>
+          <tr><td>☐</td><td>各服務 <code>/actuator/health</code></td><td><code>status":"UP"</code></td></tr>
+          <tr><td>☐</td><td>（可選）Desktop Enable Kubernetes</td><td>可不開；與 kind 無關</td></tr>
+        </tbody>
+      </table>
+<pre># 核對清單對應指令（複製即跑）
+kubectl config current-context
+kubectl get nodes
+kubectl get --raw=/readyz
+kubectl -n fintech-demo get pods
+docker compose -f D:\ClaudeCode\FinTechDemo\docker-compose.yml ps</pre>
+      <div class="gate">本頁＝通用解法；完整指令見「驗證指令」分頁。細節另見 <code>K8s跑通與驗證技巧.md</code>、<code>上線部署階段層次.html</code>。</div>
+    </section>
+  </main>
+
+  <footer>
+    紀錄來源：FinTechDemo Loop Engineering（2026-08-06）—
+    Compose smoke 通過；kind 初版因 liveness／512Mi 導致 exit 137；
+    改 startupProbe＋768Mi＋MaxRAMPercentage 後，四 Pod <code>1/1</code> 且 health UP＝部署 SUCCESS。
+    本頁即該過程的通用解法。
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+    document.querySelectorAll(".tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("active"); });
+        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+# =============================================================================
+# FinTechDemo — docker-compose 全棧編排
+# 【職責】一鍵拉起：Kafka(Redpanda)＋Redis＋3 業務 MS＋gateway；（可選 profile full）job＋frontend
+# 【技巧】Compose YAML：services／ports／depends_on／environment／healthcheck／profiles／build.args
+# 【概念】本機「分散式迷你叢集」：用容器網路基名互叫（order-service、redpanda），不必寫死 IP
+# 建置並啟動：docker compose up -d --build
+# 僅 infra：docker compose up -d redpanda redis
+# 含前端／job：docker compose --profile full up -d --build
+# 停止：docker compose down
+# =============================================================================
+
+services:
+  # -------------------------------------------------------------------------
+  # Redpanda＝Kafka API 相容 broker（學習用，比完整 Kafka＋ZK 輕）
+  # 【職責】提供 message bus：order 事件／成交事件等非同步路徑
+  # 【技巧】command 陣列＝覆寫映像進入點參數；ports「主機:容器」
+  # 【概念】INTERNAL 給容器互連；EXTERNAL（19092）給本機 IDE／gradle 連
+  # -------------------------------------------------------------------------
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.5
+    container_name: fintech-demo-kafka
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      # 【技巧】雙監聽：容器內 9092、對外映射常用 19092
+      - --kafka-addr
+      - INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - INTERNAL://redpanda:9092,EXTERNAL://localhost:19092
+    ports:
+      # 【技巧】本機客戶端連 localhost:19092（與 application.yml 預設一致）
+      - "19092:19092"
+    healthcheck:
+      # 【技巧】健康檢查失敗 → depends_on condition: service_healthy 會等
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # -------------------------------------------------------------------------
+  # Redis — account 快取／狀態（demo profile 才真正啟用）
+  # 【職責】示範「服務可選依賴」：本機預設關 Redis，compose demo 才開
+  # 【技巧】redis-cli ping → PONG 視為健康
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: fintech-demo-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # -------------------------------------------------------------------------
+  # risk-service :8082 — 同步風控（名目金額等）
+  # 【職責】被 order Feign 呼叫；無狀態規則引擎示意
+  # 【技巧】build.context=. + args.MODULE → 重用根目錄多模組 Dockerfile
+  # -------------------------------------------------------------------------
+  risk-service:
+    build:
+      context: .
+      args:
+        MODULE: risk-service
+    image: fintech-demo/risk-service:local
+    container_name: fintech-demo-risk
+    ports:
+      - "8082:8082"
+    healthcheck:
+      # 【技巧】curl 已在 Dockerfile 安裝；grep UP 對齊 Spring Actuator
+      test: ["CMD-SHELL", "curl -sf http://localhost:8082/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  # -------------------------------------------------------------------------
+  # account-service :8084 — 餘額／持倉；可消費 Kafka、用 Redis
+  # 【職責】帳務邊界；demo profile 打開 Kafka／Redis
+  # 【技巧】depends_on + condition: service_healthy＝等 infra 就緒再啟動
+  # 【概念】SPRING_PROFILES_ACTIVE=demo 載入 application-demo.yml 覆寫
+  # -------------------------------------------------------------------------
+  account-service:
+    build:
+      context: .
+      args:
+        MODULE: account-service
+    image: fintech-demo/account-service:local
+    container_name: fintech-demo-account
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # 【技巧】環境變數可覆寫 Spring 設定（鬆散綁定／或顯式 spring.*）
+      SPRING_PROFILES_ACTIVE: demo
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      FINTECH_KAFKA_ENABLED: "true"
+      FINTECH_REDIS_ENABLED: "true"
+    ports:
+      - "8084:8084"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8084/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 50s
+
+  # -------------------------------------------------------------------------
+  # order-service :8081 — 下單／JWT／可發 Kafka
+  # 【職責】交易入口業務服務；依賴 risk＋account（URL 指向 compose DNS）
+  # 【技巧】FINTECH_SERVICES_*_URL 對應 application.yml 的 fintech.services.*
+  # -------------------------------------------------------------------------
+  order-service:
+    build:
+      context: .
+      args:
+        MODULE: order-service
+    image: fintech-demo/order-service:local
+    container_name: fintech-demo-order
+    depends_on:
+      risk-service:
+        condition: service_healthy
+      account-service:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      FINTECH_KAFKA_ENABLED: "true"
+      # 【概念】false＝示範 Kafka 非同步主路徑時，可不走 Feign 同步扣款
+      FINTECH_ACCOUNT_FEIGN_SYNC: "false"
+      FINTECH_SERVICES_RISK_URL: http://risk-service:8082
+      FINTECH_SERVICES_ACCOUNT_URL: http://account-service:8084
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  # -------------------------------------------------------------------------
+  # gateway :8080 — 統一 HTTP 入口（對前端／對外）
+  # 【職責】路由到 order／account／risk；隱藏內部埠拓撲
+  # 【技巧】只依賴健康的下游；URL 用服務名而非 localhost
+  # -------------------------------------------------------------------------
+  gateway:
+    build:
+      context: .
+      args:
+        MODULE: gateway
+    image: fintech-demo/gateway:local
+    container_name: fintech-demo-gateway
+    depends_on:
+      order-service:
+        condition: service_healthy
+      account-service:
+        condition: service_healthy
+    environment:
+      FINTECH_SERVICES_ORDER_URL: http://order-service:8081
+      FINTECH_SERVICES_ACCOUNT_URL: http://account-service:8084
+      FINTECH_SERVICES_RISK_URL: http://risk-service:8082
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  # -------------------------------------------------------------------------
+  # job-service :8083 — 排程（逾時取消等）；預設不啟動
+  # 【職責】定時打 order API；與同步請求路徑分離
+  # 【技巧】profiles: [full] → 需 docker compose --profile full ...
+  # 【概念】學習「選配服務」：核心路徑可不掛 job
+  # -------------------------------------------------------------------------
+  job-service:
+    build:
+      context: .
+      args:
+        MODULE: job-service
+    image: fintech-demo/job-service:local
+    container_name: fintech-demo-job
+    depends_on:
+      order-service:
+        condition: service_healthy
+    environment:
+      FINTECH_ORDER_URL: http://order-service:8081
+      FINTECH_JOB_TOKEN: demo-job-token
+    ports:
+      - "8083:8083"
+    profiles:
+      - full
+
+  # -------------------------------------------------------------------------
+  # frontend — nginx:80 → 主機 5173
+  # 【職責】SPA UI；/api 反代 gateway（見 frontend/nginx.conf）
+  # 【技巧】ports "5173:80"：開發習慣保留 5173，容器內仍是 80
+  # -------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+    image: fintech-demo/frontend:local
+    container_name: fintech-demo-frontend
+    depends_on:
+      gateway:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    profiles:
+      - full

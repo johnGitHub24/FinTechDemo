@@ -1,0 +1,25 @@
+# =============================================================================
+# risk-service — application.yml
+# 【職責】風控微服務：埠、名目金額上限、健康檢查
+# 【技巧】無 DB／Kafka：純規則服務，設定檔極短
+# 【概念】同步 Feign 呼叫適合「快速允許／拒絕」；複雜風控可再拆規則引擎
+# =============================================================================
+
+server:
+  port: 8082
+
+spring:
+  application:
+    name: risk-service
+
+fintech:
+  risk:
+    # 【技巧】下單名目（qty×price）超過此值 → 拒絕；可用環境變數覆寫做實驗
+    # 【概念】把「業務門檻」外置設定，避免改程式才能調參
+    max-notional: 50000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

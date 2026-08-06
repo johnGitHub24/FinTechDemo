@@ -1,0 +1,15 @@
+.gradle
+**/build
+!gradle/wrapper/gradle-wrapper.jar
+.git
+.idea
+**/.idea
+**/node_modules
+frontend/dist
+frontend/node_modules
+*.log
+loadtest
+docs
+deploy
+*.md
+scripts

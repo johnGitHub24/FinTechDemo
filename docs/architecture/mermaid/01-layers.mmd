@@ -1,0 +1,32 @@
+flowchart TB
+  subgraph Client["前端層"]
+    Vue["Vue 3.5 + Router 4.5 + Axios<br/>Vite 6 · :5173"]
+  end
+
+  subgraph Edge["入口層（可選）"]
+    GW["Gateway MVC<br/>Spring Cloud Gateway · :8080"]
+  end
+
+  subgraph MS["微服務層 · Java 21 · Spring Boot 3.2.2"]
+    Order["Order Service :8081<br/>Security JWT · JPA · Feign<br/>Kafka · Actuator · springdoc"]
+    Risk["Risk Service :8082<br/>名目金額風控 API"]
+    Account["Account Service :8084<br/>JPA · Redis · Kafka"]
+    Job["Job Service :8083<br/>逾時取消排程"]
+  end
+
+  subgraph Data["資料／訊息層"]
+    H2[(H2 / PostgreSQL)]
+    Redis[(Redis)]
+    Kafka[(Kafka)]
+  end
+
+  Vue -->|"HTTP + JWT<br/>最短：直連 Order"| Order
+  Vue -.->|"可選：經 Gateway"| GW
+  GW -->|"轉發 + X-Demo-Via-Gateway"| Order
+  Order -->|"OpenFeign"| Risk
+  Order -.->|"事件（可選）"| Kafka
+  Order --> H2
+  Account --> H2
+  Account --> Redis
+  Account -.-> Kafka
+  Job -->|"取消 PENDING"| Order

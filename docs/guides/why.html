@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 技術次序與架構為什麼</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>技術次序與架構為什麼</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/guides/why.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 技術次序與架構為什麼</h1>
+<blockquote>
+<p>本文件是開發權威敘事：<em><em>先理解各 Trading</em> Demo 的技術次序，再決定 FinTechDemo 為什麼長這樣。</em>*<br>圖形版：<a href="../portals/codeGraphic.html"><code>codeGraphic.html</code></a>（雙擊開啟）</p>
+</blockquote>
+<hr>
+<h2>1. 你給的技術次序（技術堆疊順序）</h2>
+<p>這些不是隨機清單，而是<strong>能力層層往上疊</strong>：每一層解決上一層「站上舞台後會立刻被問到的下一個問題」。</p>
+<div class="mermaid">flowchart TB
+  subgraph L1["① 後端能力面"]
+    P1[TradingPagingList<br/>伺服器端分頁]
+    P2[TradingSpringSecurity<br/>JWT / 角色]
+    P3[TradingCRUD<br/>分層 CRUD]
+  end
+  subgraph L2["② Middleware"]
+    P4[TradingSpringCloud<br/>Spring Cloud Gateway]
+  end
+  subgraph L3["③ 分散式"]
+    P5[TradingMicroService<br/>服務拆分 + Feign]
+    P6[APIGatewayMQ<br/>Kafka 削峰]
+  end
+  subgraph L4["④ 橫切與排程"]
+    P7[TradingJob<br/>@Scheduled]
+    P8[TradingIocAOP<br/>AOP 審計]
+  end
+  subgraph L5["⑤ 證明與上雲"]
+    P9[TradingLocustJMeter<br/>壓測]
+    P10[TradingPrometheusActuator<br/>健康／指標]
+    P11[TradingKubernetes<br/>Docker → K8s]
+  end
+  L1 --> L2 --> L3 --> L4 --> L5
+</div>
+<table>
+<thead>
+<tr>
+<th>次序</th>
+<th>來源</th>
+<th>解決的問題（為什麼要這步）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>PagingList</td>
+<td>列表不能一次全撈 → <strong>DB 端切片契約</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>SpringSecurity</td>
+<td>API 公開不安全 → <strong>JWT Stateless + 角色</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>CRUD</td>
+<td>要有可演示的業務面 → <strong>Controller→Service→Repo</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>SpringCloud</td>
+<td>前端不該直連多服務 → <strong>Gateway 唯一入口</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>MicroService</td>
+<td>風控與下單生命週期不同 → <strong>拆服務 + Feign</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td>APIGatewayMQ</td>
+<td>同步寫入扛不住尖峰 → <strong>Kafka 寫入削峰、查詢仍同步</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Job</td>
+<td>逾時單不會自己消失 → <strong>排程掃終態</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td>IocAOP</td>
+<td>審計不該塞滿 Service → <strong>AOP 橫切寫 audit</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td>LocustJMeter</td>
+<td>「感覺很快」不夠 → <strong>可重跑壓測報告</strong></td>
+</tr>
+<tr>
+<td>10</td>
+<td>PrometheusActuator</td>
+<td>掛了怎麼知道 → <strong>health + 業務 Counter</strong></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Kubernetes</td>
+<td>本機 Demo ≠ 上雲路徑 → <strong>Compose → Kustomize</strong></td>
+</tr>
+</tbody></table>
+<p><strong>FinTechDemo 的價值</strong>：把以上次序<strong>收成一個可跑倉庫</strong>，用一條鏈展示講完，不必再翻十個子專案。</p>
+<hr>
+<h2>2. 為什麼系統架構是「前端 → Gateway → MS → Kafka → 後端」</h2>
+<p>這不是裝飾，而是對應上面次序的<strong>部署／請求形狀</strong>：</p>
+<div class="mermaid">flowchart LR
+  subgraph WHY["設計原則"]
+    direction TB
+    W1["有 UI 才能現場 Demo"]
+    W2["有 Gateway 才像 Middleware"]
+    W3["有拆服務才像 Microservice"]
+    W4["有 Kafka 才像 Distributed"]
+    W5["有 DB/Job/AOP 才像完整後端"]
+  end
+</div>
+<table>
+<thead>
+<tr>
+<th>架構層</th>
+<th>為什麼要獨立成層</th>
+<th>對應次序</th>
+<th>採納技巧（來自子專案）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Frontend (Vue)</strong></td>
+<td>需要看得見的 UI；分頁／登入／下單是故事入口</td>
+<td>1＋3</td>
+<td>Vite proxy、<code>PageResponse</code>、Axios Bearer（PagingList／CRUD）</td>
+</tr>
+<tr>
+<td><strong>Gateway</strong></td>
+<td>前端只認一個 origin；路由改下游不改前端</td>
+<td>4</td>
+<td>固定 URL 路由、Path 對齊 <code>/api/**</code>（SpringCloud；可口述升級 <code>lb://</code>）</td>
+</tr>
+<tr>
+<td><strong>Microservices</strong></td>
+<td>order 編排、risk 規則、job 排程關注點分離</td>
+<td>5</td>
+<td>Feign 介面契約、服務固定埠（MicroService 精簡版，<strong>不搬 Eureka／Config</strong>）</td>
+</tr>
+<tr>
+<td><strong>Kafka</strong></td>
+<td>「入隊 ≠ 成交」；寫入可水平擴 consumer</td>
+<td>6</td>
+<td>202＋topic、partition key、Idempotency-Key、local 可關 listener（APIGatewayMQ）</td>
+</tr>
+<tr>
+<td><strong>Backend data</strong></td>
+<td>狀態真相在 DB；審計／排程依附資料</td>
+<td>3＋7＋8</td>
+<td>JPA CRUD、Job→Service、<code>@AfterReturning</code> audit（升級為 <code>audit_log</code> 表）</td>
+</tr>
+<tr>
+<td><strong>Obs / Perf / Cloud</strong></td>
+<td>證明可維運、可壓、可部署</td>
+<td>9～11</td>
+<td>Actuator prometheus、Locust baseline、<code>apps</code>+<code>clusters</code> overlay</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. 為什麼「實作順序」必須跟技術次序走</h2>
+<p>若先做 Kafka／K8s、後做 CRUD／Gateway，Demo 會變成「一堆基礎設施沒故事」。<br>正確順序＝<strong>先有可講的業務面，再往外長 Middleware／分散式／證明層</strong>。</p>
+<div class="mermaid">flowchart TB
+  P0[P0 骨架 eos] --> P1[P1 CRUD+分頁]
+  P1 --> P2[P2 JWT]
+  P2 --> P3[P3 Gateway+Feign risk]
+  P3 --> P4[P4 Kafka+Redis]
+  P4 --> P5[P5 Vue 串 Gateway]
+  P5 --> P6[P6 Job+AOP audit_log]
+  P6 --> P7[P7 Actuator/Prom]
+  P7 --> P8[P8 Locust]
+  P8 --> P9[P9 Compose→K8s]
+</div>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>對應次序</th>
+<th>完成時你能講的一句話</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1–P2</td>
+<td>1～3</td>
+<td>「我有受保護的分頁訂單 API」</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>4～5</td>
+<td>「前端只打 Gateway；風控是另一個服務」</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>6</td>
+<td>「下單進 Kafka，查詢同步讀」</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>前端打通</td>
+<td>「現場瀏覽器走完整鏈」</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>7～8</td>
+<td>「逾時有 Job；成功下單有 audit_log」</td>
+</tr>
+<tr>
+<td>P7–P9</td>
+<td>9～11</td>
+<td>「有指標、有壓測報告、有上雲 YAML」</td>
+</tr>
+</tbody></table>
+<p><code>local</code> 可暫同步呼叫 risk（方便開發）；<strong>demo／docker 主路徑必須 Kafka</strong> — 否則次序第 6 步在展示會斷層。</p>
+<hr>
+<h2>4. 為什麼刻意「不搬」某些東西</h2>
+<table>
+<thead>
+<tr>
+<th>不搬</th>
+<th>來自</th>
+<th>為什麼砍</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Eureka + Config Server</td>
+<td>MicroService</td>
+<td>可說明「可換成 lb://」即可；本機固定 URL 更穩</td>
+</tr>
+<tr>
+<td>Engine 多副本 Round-robin</td>
+<td>APIGatewayMQ <code>EngineProxyService</code></td>
+<td>一個 consumer group 示意即可</td>
+</tr>
+<tr>
+<td>R001～R010</td>
+<td>APIGatewayMQ／MVP</td>
+<td>一條名義金額規則夠講「風控服務」</td>
+</tr>
+<tr>
+<td>Node BFF</td>
+<td>CRUD</td>
+<td>Gateway 已是統一入口</td>
+</tr>
+<tr>
+<td>mini-ioc 手刻容器</td>
+<td>IocAOP</td>
+<td>只要 Spring AOP → DB <code>audit_log</code></td>
+</tr>
+<tr>
+<td>雙 GitOps（Argo+Flux）</td>
+<td>Kubernetes</td>
+<td>Kustomize 三環境 overlay 夠</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. 目標架構（由次序推出的結果）</h2>
+<div class="mermaid">flowchart TB
+  Vue["Vue :5173<br/>分頁／登入／下單"] --> GW["Spring Cloud Gateway :8080"]
+  GW --> ORD["order-service :8081<br/>JWT CRUD Redis AOP"]
+  GW --> RSK["risk-service :8082"]
+  ORD -->|Feign| RSK
+  ORD -->|produce| K[[Kafka order-events]]
+  K -->|consume| ORD
+  ORD --> PG[(PostgreSQL)]
+  ORD --> RD[(Redis)]
+  JOB["job-service :8083"] --> PG
+  ORD -. audit .-> AL[(audit_log)]
+  LOC[Locust] --> GW
+  PROM[Prometheus scrape] --> GW
+  PROM --> ORD
+</div>
+<p><strong>一句話設計理由</strong>：<br>前端證明可用性 → Gateway 證明 Middleware → 多服務＋Kafka 證明分散式 → DB／Job／AOP 證明後端完整 → Actuator／壓測／K8s 證明工程與上雲。</p>
+<hr>
+<h2>6. 相關文件</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="../portals/codeGraphic.html">codeGraphic.html</a></td>
+<td>Tab＋Mermaid 視覺版（為什麼／次序／流量／部署）</td>
+</tr>
+<tr>
+<td><a href="../architecture/architecture.html">architecture</a></td>
+<td>模組職責與設定</td>
+</tr>
+<tr>
+<td><a href="./fusion.html">技術融合對照</a></td>
+<td>各來源「採納技巧／不搬」</td>
+</tr>
+<tr>
+<td><a href="./spec.html">FinTechDemo-SPEC</a></td>
+<td>權威規格與 Phase</td>
+</tr>
+</tbody></table>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

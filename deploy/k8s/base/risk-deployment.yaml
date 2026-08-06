@@ -1,0 +1,61 @@
+# =============================================================================
+# FinTechDemo K8s — risk-service Deployment
+# 【職責】無狀態風控服務；被 order Feign 呼叫（同步）
+# 【技巧】無額外 env：規則門檻多半在 application.yml（fintech.risk.max-notional）
+# 【概念】愈「純計算」的服務愈適合水平擴展；此 Demo 仍 replicas=1
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risk-service
+  labels:
+    app: risk-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: risk-service
+  template:
+    metadata:
+      labels:
+        app: risk-service
+    spec:
+      containers:
+        - name: risk-service
+          # 【技巧】本機：docker build --build-arg MODULE=risk-service -t fintech-demo/risk-service:local .
+          image: fintech-demo/risk-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+              name: http
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=70.0"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            periodSeconds: 5
+            failureThreshold: 36
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            periodSeconds: 20
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi

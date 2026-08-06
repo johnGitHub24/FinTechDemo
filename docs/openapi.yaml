@@ -1,0 +1,204 @@
+# =============================================================================
+# FinTechDemo — OpenAPI 3 契約（教學用）
+# 【職責】用機器可讀方式描述 REST：路徑、方法、參數、安全、元件；可供 Swagger UI／客戶端產生
+# 【技巧】YAML 頂層鍵：openapi → info → servers → tags → paths → components；# 註解不影響解析
+# 【概念】契約優先：前後端／多服務以同一份 spec 對齊；本檔為示意摘要，執行時細節以程式＋測試為準
+# 帳號示範：trader1／admin，密碼 password
+# =============================================================================
+
+# 【技巧】openapi: 版本字串（3.0.x）；工具依此選 parser 行為
+openapi: 3.0.3
+
+# -----------------------------------------------------------------------------
+# info — API 名片（標題、說明、版本）
+# 【職責】給人看的中繼資料；不影響路由
+# 【技巧】description 用 | 區塊純量可多行
+# -----------------------------------------------------------------------------
+info:
+  title: FinTechDemo API
+  description: |
+    端到端 Demo：JWT 登入 → 前台下單 → 後台餘額／持倉／歷史。
+    帳號 `trader1`／`admin`，密碼 `password`。
+  version: 0.1.0
+
+# -----------------------------------------------------------------------------
+# servers — 預設呼叫基底 URL（可多個，Swagger UI 可切換）
+# 【職責】告訴客戶端「打哪一台」；單一 path 也可覆寫 servers（見 /api/risk/check）
+# 【技巧】url 不含 path 尾端斜線慣例；實際 path 寫在 paths 鍵
+# -----------------------------------------------------------------------------
+servers:
+  - url: http://localhost:8081
+    description: "【預設】order-service — Auth／Orders／Audit（Try it out 多數打這裡）"
+  - url: http://localhost:8084
+    description: "account-service — Accounts／Positions（餘額／持倉請選這個）"
+  - url: http://localhost:8080
+    description: "Gateway — 統一入口（全棧 demo 時可選）"
+
+# -----------------------------------------------------------------------------
+# tags — 邏輯分組（UI 側邊欄／文件章節）
+# 【職責】把 operations 歸類；不產生實際端點
+# -----------------------------------------------------------------------------
+tags:
+  - name: Auth
+  - name: Orders
+  - name: Portal
+  - name: Account
+  - name: Risk
+
+# -----------------------------------------------------------------------------
+# paths — 真正的 API 表面（path → method → operation）
+# 【技巧】鍵是路徑樣板；{id} 為 path 參數；security 引用 components.securitySchemes
+# 【概念】同一 path 可有 get／post／delete 多個 operation
+# -----------------------------------------------------------------------------
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: 登入取得 JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: trader1 }
+                password: { type: string, example: password }
+      responses:
+        "200":
+          description: token + roles
+  /api/orders:
+    get:
+      tags: [Orders]
+      summary: 訂單歷史分頁
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 10 }
+        - in: query
+          name: status
+          schema: { type: string, enum: [PENDING, ACCEPTED, REJECTED, CANCELLED] }
+      responses:
+        "200": { description: PageResponse }
+    post:
+      tags: [Orders]
+      summary: 下單（PENDING；demo 可走 Kafka）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientOrderId, symbol, side, quantity, price]
+              properties:
+                clientOrderId: { type: string, example: DEMO-001 }
+                symbol: { type: string, example: AAPL }
+                side: { type: string, enum: [BUY, SELL] }
+                quantity: { type: integer, example: 1 }
+                price: { type: number, example: 150.0 }
+      responses:
+        "201": { description: Order created }
+  /api/orders/{id}:
+    get:
+      tags: [Orders]
+      summary: 查單
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+    delete:
+      tags: [Orders]
+      summary: 取消 PENDING
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: CANCELLED }
+  /api/orders/{id}/execute:
+    post:
+      tags: [Orders]
+      summary: 手動執行（風控→成交）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: ACCEPTED or REJECTED }
+  /api/accounts/me:
+    get:
+      tags: [Account]
+      summary: 我的餘額（後台 B1）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: cashBalance }
+  /api/positions:
+    get:
+      tags: [Account]
+      summary: 持倉列表（後台 B2）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: positions }
+  /api/audit-logs:
+    get:
+      tags: [Portal]
+      summary: 審計（ADMIN）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 10 }
+      responses:
+        "200": { description: OK }
+        "403": { description: 非 ADMIN }
+  /api/market/symbols:
+    get:
+      tags: [Portal]
+      summary: 參考價清單（前台 F4）
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: symbols }
+  /api/risk/check:
+    post:
+      tags: [Risk]
+      summary: 風控檢查（內部 Feign，通常不直打）
+      # 【技巧】operation 級 servers 覆寫：此呼叫預設打 risk-service :8082
+      servers:
+        - url: http://localhost:8082
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200": { description: allowed / reason }
+
+# -----------------------------------------------------------------------------
+# components — 可重用元件（schemas／securitySchemes／parameters…）
+# 【職責】集中定義，paths 用 $ref 或短寫引用，避免複製貼上
+# 【技巧】此 Demo 用 security: [{ bearerAuth: [] }] 引用下方 bearerAuth
+# 【概念】JWT Bearer：Authorization: Bearer <token>
+# -----------------------------------------------------------------------------
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

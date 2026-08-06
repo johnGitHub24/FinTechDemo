@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — API規格書</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>API規格書</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/architecture/api-spec.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — API 規格書</h1>
+<blockquote>
+<p>互動版：<a href="../portals/swagger.html">swagger.html</a> · Runtime：<code>http://localhost:8081/swagger-ui.html</code></p>
+</blockquote>
+<h2>認證</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td><code>{username,password}</code> → <code>{token,username,roles}</code></td>
+</tr>
+</tbody></table>
+<p>之後請求加 Header：<code>Authorization: Bearer &lt;token&gt;</code>。</p>
+<p>示範帳：<code>trader1</code>／<code>admin</code>，密碼 <code>password</code>。</p>
+<h2>前台（交易）</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>角色</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/api/market/symbols</code></td>
+<td>USER/ADMIN</td>
+<td>參考價</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/orders</code></td>
+<td>USER/ADMIN</td>
+<td>下單 → PENDING</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/orders</code></td>
+<td>USER/ADMIN</td>
+<td>歷史分頁 <code>page</code>/<code>size</code>/<code>status</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/orders/{id}</code></td>
+<td>自己的</td>
+<td>查單</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/orders/{id}/execute</code></td>
+<td>自己的</td>
+<td>風控後 ACCEPTED／REJECTED</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/orders/{id}</code></td>
+<td>自己的</td>
+<td>取消 PENDING</td>
+</tr>
+</tbody></table>
+<h2>後台（會員）</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>角色</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/api/accounts/me</code></td>
+<td>USER/ADMIN</td>
+<td>餘額（正式由 account:8084／Gateway）</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/positions</code></td>
+<td>USER/ADMIN</td>
+<td>持倉</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/audit-logs</code></td>
+<td><strong>ADMIN</strong></td>
+<td>審計摘要</td>
+</tr>
+</tbody></table>
+<h2>內部（系統）</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/risk/check</code></td>
+<td>risk:8082，Feign</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/internal/accounts/{userId}/apply-trade</code></td>
+<td>account 入帳，<code>X-Internal-Token</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/internal/jobs/cancel-stale</code></td>
+<td>Job 觸發，<code>X-Job-Token</code></td>
+</tr>
+</tbody></table>
+<h2>錯誤碼</h2>
+<table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>情境</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>401</td>
+<td>未登入／Token 無效</td>
+</tr>
+<tr>
+<td>403</td>
+<td>角色不符（如 USER 打 audit）</td>
+</tr>
+<tr>
+<td>404</td>
+<td>資源不存在或不屬於你</td>
+</tr>
+<tr>
+<td>422</td>
+<td>業務規則（重複 clientOrderId 等）</td>
+</tr>
+</tbody></table>
+<h2>埠</h2>
+<table>
+<thead>
+<tr>
+<th>服務</th>
+<th>Port</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gateway</td>
+<td>8080</td>
+</tr>
+<tr>
+<td>order</td>
+<td>8081</td>
+</tr>
+<tr>
+<td>risk</td>
+<td>8082</td>
+</tr>
+<tr>
+<td>job</td>
+<td>8083</td>
+</tr>
+<tr>
+<td>account</td>
+<td>8084</td>
+</tr>
+<tr>
+<td>Vue</td>
+<td>5173</td>
+</tr>
+</tbody></table>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

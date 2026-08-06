@@ -1,0 +1,102 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.2' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+allprojects {
+    group = 'com.fintech.demo'
+    version = '0.1.0-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+            mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.0'
+        }
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    tasks.withType(Javadoc).configureEach {
+        options.encoding = 'UTF-8'
+        options.charSet = 'UTF-8'
+        options.docEncoding = 'UTF-8'
+        options.addStringOption('Xdoclint:none', '-quiet')
+        failOnError = false
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+    }
+
+    // Spring Boot：由 @ConfigurationProperties 產生 META-INF/spring-configuration-metadata.json
+    // （IDE 補全／提示）；若有 additional-spring-configuration-metadata.json，需先 processResources。
+    // annotationProcessor 順序：lombok 在前，再接 configuration-processor。
+    plugins.withId('org.springframework.boot') {
+        dependencies {
+            annotationProcessor 'org.projectlombok:lombok'
+            annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        }
+        tasks.named('compileJava') {
+            inputs.files(tasks.named('processResources'))
+        }
+    }
+}
+
+/**
+ * 聚合各模組 main sources 產出一份 JavaDoc HTML 到 docs/javadoc。
+ * 執行：.\gradlew.bat aggregateJavadoc
+ */
+tasks.register('aggregateJavadoc', Javadoc) {
+    group = 'documentation'
+    description = 'Generate aggregated JavaDoc HTML into docs/javadoc'
+    destinationDir = file("${rootDir}/docs/javadoc")
+    title = "FinTechDemo ${version} API"
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.docEncoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.links('https://docs.oracle.com/en/java/javase/21/docs/api/')
+    failOnError = false
+
+    def modules = [
+            'common',
+            'order-service',
+            'risk-service',
+            'account-service',
+            'gateway',
+            'job-service'
+    ]
+    source = files()
+    classpath = files()
+    modules.each { name ->
+        def proj = project(":${name}")
+        dependsOn(proj.tasks.named('classes'))
+        source += proj.sourceSets.main.allJava
+        classpath += proj.sourceSets.main.compileClasspath
+        classpath += proj.sourceSets.main.output
+    }
+    doFirst {
+        destinationDir.mkdirs()
+    }
+}

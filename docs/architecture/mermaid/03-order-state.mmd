@@ -1,0 +1,13 @@
+flowchart LR
+  Start([建立訂單]) -->|"CreateOrder<br/>JPA 寫入"| PENDING
+  PENDING -->|"Execute + Risk 通過<br/>OpenFeign"| ACCEPTED
+  PENDING -->|"Execute + Risk 拒絕"| REJECTED
+  PENDING -->|"使用者取消<br/>或 Job 逾時"| CANCELLED
+  ACCEPTED --> Done([結束])
+  REJECTED --> Done
+  CANCELLED --> Done
+
+  style PENDING fill:#fef3c7,stroke:#b45309,color:#1a2b3c
+  style ACCEPTED fill:#d1fae5,stroke:#047857,color:#1a2b3c
+  style REJECTED fill:#fee2e2,stroke:#b91c1c,color:#1a2b3c
+  style CANCELLED fill:#e5e7eb,stroke:#4b5563,color:#1a2b3c

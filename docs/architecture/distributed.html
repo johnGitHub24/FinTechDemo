@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 分散式系統落地</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>分散式系統落地</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/architecture/distributed.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 分散式系統落地（微服務 × Kafka × Redis）</h1>
+<blockquote>
+<p>展示主敘事：<strong>Distributed System Demo</strong>（不是單機 CRUD）。</p>
+</blockquote>
+<h2>三個業務微服務（至少）</h2>
+<table>
+<thead>
+<tr>
+<th>服務</th>
+<th>埠</th>
+<th>職責</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>order-service</code></td>
+<td>8081</td>
+<td>登入 JWT、訂單、審計、發 Kafka</td>
+</tr>
+<tr>
+<td><code>risk-service</code></td>
+<td>8082</td>
+<td>名義金額風控（Feign 被叫）</td>
+</tr>
+<tr>
+<td><code>account-service</code></td>
+<td>8084</td>
+<td>餘額／持倉帳本、<strong>Redis cache</strong>、消費 trade-events</td>
+</tr>
+<tr>
+<td><code>job-service</code></td>
+<td>8083</td>
+<td>排程輔助（非業務主鏈）</td>
+</tr>
+<tr>
+<td><code>gateway</code></td>
+<td>8080</td>
+<td>依路徑路由到 order／account</td>
+</tr>
+</tbody></table>
+<h2>Kafka Event Bus</h2>
+<pre><code class="language-text">POST /api/orders
+   └─ Producer → topic order-events
+        └─ order Consumer → Feign risk → 改訂單 ACCEPTED
+             └─ Producer → topic trade-events
+                  └─ account Consumer → 入帳 + 清 Redis cache
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Producer</th>
+<th>Consumer</th>
+<th>之後做什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>order-events</code></td>
+<td>order</td>
+<td>order</td>
+<td>呼叫 <strong>risk-service</strong>，執行帳務編排</td>
+</tr>
+<tr>
+<td><code>trade-events</code></td>
+<td>order</td>
+<td><strong>account</strong></td>
+<td>更新現金／持倉，<strong>evict Redis</strong></td>
+</tr>
+</tbody></table>
+<ul>
+<li>預設 <code>fintech.kafka.enabled=false</code>（單元／整合測試與 standalone 不依賴 broker）</li>
+<li>Demo：<code>docker compose up -d</code> + <code>--spring.profiles.active=demo</code>（order <strong>與</strong> account 都開 demo）</li>
+</ul>
+<h2>Redis Cache</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>落點</td>
+<td><strong>account-service</strong></td>
+</tr>
+<tr>
+<td>Key</td>
+<td><code>account:{userId}</code>、<code>positions:{userId}</code></td>
+</tr>
+<tr>
+<td>TTL</td>
+<td>60s</td>
+</tr>
+<tr>
+<td>失效</td>
+<td>入帳（Kafka／Feign apply-trade）後 <code>evict</code></td>
+</tr>
+<tr>
+<td>降級</td>
+<td>預設 <code>fintech.redis.enabled=false</code> + exclude RedisAutoConfiguration（無 Redis 可啟動）</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td><code>application-demo.yml</code> 開啟 Redis</td>
+</tr>
+</tbody></table>
+<h2>雙路徑一致性</h2>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行為</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kafka Demo</td>
+<td>trade-events → account 最終一致（<strong>不要</strong>再開 feign-sync，避免雙重入帳）</td>
+</tr>
+<tr>
+<td>Feign sync</td>
+<td><code>fintech.account.feign-sync=true</code> 且 kafka=false → order 同步打 account 內部 API</td>
+</tr>
+<tr>
+<td>Standalone</td>
+<td>只起 order：本機 H2 帳本仍可用；portal 直打 :8081</td>
+</tr>
+</tbody></table>
+<h2>Gateway 路由</h2>
+<ul>
+<li><code>/api/accounts/**</code>、<code>/api/positions</code> → account:8084</li>
+<li>其餘 <code>/api/**</code> → order:8081</li>
+</ul>
+<p>前端 Vite：standalone 預設 <code>:8081</code>；分散式設 <code>VITE_API_TARGET=http://localhost:8080</code>。</p>
+<h2>驗證</h2>
+<pre><code class="language-powershell">.\scripts\check.ps1
+.\scripts\check-k8s.ps1          # 應含 account-service（只 kustomize，不連 API）
+.\scripts\smoke-distributed.ps1  # compose +（服務就緒時）API 煙霧
+</code></pre>
+<p>K8s／kind／Docker 跑通規則與故障排除（含 <code>connection refused</code> 解法）：<br><a href="../deploy/k8s-tips.html"><code>K8s跑通與驗證技巧</code></a></p>
+<p>逐層打通到可部署／上線（S0→S6）：<br><a href="../deploy/stages-doc.html"><code>上線部署階段層次（MD）</code></a> · <a href="../portals/stages.html"><code>上線部署階段層次（互動）</code></a></p>
+<p>完整架構圖：<a href="./architecture.html"><code>architecture</code></a></p>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

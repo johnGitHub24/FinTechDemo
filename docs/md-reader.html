@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — Markdown 閱讀器</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --warn: #b45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+    header.top {
+      flex: 0 0 auto; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%);
+      padding: 0.9rem 1.2rem;
+    }
+    header.top h1 { font-size: 1.15rem; margin-bottom: 0.2rem; }
+    header.top .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.45rem; }
+    header.top .links a { color: var(--accent); text-decoration: none; margin-right: 0.85rem; font-size: 0.82rem; }
+    .layout { flex: 1; display: flex; min-height: 0; }
+    aside {
+      width: 280px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; min-height: 0;
+    }
+    .search-wrap { padding: 0.65rem; border-bottom: 1px solid var(--border); }
+    .search-wrap input { width: 100%; padding: 0.4rem 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; }
+    .nav { overflow-y: auto; flex: 1; padding: 0.4rem 0 1rem; }
+    .group-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 0.55rem 0.85rem 0.2rem; font-weight: 600; }
+    .nav-item {
+      display: block; width: 100%; text-align: left; border: none; background: transparent;
+      padding: 0.38rem 0.85rem; font-size: 0.8rem; color: var(--text); cursor: pointer; border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: var(--surface2); }
+    .nav-item.active { background: #e6f3f2; border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
+    main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .viewer-head { padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .viewer-head h2 { font-size: 1.05rem; }
+    .viewer-head .meta { font-size: 0.78rem; color: var(--muted); word-break: break-all; margin-top: 0.2rem; }
+    .viewer-head .actions { margin-top: 0.45rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .btn {
+      display: inline-block; padding: 0.3rem 0.6rem; font-size: 0.78rem; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text); text-decoration: none; cursor: pointer;
+    }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .viewer-body { margin:0; flex: 1; overflow: auto; padding: 1.25rem 1.5rem 2.5rem; }
+    .gate { background: var(--surface2); border-left: 3px solid var(--accent); padding: 0.6rem 0.85rem; font-size: 0.85rem; margin-bottom: 0.85rem; border-radius: 0 6px 6px 0; }
+    .gate.warn { border-left-color: var(--warn); }
+    .gate.bad { border-left-color: #b91c1c; }
+    .md-body { margin:0; max-width: 860px; line-height: 1.7; font-size: 0.95rem; }
+    .md-body h1 { font-size: 1.55rem; margin: 0 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--accent); }
+    .md-body h2 { font-size: 1.2rem; margin: 1.5rem 0 0.55rem; color: #0f4c5c; }
+    .md-body h3 { font-size: 1.02rem; margin: 1.1rem 0 0.4rem; color: var(--accent); }
+    .md-body p, .md-body li { color: #334155; margin-bottom: 0.45rem; }
+    .md-body ul, .md-body ol { padding-left: 1.35rem; margin: 0.4rem 0 0.85rem; }
+    .md-body blockquote { border-left: 3px solid var(--warn); background: var(--surface2); padding: 0.55rem 0.9rem; margin: 0.75rem 0; color: var(--muted); font-size: 0.9rem; }
+    .md-body table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.85rem 0; background: var(--surface); }
+    .md-body th, .md-body td { border: 1px solid var(--border); padding: 0.4rem 0.55rem; vertical-align: top; text-align: left; }
+    .md-body th { background: var(--surface2); color: var(--accent); }
+    .md-body code { background: #e8eef3; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; color: #0f4c5c; }
+    .md-body pre { background: #1e293b; color: #e2e8f0; padding: 0.9rem 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.8rem; margin: 0.75rem 0; }
+    .md-body pre code { background: transparent; color: inherit; padding: 0; }
+    .md-body a { color: var(--accent); }
+    .md-body hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    .md-body .mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; margin: 0.85rem 0; }
+    /* Mermaid Note 可讀性：避免深灰塊蓋住文字 */
+    .mermaid .note rect { fill: #fff8e6 !important; stroke: #d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill: #1f2937 !important; }
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; }
+      aside { width: 100%; max-height: 36vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>Markdown 閱讀器</h1>
+    <p class="sub">學習導引地圖用到的規格／架構 MD，轉成可閱讀排版（表格、程式碼、Mermaid）。權威仍以 <code>.md</code> 為準。</p>
+    <p class="links">
+      <a href="portals/learning-map.html">學習導引地圖</a>
+      <a href="index.html">統一學習入口</a>
+      <a href="portals/swagger.html">Swagger</a>
+      <a href="portals/loop-guide.html">部署跑通</a>
+    </p>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="搜尋文件…" autocomplete="off" />
+      </div>
+      <nav id="nav" class="nav"></nav>
+    </aside>
+    <main>
+      <div class="viewer-head">
+        <h2 id="title">選擇左側文件</h2>
+        <div class="meta" id="meta">建議從專案根 <code>npx --yes serve -p 5500</code> 後開本頁。</div>
+        <div class="actions" id="actions"></div>
+      </div>
+      <div class="viewer-body" id="body">
+        <div class="gate">點左側 MD，右側以 HTML 排版閱讀。深連結：<code>?id=architecture</code></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /**
+     * 【職責】把學習路線相關 Markdown 以 HTML 排版閱讀（不取代 .md 權威）
+     * 【技巧】marked 轉 HTML；```mermaid 區塊改成 div.mermaid 再 mermaid.run
+     * 【概念】一份閱讀器 + 清單，避免每個 md 手維護一份 html 漂移
+     */
+    const DOCS = [
+      { id: "spec", group: "權威／產品", title: "FinTechDemo-SPEC（權威規格）", path: "_md/guides/spec.md", html: "guides/spec.html" },
+      { id: "claude", group: "權威／產品", title: "CLAUDE.md（專案規則）", path: "_md/guides/claude.md", html: "guides/claude.html" },
+      { id: "story-ui", group: "權威／產品", title: "產品劇情-前台與後台", path: "_md/guides/story-ui.md", html: "guides/story-ui.html" },
+      { id: "story-rbac", group: "權威／產品", title: "產品劇情與RBAC", path: "_md/guides/story-rbac.md", html: "guides/story-rbac.html" },
+      { id: "why", group: "權威／產品", title: "技術次序與架構為什麼", path: "_md/guides/why.md", html: "guides/why.html" },
+      { id: "fusion", group: "權威／產品", title: "技術融合對照", path: "_md/guides/fusion.md", html: "guides/fusion.html" },
+
+      { id: "architecture", group: "架構／設定", title: "architecture", path: "_md/architecture/architecture.md", html: "architecture/architecture.html" },
+      { id: "eng-config", group: "架構／設定", title: "engineering-config", path: "_md/architecture/engineering-config.md", html: "architecture/engineering-config.html" },
+      { id: "distributed", group: "架構／設定", title: "分散式系統落地", path: "_md/architecture/distributed.md", html: "architecture/distributed.html" },
+      { id: "api-spec", group: "架構／設定", title: "API規格書", path: "_md/architecture/api-spec.md", html: "architecture/api-spec.html" },
+
+      { id: "db", group: "資料／驗證", title: "資料庫設計", path: "_md/architecture/db.md", html: "architecture/db.html" },
+      { id: "verify-design", group: "資料／驗證", title: "驗證設計", path: "_md/architecture/verify-design.md", html: "architecture/verify-design.html" },
+      { id: "testing", group: "資料／驗證", title: "testing", path: "_md/architecture/testing.md", html: "architecture/testing.html" },
+
+      { id: "k8s-tips", group: "部署", title: "K8s跑通與驗證技巧", path: "_md/deploy/k8s-tips.md", html: "deploy/k8s-tips.html" },
+      { id: "stages-md", group: "部署", title: "上線部署階段層次（MD）", path: "_md/deploy/stages.md", html: "deploy/stages-doc.html" },
+      { id: "deploy-readme", group: "部署", title: "deploy/README", path: "_md/deploy/deploy-readme.md", html: "deploy/deploy-readme.html" },
+
+      { id: "portal-design", group: "設計備註", title: "統一入口設計 spec", path: "superpowers/specs/2026-08-06-docs-unified-portal-design.md", html: "architecture/portal-design.html" },
+      { id: "roadmap-design", group: "設計備註", title: "學習導引地圖設計 spec", path: "superpowers/specs/2026-08-06-learning-roadmap-design.md", html: "architecture/roadmap-design.html" },
+      { id: "topic-html-design", group: "設計備註", title: "主題目錄 HTML catalog", path: "superpowers/specs/2026-08-06-docs-topic-html-catalog-design.md", html: "architecture/topic-html-design.html" }
+    ];
+
+    const GROUP_ORDER = ["權威／產品", "架構／設定", "資料／驗證", "部署", "設計備註"];
+
+    const navEl = document.getElementById("nav");
+    const searchEl = document.getElementById("search");
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const actionsEl = document.getElementById("actions");
+    const bodyEl = document.getElementById("body");
+    let activeId = null;
+
+    mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "loose", themeVariables: { primaryColor: "#e6f3f2", primaryTextColor: "#1f2937", primaryBorderColor: "#0d7377", lineColor: "#5b6b7c", noteBkgColor: "#fff8e6", noteTextColor: "#1f2937", noteBorderColor: "#d5dde6", background: "#ffffff", mainBkg: "#ffffff", actorBkg: "#e6f3f2", actorTextColor: "#1f2937", actorBorder: "#0d7377", signalColor: "#1f2937", signalTextColor: "#1f2937" } });
+
+    marked.setOptions({
+      gfm: true,
+      breaks: false
+    });
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function filtered() {
+      const q = (searchEl.value || "").trim().toLowerCase();
+      if (!q) return DOCS.slice();
+      return DOCS.filter(function (d) {
+        return (d.title + " " + d.path + " " + d.group).toLowerCase().indexOf(q) >= 0;
+      });
+    }
+
+    function renderNav() {
+      const items = filtered();
+      navEl.innerHTML = "";
+      GROUP_ORDER.forEach(function (g) {
+        const inG = items.filter(function (i) { return i.group === g; });
+        if (!inG.length) return;
+        const gt = document.createElement("div");
+        gt.className = "group-title";
+        gt.textContent = g;
+        navEl.appendChild(gt);
+        inG.forEach(function (item) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "nav-item" + (item.id === activeId ? " active" : "");
+          btn.textContent = item.title;
+          btn.addEventListener("click", function () { openDoc(item.id); });
+          navEl.appendChild(btn);
+        });
+      });
+    }
+
+    function rewriteMdLinks(html) {
+      function decodePath(p) {
+        try { return decodeURIComponent(p); } catch (e) { return p; }
+      }
+      const aliases = {
+        "FinTechDemo-SPEC": "spec",
+        CLAUDE: "claude",
+        "技術次序與架構為什麼": "why",
+        "技術融合對照": "fusion",
+        "產品劇情與RBAC": "story-rbac",
+        "產品劇情-前台與後台": "story-ui",
+        "分散式系統落地": "distributed",
+        "資料庫設計": "db",
+        "驗證設計": "verify-design",
+        "API規格書": "api-spec",
+        "K8s跑通與驗證技巧": "k8s-tips",
+        "上線部署階段層次": "stages-md",
+        architecture: "architecture",
+        "engineering-config": "eng-config",
+        testing: "testing",
+        "deploy-readme": "deploy-readme",
+        README: "deploy-readme"
+      };
+      return html.replace(/href="([^"]+\.(?:md|html))(#[^"]*)?"/gi, function (full, path, hash) {
+        const decoded = decodePath(path);
+        if (/^https?:\/\//i.test(decoded)) return full;
+        const base = decoded.replace(/^(\.\.\/)+/, "").replace(/^docs\//, "").replace(/^.*\//, "").replace(/\.(md|html)$/i, "");
+        let found = DOCS.find(function (d) {
+          return d.path.endsWith(decoded) || d.path.endsWith(base + ".md") || d.id === base;
+        });
+        if (!found && aliases[base]) {
+          const aid = aliases[base];
+          found = DOCS.find(function (d) { return d.id === aid; });
+        }
+        if (found) return 'href="md-reader.html?id=' + found.id + (hash || "") + '"';
+        if (decoded.endsWith(".html")) return full;
+        return full;
+      });
+    }
+
+    function enhanceMermaid(root) {
+      root.querySelectorAll("pre code").forEach(function (code) {
+        const cls = code.className || "";
+        if (cls.indexOf("language-mermaid") < 0 && cls.indexOf("mermaid") < 0) return;
+        const pre = code.parentElement;
+        const div = document.createElement("div");
+        div.className = "mermaid";
+        div.textContent = code.textContent;
+        pre.replaceWith(div);
+      });
+      const nodes = root.querySelectorAll(".mermaid");
+      if (nodes.length) mermaid.run({ nodes: nodes });
+    }
+
+    function openDoc(id) {
+      const item = DOCS.find(function (d) { return d.id === id; });
+      if (!item) return;
+      activeId = id;
+      renderNav();
+      titleEl.textContent = item.title;
+      metaEl.textContent = item.path;
+      actionsEl.innerHTML = "";
+      if (item.html) {
+        const htmlBtn = document.createElement("a");
+        htmlBtn.className = "btn primary";
+        htmlBtn.href = item.html;
+        htmlBtn.target = "_blank";
+        htmlBtn.rel = "noopener";
+        htmlBtn.textContent = "開啟靜態 HTML";
+        actionsEl.appendChild(htmlBtn);
+      }
+      const share = document.createElement("a");
+      share.className = "btn";
+      share.href = "md-reader.html?id=" + item.id;
+      share.textContent = "本頁連結";
+      actionsEl.appendChild(share);
+
+      history.replaceState(null, "", "md-reader.html?id=" + item.id);
+      bodyEl.innerHTML = '<div class="gate">載入中…</div>';
+
+      fetch(encodeURI(item.path))
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        })
+        .then(function (md) {
+          let html = marked.parse(md);
+          html = rewriteMdLinks(html);
+          bodyEl.innerHTML = '<article class="md-body">' + html + "</article>";
+          enhanceMermaid(bodyEl);
+        })
+        .catch(function (err) {
+          bodyEl.innerHTML =
+            '<div class="gate bad"><strong>無法載入</strong>：' + escapeHtml(String(err.message || err)) + "</div>" +
+            '<div class="gate warn">請執行 <code>.\\scripts\\serve-docs.ps1</code>，再開 ' +
+            "<code>http://127.0.0.1:5500/docs/md-reader.html?id=" + escapeHtml(item.id) + "</code></div>";
+        });
+    }
+
+    searchEl.addEventListener("input", renderNav);
+    renderNav();
+
+    const want = new URLSearchParams(location.search).get("id");
+    if (want && DOCS.some(function (d) { return d.id === want; })) {
+      openDoc(want);
+    } else {
+      openDoc("architecture");
+    }
+  </script>
+</body>
+</html>

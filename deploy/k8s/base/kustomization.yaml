@@ -1,0 +1,31 @@
+# =============================================================================
+# FinTechDemo K8s — base Kustomization
+# 【職責】宣告「基底」資源清單：Namespace＋各服務 Deployment／Service；供 overlay 引用
+# 【技巧】kind: Kustomization（apiVersion kustomize.config.k8s.io）不是叢集 API 物件，是 kustomize 組態
+# 【概念】base＝共用真相；overlays/dev｜staging｜prod 只補差異（標籤、副本、映像 tag）
+# 映像為 placeholder；本機請先 docker build 或改 images 後再 kubectl apply -k ...
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 【技巧】namespace：後續 resources 若未寫 metadata.namespace，會被注入此值
+namespace: fintech-demo
+
+# 【技巧】resources：相對路徑列出要納入 build 的 YAML（順序通常不影響最終合併結果）
+resources:
+  - namespace.yaml
+  - gateway-deployment.yaml
+  - gateway-service.yaml
+  - order-deployment.yaml
+  - order-service.yaml
+  - risk-deployment.yaml
+  - risk-service.yaml
+  - account-deployment.yaml
+  - account-service.yaml
+
+# 【技巧】labels.pairs + includeSelectors：把標籤加到資源與 selector（統一 app.kubernetes.io/part-of）
+# 【概念】建議用標準標籤做查詢／監控／政策選擇器
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: fintech-demo
+    includeSelectors: true

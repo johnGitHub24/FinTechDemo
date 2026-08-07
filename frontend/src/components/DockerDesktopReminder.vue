@@ -12,8 +12,8 @@
     </div>
     <ul v-show="open" class="docker-reminder-steps">
       <li>燈號 DOWN／記憶體不足 → 關 kind／多餘 Docker，再跑 <code>開啟Demo.cmd</code></li>
-      <li>Compose／kubectl 才需要 Docker Desktop Ready</li>
-      <li>面試劇本：登入 → Trade 下單 → 成交 → Portal 歷史</li>
+        <li>Compose／監控／kubectl 才需要 Docker Desktop Ready</li>
+        <li>劇本：登入 → Trade 下單 → 成交 → Portal 歷史</li>
     </ul>
   </aside>
 </template>

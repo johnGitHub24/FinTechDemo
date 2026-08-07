@@ -176,7 +176,7 @@ patch(
         riskReq.setCashBalance(account.getCashBalance());
         RiskCheckResponse risk = riskClient.check(riskReq);
         if (!risk.isAllowed()) {
-            // 細節：風控拒絕仍落 REJECTED + 審計，方便前端／面試展示失敗路徑
+            // 細節：風控拒絕仍落 REJECTED + 審計，方便前端／Demo 展示失敗路徑
             order.setStatus(OrderStatus.REJECTED);
             orderRepository.save(order);
             writeAudit(usernameOf(userId), "ORDER_REJECTED", "orders/" + orderId, risk.getReason());
@@ -366,7 +366,7 @@ if "【技巧】" not in text:
         """/**
  * 【職責】交易 API；身分來自 JWT（CurrentUserService）。
  * 【技巧】Controller 只轉交 TradingService，不寫扣款／風控。
- * 【概念】薄 Controller + 厚 Service，是面試常考分層。
+ * 【概念】薄 Controller + 厚 Service，是 Demo 常講的分層。
  */
 """,
     )

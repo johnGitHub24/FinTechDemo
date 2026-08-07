@@ -298,19 +298,19 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 三業務微服務：**order + risk + account**（job／gateway 為基礎設施角色）。  
 詳見 [分散式系統落地](docs/architecture/distributed.html)。
 
-### 3.1 本機啟動前置（面試展演精簡）
+### 3.1 本機啟動前置（Demo 精簡）
 
-> **面試最短路徑（必開）**：Order `:8081` ＋ Risk `:8082` ＋ Vite `:5173` → 可登入、下單、成交。  
-> **一鍵**：雙擊 `開啟Demo.cmd`（＝`scripts\start-interview-demo.ps1 -FreeKind`）。  
+> **Demo 最短路徑（必開）**：Order `:8081` ＋ Risk `:8082` ＋ Vite `:5173` → 可登入、下單、成交。  
+> **一鍵**：雙擊 `開啟Demo.cmd`（＝`scripts\start-demo-ready.ps1 -FreeKind`）。  
 > **全開**（Gateway／Account／Job）需足夠 RAM；本機曾因同時多個 Gradle／kind 記憶體不足而全 DOWN——腳本改**依序**啟動，必要時先停 kind。
 
 | 場景 | 要開什麼 |
 |------|----------|
-| 面試成交 Demo | Order＋Risk＋Vite（`開啟Demo.cmd`） |
+| Demo 成交 | Order＋Risk＋Vite（`開啟Demo.cmd`） |
 | Compose／Kafka／監控 | 另需 Docker Desktop Ready |
-| kind／kubectl | Docker＋活叢集（與本機 bootRun 搶 RAM，展演時可先停 kind） |
+| kind／kubectl | Docker＋活叢集（與本機 bootRun 搶 RAM，Demo 時可先停 kind） |
 
-**常見錯誤**：服務狀態全 DOWN／`insufficient memory` → 關多餘 Docker／kind，再跑 `start-interview-demo.ps1`。勿改業務 Java。  
+**常見錯誤**：服務狀態全 DOWN／`insufficient memory` → 關多餘 Docker／kind，再跑 `start-demo-ready.ps1`。勿改業務 Java。  
 **UI**：登入頁「一鍵確保 UP」；Demo 快捷登入前後皆可用（需登入頁會記住 next）。
 
 ---

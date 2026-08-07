@@ -12,7 +12,7 @@ CLASS_DOCS: dict[str, str] = {
     "gateway/src/main/java/com/fintech/demo/gateway/config/ServiceUrlsProperties.java": """/**
  * 【職責】綁定下游服務基底 URL（order／risk 等），供 Gateway 路由轉發。
  * 【技巧】{@code @ConfigurationProperties(prefix = "fintech.services")} 對應 application.yml。
- * 【概念】固定 URL 路由是面試敘事的簡化版；正式環境可改服務發現 {@code lb://}。
+ * 【概念】固定 URL 路由是 Demo 敘事的簡化版；正式環境可改服務發現 {@code lb://}。
  * getter／setter：對應 YAML 欄位綁定，不另寫商業規則。
  */
 """,
@@ -149,7 +149,7 @@ def heuristic_for(rel: str, class_name: str) -> tuple[str, str, str]:
         return (
             f"{class_name}：封裝商業流程與交易邊界。",
             "讀多用 @Transactional(readOnly=true)；寫入走預設交易。",
-            "Service 是 Demo 面試時最常講的「流程編排」層。",
+            "Service 是 Demo 時最常講的「流程編排」層。",
         )
     if "Repository" in class_name:
         return (
@@ -173,7 +173,7 @@ def heuristic_for(rel: str, class_name: str) -> tuple[str, str, str]:
         return (
             f"{class_name}：跨服務 Feign 客戶端。",
             "url 來自設定，固定 URL 示意服務拆分。",
-            "面試可講：下一步可換成服務發現。",
+            "Demo 可講：下一步可換成服務發現。",
         )
     if pkg.startswith("common/"):
         return (

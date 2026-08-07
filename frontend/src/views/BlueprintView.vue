@@ -7,28 +7,81 @@
 
     <h1>系統運作藍圖</h1>
     <p class="blueprint-lead">
-      本頁用 HTML 說明「導入了哪些技術、系統怎麼跑」——Demo 時點導覽即可講，不必另開文件。
+      技術導入與系統怎麼跑——點下方目錄或區塊即可跳轉。
     </p>
 
-    <aside class="blueprint-howto" aria-label="Demo 建議講法">
+    <DockerDesktopReminder class="blueprint-docker" />
+
+    <section id="docker-start" class="card">
+      <h2>Docker／本機服務怎麼開</h2>
+      <p class="story-meta">先開引擎，再起服務。最短可成交不必全開 Compose。</p>
+      <ol class="docker-start-steps">
+        <li>
+          <strong>開 Docker Desktop</strong>
+          <p class="muted small">等到狀態 Ready（綠燈）。Compose、監控、K8s 都靠它。</p>
+        </li>
+        <li>
+          <strong>一鍵起 Demo（最短可成交）</strong>
+          <p class="muted small"><strong>在哪執行：</strong>資料夾 <code>D:\ClaudeCode\FinTechDemo</code>（專案根目錄，裡面有 <code>開啟Demo.cmd</code> 這個檔）。</p>
+          <p class="muted small"><strong>方法 A（最簡單）</strong>：用檔案總管打開上面資料夾 → 雙擊 <code>開啟Demo.cmd</code>。</p>
+          <p class="muted small"><strong>方法 B（PowerShell）</strong>：先 <code>cd</code> 進該資料夾，再執行指令（不要只打 <code>Demo.cmd</code>）：</p>
+          <div class="observe-cmd-row">
+            <code class="observe-cmd">cd D:\ClaudeCode\FinTechDemo
+.\開啟Demo.cmd</code>
+            <button
+              type="button"
+              class="secondary sm"
+              @click="copyText('cd D:\\ClaudeCode\\FinTechDemo\r\n.\\開啟Demo.cmd')"
+            >複製</button>
+          </div>
+          <p class="muted small">成功後會開 Order＋Risk＋前端 → 瀏覽器 <code>http://localhost:5173/login</code>（trader1／password）。</p>
+        </li>
+        <li>
+          <strong>要看 Grafana／Prometheus</strong>
+          <div class="observe-cmd-row">
+            <code class="observe-cmd">docker compose --profile monitoring up -d prometheus grafana</code>
+            <button type="button" class="secondary sm" @click="copyText('docker compose --profile monitoring up -d prometheus grafana')">複製</button>
+          </div>
+          <p class="muted small">只起監控，不佔 :8082。若寫完整 <code>up -d</code> 可能跟本機已開的 Risk 搶埠而失敗。</p>
+          <p class="muted small">Grafana <code>:3000</code>（admin／admin）· Prometheus <code>:9090</code></p>
+        </li>
+        <li>
+          <strong>要做壓測 Locust</strong>
+          <div class="observe-cmd-row">
+            <code class="observe-cmd">.\scripts\run-loadtest.ps1 -WebUi</code>
+            <button type="button" class="secondary sm" @click="copyText('.\\scripts\\run-loadtest.ps1 -WebUi')">複製</button>
+          </div>
+          <p class="muted small">瀏覽器開 <code>http://localhost:8089</code></p>
+        </li>
+      </ol>
+      <p class="muted small">登入後看燈號：http://localhost:5173/login · 帳密 trader1／password</p>
+    </section>
+
+    <aside class="blueprint-howto" aria-label="藍圖導覽">
       <div class="howto-frame">
         <header class="howto-frame-title">
-          <span class="howto-frame-badge">Demo 腳本</span>
-          <strong>建議講法（約 3 分鐘）</strong>
-          <span class="howto-frame-hint">點目錄跳轉 · 邊框區＝講解順序</span>
+          <span class="howto-frame-badge">導覽</span>
+          <strong>本頁區塊</strong>
         </header>
         <ol class="howto-steps">
           <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">0</span>
+            <div class="howto-body">
+              <a href="#docker-start">Docker／本機開啟</a>
+              <p>Docker Desktop → 開啟Demo.cmd</p>
+            </div>
+          </li>
+          <li class="howto-step">
             <span class="howto-n" aria-hidden="true">1</span>
             <div class="howto-body">
-              <a href="#stack">技術棧表</a>
+              <a href="#stack">技術棧</a>
               <p>前後端語言／框架版本</p>
             </div>
           </li>
           <li class="howto-step">
             <span class="howto-n" aria-hidden="true">2</span>
             <div class="howto-body">
-              <a href="#layers">分層架構圖</a>
+              <a href="#layers">分層架構</a>
               <p>誰連誰（實線＝主路徑，虛線＝可選）</p>
             </div>
           </li>
@@ -42,29 +95,29 @@
           <li class="howto-step">
             <span class="howto-n" aria-hidden="true">4</span>
             <div class="howto-body">
-              <a href="#states">訂單狀態機</a> · <a href="#stages">S1–S3</a>
-              <p>環境開到哪 ≠ 訂單狀態</p>
+              <a href="#states">訂單狀態</a> · <a href="#stages">S1–S3</a>
+              <p>訂單到哪 vs 環境開到哪</p>
             </div>
           </li>
           <li class="howto-step">
             <span class="howto-n" aria-hidden="true">5</span>
             <div class="howto-body">
-              <span class="howto-label">Compose／K8s</span>
-              <p>開 Docker → <code>開啟Demo.cmd</code>（SPEC §3.1）</p>
+              <a href="#ports">埠對照</a> · <a href="#k8s-verify">K8s</a>
+              <p>本機埠與叢集驗證</p>
             </div>
           </li>
           <li class="howto-step">
             <span class="howto-n" aria-hidden="true">6</span>
             <div class="howto-body">
               <span class="howto-label">即時綠紅燈</span>
-              <p>回「交易前台／會員後台」右側 PROCESS FLOW</p>
+              <p>交易前台／會員後台右側 PROCESS FLOW</p>
             </div>
           </li>
           <li class="howto-step howto-step-bonus">
-            <span class="howto-n" aria-hidden="true">+</span>
+            <span class="howto-n" aria-hidden="true">7</span>
             <div class="howto-body">
               <a href="#observe">觀測／壓測</a>
-              <p>Locust 打 → Prometheus 記 → Grafana 畫</p>
+              <p>Locust → Prometheus → Grafana</p>
             </div>
           </li>
         </ol>
@@ -73,6 +126,8 @@
 
     <nav class="blueprint-toc card" aria-label="頁內目錄">
       <span class="toc-label">目錄</span>
+      <a href="#docker-start">Docker 開啟</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#stack">技術棧</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#layers">分層架構</a>
@@ -301,6 +356,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import K8sVerifyPanel from '../components/K8sVerifyPanel.vue';
+import DockerDesktopReminder from '../components/DockerDesktopReminder.vue';
 import { demoLinks } from '../config/demoLinks';
 import {
   DIAGRAM_FLOW,

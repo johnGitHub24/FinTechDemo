@@ -27,11 +27,11 @@
 
     <p class="muted small topo-summary">
       {{ upCount }}/{{ services.length }} UP
-      · <strong>面試最短</strong>：Order＋Risk＋本頁即可登入成交
+      · <strong>Demo 最短</strong>：Order＋Risk＋本頁即可登入成交
       · 全綠需足夠 RAM：雙擊 <code>開啟Demo.cmd</code>（會先停 kind 省記憶體）
     </p>
 
-    <p v-if="interviewReady" class="ok-banner">
+    <p v-if="demoReady" class="ok-banner">
       展演可開始：Order＋Risk 已 UP → 登入後下單／成交。
     </p>
     <p v-else-if="riskDown" class="warn-banner">
@@ -68,7 +68,7 @@ let pollTimer = null;
 const upCount = computed(() => services.value.filter((s) => s.up).length);
 const riskDown = computed(() => !services.value.find((s) => s.id === 'risk')?.up);
 const orderDown = computed(() => !services.value.find((s) => s.id === 'order')?.up);
-const interviewReady = computed(() => !orderDown.value && !riskDown.value);
+const demoReady = computed(() => !orderDown.value && !riskDown.value);
 
 async function probeProxy(path) {
   try {

@@ -648,31 +648,31 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 </tbody></table>
 <p>三業務微服務：<strong>order + risk + account</strong>（job／gateway 為基礎設施角色）。<br>詳見 <a href="../architecture/distributed.html">分散式系統落地</a>。</p>
-<h3>3.1 本機啟動前置：Docker Desktop（必記）</h3>
+<h3>3.1 本機啟動前置（Demo 精簡）</h3>
 <blockquote>
-<p><strong>精簡操作</strong>：開 Docker Desktop → <code>docker info</code> 見 <strong>Server Version</strong> → 雙擊 <code>開啟Demo.cmd</code>（或 <code>.\scripts\doctor-demo.ps1 -Fix</code>）。<br>最短成交（Order＋Risk＋Vite／H2）<strong>可不開</strong> Docker。</p>
+<p><strong>Demo 最短路徑（必開）</strong>：Order <code>:8081</code> ＋ Risk <code>:8082</code> ＋ Vite <code>:5173</code> → 可登入、下單、成交。<br><strong>一鍵</strong>：雙擊 <code>開啟Demo.cmd</code>（＝<code>scripts\start-demo-ready.ps1 -FreeKind</code>）。<br><strong>全開</strong>（Gateway／Account／Job）需足夠 RAM；本機曾因同時多個 Gradle／kind 記憶體不足而全 DOWN——腳本改<strong>依序</strong>啟動，必要時先停 kind。</p>
 </blockquote>
 <table>
 <thead>
 <tr>
 <th>場景</th>
-<th>Docker？</th>
+<th>要開什麼</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>最短成交（H2）</td>
-<td>可不開</td>
+<td>Demo 成交</td>
+<td>Order＋Risk＋Vite（<code>開啟Demo.cmd</code>）</td>
 </tr>
 <tr>
 <td>Compose／Kafka／監控</td>
-<td><strong>要</strong></td>
+<td>另需 Docker Desktop Ready</td>
 </tr>
 <tr>
-<td>kind／<code>kubectl</code></td>
-<td><strong>要</strong></td>
+<td>kind／kubectl</td>
+<td>Docker＋活叢集（與本機 bootRun 搶 RAM，Demo 時可先停 kind）</td>
 </tr>
 </tbody></table>
-<p><strong>常見錯誤</strong>：<code>connection refused</code> → 引擎未開或 Vite／bootRun 行程沒跑（不是業務 bug）。<br><strong>UI</strong>：頁頂一行摘要（可點「詳情」）；K8s 指令在藍圖 <code>#k8s-verify</code>。權威細節見 <a href="../deploy/k8s-tips.html">k8s-tips</a>。</p>
+<p><strong>常見錯誤</strong>：服務狀態全 DOWN／<code>insufficient memory</code> → 關多餘 Docker／kind，再跑 <code>start-demo-ready.ps1</code>。勿改業務 Java。<br><strong>UI</strong>：登入頁「一鍵確保 UP」；Demo 快捷登入前後皆可用（需登入頁會記住 next）。</p>
 <hr>
 <h2>4. 業務規則（保持簡單、但前後台一致）</h2>
 <h3>4.1 帳戶與餘額</h3>

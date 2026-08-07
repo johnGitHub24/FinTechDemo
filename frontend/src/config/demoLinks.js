@@ -156,4 +156,4 @@ export const loginDemoGroups = [
 export const NEXT_PATH_KEY = 'fintech_demo_next_path';
 
 export const ENSURE_SERVICES_CMD =
-  'cd /d D:\\ClaudeCode\\FinTechDemo && .\\scripts\\start-interview-demo.ps1 -FreeKind -OpenBrowser';
+  'cd /d D:\\ClaudeCode\\FinTechDemo && .\\scripts\\start-demo-ready.ps1 -FreeKind -OpenBrowser';

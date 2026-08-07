@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Demo 一鍵就緒：優先保證 Order+Risk+Vite（可成交），再依序補齊其餘服務。

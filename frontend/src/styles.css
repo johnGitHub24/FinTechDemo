@@ -684,11 +684,6 @@ tbody tr:hover { background: var(--surface2); }
   font-weight: 700;
   letter-spacing: 0.04em;
 }
-.howto-frame-hint {
-  margin-left: auto;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
 .howto-steps {
   list-style: none;
   margin: 0;
@@ -1038,6 +1033,17 @@ a.demo-nav-btn.router-link-active {
 }
 .docker-reminder-steps li { margin: 0.1rem 0; }
 .blueprint .docker-reminder { margin: 0 0 1rem; max-width: none; }
+.docker-start-steps {
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
+}
+.docker-start-steps > li {
+  margin: 0.65rem 0;
+}
+.docker-start-steps > li > strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
 .login-demo-panel h2 {
   margin: 0 0 0.35rem;
   font-size: 1.15rem;

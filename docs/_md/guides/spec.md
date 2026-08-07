@@ -3,7 +3,7 @@
 > **路徑**：`d:\ClaudeCode\FinTechDemo`  
 > **工程導入**：`d:\ClaudeCode\EngineeringOS\eos-minimal\`（**HOW_TO_APPLY** — 開發一律走 EOS，勿手搓無規範專案）  
 > **公版版本**：eos-minimal @ **0.1.9**（見 `EngineeringOS/VERSION`）  
-> **視覺敘事**：[codeGraphic](../portals/codeGraphic.html) · [技術次序與架構為什麼](why.html) · [產品劇情與RBAC](story-rbac.html)
+> **視覺敘事**：[codeGraphic](docs/portals/codeGraphic.html) · [技術次序與架構為什麼](docs/guides/why.html) · [產品劇情與RBAC](docs/guides/story-rbac.html)
 
 ---
 
@@ -235,7 +235,7 @@ flowchart LR
 
 ## 2. 技術導入層（子專案＝運用模組）
 
-> 完整「採納哪招／不搬什麼」見 [技術融合對照](fusion.html)。
+> 完整「採納哪招／不搬什麼」見 [技術融合對照](docs/guides/fusion.html)。
 
 ### 2.1 次序（不可顛倒故事）
 
@@ -296,7 +296,22 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | `deploy` | — | 部署示意 | Compose + k8s overlay |
 
 三業務微服務：**order + risk + account**（job／gateway 為基礎設施角色）。  
-詳見 [分散式系統落地](../architecture/distributed.html)。
+詳見 [分散式系統落地](docs/architecture/distributed.html)。
+
+### 3.1 本機啟動前置（面試展演精簡）
+
+> **面試最短路徑（必開）**：Order `:8081` ＋ Risk `:8082` ＋ Vite `:5173` → 可登入、下單、成交。  
+> **一鍵**：雙擊 `開啟Demo.cmd`（＝`scripts\start-interview-demo.ps1 -FreeKind`）。  
+> **全開**（Gateway／Account／Job）需足夠 RAM；本機曾因同時多個 Gradle／kind 記憶體不足而全 DOWN——腳本改**依序**啟動，必要時先停 kind。
+
+| 場景 | 要開什麼 |
+|------|----------|
+| 面試成交 Demo | Order＋Risk＋Vite（`開啟Demo.cmd`） |
+| Compose／Kafka／監控 | 另需 Docker Desktop Ready |
+| kind／kubectl | Docker＋活叢集（與本機 bootRun 搶 RAM，展演時可先停 kind） |
+
+**常見錯誤**：服務狀態全 DOWN／`insufficient memory` → 關多餘 Docker／kind，再跑 `start-interview-demo.ps1`。勿改業務 Java。  
+**UI**：登入頁「一鍵確保 UP」；Demo 快捷登入前後皆可用（需登入頁會記住 next）。
 
 ---
 
@@ -337,7 +352,7 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | `positions` | 持倉（symbol + qty + avg_price） |
 | `audit_log` | AOP 審計 |
 
-詳見 [資料庫設計](../architecture/db.html)。
+詳見 [資料庫設計](docs/architecture/db.html)。
 
 ---
 
@@ -448,15 +463,18 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 
 | 文件 | 用途 |
 |------|------|
-| **本 SPEC** | 權威：目的、劇情、RBAC、EOS、API、Phase |
-| [CLAUDE.md](claude.html) | 薄規則（繼承 eos-minimal @ 0.1.9） |
-| [engineering-config](../architecture/engineering-config.html) | EOS 變數／埠 |
-| [產品劇情與RBAC](story-rbac.html) | 前後台劇本與權限矩陣 |
-| [驗證設計](../architecture/verify-design.html) | JWT／RBAC（EOS Security 必備文） |
-| [技術次序與架構為什麼](why.html) | 運用模組次序與為什麼 |
-| [技術融合對照](fusion.html) | 各運用模組採納技巧 |
-| [architecture](../architecture/architecture.html) | 部署／模組職責 |
-| [資料庫設計](../architecture/db.html) | ER |
-| [testing](../architecture/testing.html) | 測試案例 |
-| [codeGraphic](../portals/codeGraphic.html) | Mermaid／HTML 總覽 |
+| **本 SPEC** | 權威：目的、劇情、RBAC、EOS、API、Phase、**§3.1 Docker Desktop 前置** |
+| [CLAUDE.md](docs/guides/claude.html) | 薄規則（繼承 eos-minimal @ 0.1.9） |
+| [engineering-config](docs/architecture/engineering-config.html) | EOS 變數／埠 |
+| [產品劇情與RBAC](docs/guides/story-rbac.html) | 前後台劇本與權限矩陣 |
+| [驗證設計](docs/architecture/verify-design.html) | JWT／RBAC（EOS Security 必備文） |
+| [技術次序與架構為什麼](docs/guides/why.html) | 運用模組次序與為什麼 |
+| [技術融合對照](docs/guides/fusion.html) | 各運用模組採納技巧 |
+| [architecture](docs/architecture/architecture.html) | 部署／模組職責 |
+| [資料庫設計](docs/architecture/db.html) | ER |
+| [testing](docs/architecture/testing.html) | 測試案例 |
+| [測試與CI](docs/測試與CI.md) | check／pipeline／壓測／觀測 |
+| [驗收清單](docs/驗收清單.md) | loop-engineering 總驗收勾選 |
+| [系統運作藍圖](docs/architecture/系統運作藍圖.md) | 技術棧／Mermaid 圖文（含 Eureka 升級口徑） |
+| [codeGraphic](docs/portals/codeGraphic.html) | Mermaid／HTML 總覽 |
 | `EngineeringOS/eos-minimal/HOW_TO_APPLY.md` | **開發套用入口** |

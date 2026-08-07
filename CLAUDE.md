@@ -10,6 +10,7 @@
 - 業務 MS ≥3：order／risk／account；Gateway 入口；Kafka＋Redis（demo）
 - Frontend：Vue 3（無 Node BFF）
 - DB：H2（local／test）；Docker Demo 用各服務 H2 + Kafka/Redis
+- **Compose／Kafka／kind 前必須先開 Docker Desktop**（權威：SPEC §3.1；UI 頁頂提醒）
 - 驗證：`.\scripts\verify-pipeline.ps1`（或 `.\scripts\check.ps1`）
 - optional-frontend：yes
 

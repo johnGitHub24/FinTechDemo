@@ -37,9 +37,16 @@
       <div class="card">
         <div class="row" style="align-items:center">
           <h3 style="margin:0;flex:2">進行中／我的訂單</h3>
-          <button class="secondary" type="button" @click="load">刷新</button>
+          <button
+            class="secondary"
+            type="button"
+            :class="{ 'is-refreshing': refreshing }"
+            :disabled="refreshing"
+            @click="onRefresh"
+          >{{ refreshing ? '刷新中…' : refreshDone ? '已更新' : '刷新' }}</button>
         </div>
-        <table>
+        <p v-if="refreshHint" class="refresh-hint" :class="{ ok: refreshDone }" role="status">{{ refreshHint }}</p>
+        <table :class="{ 'table-refreshing': refreshing }">
           <thead>
             <tr><th>ID</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>Status</th><th>操作</th></tr>
           </thead>
@@ -78,11 +85,41 @@ const symbols = ref([]);
 const orders = ref([]);
 const msg = ref('');
 const error = ref('');
+const refreshing = ref(false);
+const refreshDone = ref(false);
+const refreshHint = ref('');
 const form = reactive({ symbol: 'AAPL', side: 'BUY', quantity: 1, price: 150 });
+let refreshDoneTimer = null;
 
 async function load() {
   const page = await fetchOrders({ page: 0, size: 20 });
   orders.value = page.data || [];
+}
+
+/**
+ * 【目的】手動刷新訂單列表，帶 loading／完成感受。
+ */
+async function onRefresh() {
+  if (refreshing.value) return;
+  refreshing.value = true;
+  refreshDone.value = false;
+  refreshHint.value = '載入訂單中…';
+  error.value = '';
+  try {
+    await load();
+    refreshHint.value = `已更新 · ${orders.value.length} 筆`;
+    refreshDone.value = true;
+    if (refreshDoneTimer) clearTimeout(refreshDoneTimer);
+    refreshDoneTimer = setTimeout(() => {
+      refreshDone.value = false;
+      refreshHint.value = '';
+    }, 1800);
+  } catch (e) {
+    refreshHint.value = '';
+    error.value = e.response?.data?.error || '刷新失敗';
+  } finally {
+    refreshing.value = false;
+  }
 }
 
 async function loadSymbols() {

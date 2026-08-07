@@ -31,7 +31,37 @@ if (-not (Test-Up "http://127.0.0.1:9090/-/healthy")) {
 
 if (-not (Test-Up "http://127.0.0.1:3000/login")) {
   Write-Host "START grafana :3000" -ForegroundColor Cyan
-  $env:GF_PATHS_PROVISIONING = Join-Path $Root "monitoring\grafana\provisioning"
+  # Docker 用的 provisioning 指向容器路徑；本機改寫一份到 tools/grafana-provisioning-local
+  $provLocal = Join-Path $tools "grafana-provisioning-local"
+  $dashDir = (Join-Path $Root "monitoring\grafana\dashboards") -replace '\\', '/'
+  New-Item -ItemType Directory -Force -Path (Join-Path $provLocal "datasources") | Out-Null
+  New-Item -ItemType Directory -Force -Path (Join-Path $provLocal "dashboards") | Out-Null
+  @"
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://127.0.0.1:9090
+    isDefault: true
+    editable: false
+"@ | Set-Content -Encoding utf8 (Join-Path $provLocal "datasources\datasource.yml")
+  @"
+apiVersion: 1
+providers:
+  - name: FinTechDemo
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: $dashDir
+"@ | Set-Content -Encoding utf8 (Join-Path $provLocal "dashboards\dashboards.yml")
+  $env:GF_PATHS_PROVISIONING = $provLocal
+  $env:GF_SECURITY_ADMIN_USER = "admin"
+  $env:GF_SECURITY_ADMIN_PASSWORD = "admin"
   Start-Process -FilePath $grafExe -WorkingDirectory (Split-Path $grafExe) `
     -ArgumentList "--homepath=$grafHome" -WindowStyle Minimized
 }

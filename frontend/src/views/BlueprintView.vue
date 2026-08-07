@@ -10,15 +10,65 @@
       本頁用 HTML 說明「導入了哪些技術、系統怎麼跑」——Demo 時點導覽即可講，不必另開文件。
     </p>
 
-    <aside class="story-note blueprint-howto">
-      <strong>Demo 建議講法（約 3 分鐘）</strong>
-      <ol>
-        <li>先指<strong>技術棧表</strong>：前後端語言／框架版本</li>
-        <li>再指<strong>分層架構圖</strong>：誰連誰（實線＝主路徑，虛線＝可選）</li>
-        <li>用<strong>運作過程</strong>走一遍：Login → 下單 PENDING → 成交 Feign Risk → ACCEPTED／REJECTED</li>
-        <li>對照<strong>訂單狀態機</strong>與<strong>S1–S3</strong>（環境開到哪 ≠ 訂單狀態）</li>
-        <li>要看<strong>即時綠紅燈</strong>：回「交易前台／會員後台」右側 PROCESS FLOW</li>
-      </ol>
+    <aside class="blueprint-howto" aria-label="Demo 建議講法">
+      <div class="howto-frame">
+        <header class="howto-frame-title">
+          <span class="howto-frame-badge">Demo 腳本</span>
+          <strong>建議講法（約 3 分鐘）</strong>
+          <span class="howto-frame-hint">點目錄跳轉 · 邊框區＝講解順序</span>
+        </header>
+        <ol class="howto-steps">
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">1</span>
+            <div class="howto-body">
+              <a href="#stack">技術棧表</a>
+              <p>前後端語言／框架版本</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">2</span>
+            <div class="howto-body">
+              <a href="#layers">分層架構圖</a>
+              <p>誰連誰（實線＝主路徑，虛線＝可選）</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">3</span>
+            <div class="howto-body">
+              <a href="#flow">運作過程</a>
+              <p>Login → PENDING → Feign Risk → ACCEPTED／REJECTED</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">4</span>
+            <div class="howto-body">
+              <a href="#states">訂單狀態機</a> · <a href="#stages">S1–S3</a>
+              <p>環境開到哪 ≠ 訂單狀態</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">5</span>
+            <div class="howto-body">
+              <span class="howto-label">Compose／K8s</span>
+              <p>開 Docker → <code>開啟Demo.cmd</code>（SPEC §3.1）</p>
+            </div>
+          </li>
+          <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">6</span>
+            <div class="howto-body">
+              <span class="howto-label">即時綠紅燈</span>
+              <p>回「交易前台／會員後台」右側 PROCESS FLOW</p>
+            </div>
+          </li>
+          <li class="howto-step howto-step-bonus">
+            <span class="howto-n" aria-hidden="true">+</span>
+            <div class="howto-body">
+              <a href="#observe">觀測／壓測</a>
+              <p>Locust 打 → Prometheus 記 → Grafana 畫</p>
+            </div>
+          </li>
+        </ol>
+      </div>
     </aside>
 
     <nav class="blueprint-toc card" aria-label="頁內目錄">
@@ -34,6 +84,10 @@
       <a href="#stages">S1–S3</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#ports">埠對照</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#observe">觀測／壓測</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#k8s-verify">K8s 驗證</a>
     </nav>
 
     <section id="stack" class="card">
@@ -160,6 +214,79 @@
         </tbody>
       </table>
     </section>
+
+    <section id="observe" class="card">
+      <h2>7. 觀測／壓測怎麼用（簡易）</h2>
+      <p class="story-meta">
+        記法：<strong>Locust＝製造壓力</strong> → <strong>Prometheus＝記帳本</strong> → <strong>Grafana＝報表畫圖</strong>。
+        日常 Demo 看 Grafana；Prometheus 用來確認 Targets UP 與臨時查詢。
+      </p>
+
+      <aside class="story-note">
+        <strong>怎麼運作</strong>
+        <ol>
+          <li>各服務暴露 <code>/actuator/prometheus</code>（數字出口）</li>
+          <li>Prometheus 每 15s 刮取（Targets 全 UP＝帳本有在收）</li>
+          <li>Grafana 連 Prometheus，畫成 Overview 儀表板</li>
+          <li>Locust（或你手動下單）打 API → 曲線才會動</li>
+        </ol>
+      </aside>
+
+      <h3 class="observe-h3">① 先啟動</h3>
+      <div class="observe-cmd-row">
+        <code class="observe-cmd">docker compose --profile monitoring up -d</code>
+        <button type="button" class="secondary sm" @click="copyText('docker compose --profile monitoring up -d')">複製</button>
+      </div>
+      <p class="muted small">Grafana <code>:3000</code>（帳密 <code>admin</code>／<code>admin</code>）· Prometheus <code>:9090</code></p>
+      <div class="observe-cmd-row">
+        <code class="observe-cmd">.\scripts\run-loadtest.ps1 -WebUi</code>
+        <button type="button" class="secondary sm" @click="copyText('.\\scripts\\run-loadtest.ps1 -WebUi')">複製</button>
+      </div>
+      <p class="muted small">Locust UI <code>:8089</code>（虛擬帳用系統的 <code>trader1</code>／<code>password</code>）</p>
+
+      <h3 class="observe-h3">② Prometheus（查詢範本）</h3>
+      <p class="muted small">開 <a :href="links.prometheusUi" target="_blank" rel="noopener">http://localhost:9090</a> → Graph → 貼查詢 → Execute → 切 Graph 看曲線。</p>
+      <ul class="observe-queries">
+        <li v-for="q in promQueries" :key="q.expr">
+          <div class="observe-cmd-row">
+            <code class="observe-cmd">{{ q.expr }}</code>
+            <button type="button" class="secondary sm" @click="copyText(q.expr)">複製</button>
+          </div>
+          <p class="muted small">→ {{ q.hint }}</p>
+        </li>
+      </ul>
+
+      <h3 class="observe-h3">③ Grafana（看圖）</h3>
+      <ol class="observe-steps">
+        <li>開 <a :href="links.grafana" target="_blank" rel="noopener">FinTechDemo Overview</a>（或 Dashboards 搜尋 FinTechDemo）</li>
+        <li>登入 <code>admin</code>／<code>admin</code></li>
+        <li>看：Targets UP、HTTP RPS、5xx、JVM heap</li>
+        <li>一邊 Locust／Trade 操作，一邊看線圖往上</li>
+      </ol>
+
+      <h3 class="observe-h3">④ Locust（壓測）</h3>
+      <ol class="observe-steps">
+        <li>開 <a :href="links.locust" target="_blank" rel="noopener">http://localhost:8089</a></li>
+        <li>Users <code>5</code> · Spawn rate <code>1</code> · Host <code>http://localhost:8081</code>（經 Gateway 改 <code>:8080</code>）</li>
+        <li>Start swarming → 看 RPS／Failures（門檻：錯誤率 &lt; 1%）</li>
+        <li>無畫面報告：<code>.\scripts\run-loadtest.ps1</code> → <code>loadtest/reports/*.html</code></li>
+      </ol>
+
+      <p class="observe-links">
+        快捷：
+        <a :href="links.grafana" target="_blank" rel="noopener">Grafana</a> ·
+        <a :href="links.prometheusUi" target="_blank" rel="noopener">Prometheus</a> ·
+        <a :href="links.locust" target="_blank" rel="noopener">Locust</a> ·
+        <a :href="links.orderPrometheus" target="_blank" rel="noopener">Order 原始指標</a>
+      </p>
+      <p v-if="copyMsg" class="observe-copy-msg" role="status">{{ copyMsg }}</p>
+    </section>
+
+    <section id="k8s-verify" class="card">
+      <h2>8. K8s 驗證（精簡）</h2>
+      <p class="story-meta">一鍵複製四條指令即可：Docker → readyz → nodes → fintech-demo。</p>
+      <K8sVerifyPanel initially-open />
+    </section>
   </div>
 </template>
 
@@ -169,9 +296,12 @@
  * 【頁面角色】公開藍圖頁（可不登入）；與 Trade／Portal 的即時 PROCESS FLOW 互補。
  * 【與後端關係】無 API；版本與圖碼為靜態常數。
  * 【技巧】用 mermaid.render 寫入容器，避免 pre 文字殘留與 HMR 舊 SVG。
+ * 【概念】§7 觀測／壓測＝怕忘記時的簡易備忘（Locust→Prom→Grafana）。
  */
-import { computed, nextTick, onMounted, ref, unref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import K8sVerifyPanel from '../components/K8sVerifyPanel.vue';
+import { demoLinks } from '../config/demoLinks';
 import {
   DIAGRAM_FLOW,
   DIAGRAM_LAYERS,
@@ -181,12 +311,37 @@ import {
 } from '../blueprint/diagrams';
 
 const auth = useAuthStore();
-const loggedIn = computed(() => !!unref(auth.isLoggedIn));
+const loggedIn = computed(() => !!auth.isLoggedIn);
 const techGroups = groupTechStack();
+const links = demoLinks;
+const copyMsg = ref('');
+
+/** Prometheus 教學範本（與 Targets UP 後下一步對齊） */
+const promQueries = [
+  { expr: 'up{job=~"fintech-.*"}', hint: '五個服務是否活著（應看到多條 =1）' },
+  {
+    expr: 'sum(rate(http_server_requests_seconds_count{job="fintech-order"}[1m]))',
+    hint: 'Order 近 1 分鐘大約每秒請求數（壓測／下單時會動）'
+  },
+  {
+    expr: 'sum by (job) (http_server_requests_seconds_count)',
+    hint: '各服務 HTTP 請求累積次數'
+  }
+];
 
 const elLayers = ref(null);
 const elFlow = ref(null);
 const elStates = ref(null);
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    copyMsg.value = '已複製';
+  } catch {
+    copyMsg.value = '複製失敗，請手動選取';
+  }
+  window.setTimeout(() => { copyMsg.value = ''; }, 2000);
+}
 
 async function renderDiagram(el, code, prefix) {
   if (!el) return;

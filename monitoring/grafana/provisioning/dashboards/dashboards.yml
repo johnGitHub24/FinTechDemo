@@ -7,4 +7,6 @@ providers:
     disableDeletion: false
     editable: true
     options:
-      path: d:/ClaudeCode/FinTechDemo/monitoring/grafana/dashboards
+      # Docker volume：./monitoring/grafana/dashboards → /var/lib/grafana/dashboards
+      # （勿寫宿主機 D:/… 路徑，容器內讀不到）
+      path: /var/lib/grafana/dashboards

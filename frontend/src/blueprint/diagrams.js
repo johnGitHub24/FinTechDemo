@@ -48,7 +48,10 @@ export const PORTS = [
   { port: 8082, service: 'Risk', role: '名目金額風控（成交必開）' },
   { port: 8083, service: 'Job', role: '逾時取消排程（可選）' },
   { port: 8084, service: 'Account', role: '餘額／持倉／Redis／Kafka（可選）' },
-  { port: 5173, service: 'Vue Dev', role: '前端 SPA' }
+  { port: 5173, service: 'Vue Dev', role: '前端 SPA' },
+  { port: 3000, service: 'Grafana', role: '觀測畫圖（admin／admin；profile monitoring）' },
+  { port: 9090, service: 'Prometheus', role: '指標刮取／PromQL（Targets→Graph）' },
+  { port: 8089, service: 'Locust', role: '壓測 UI（run-loadtest.ps1 -WebUi）' }
 ];
 
 /** 分層架構（換行用 &lt;br/&gt;，勿寫字面 \n） */

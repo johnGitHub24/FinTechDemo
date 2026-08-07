@@ -104,7 +104,8 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li><strong>CI／日常綠燈</strong>以 L0～L2 為準；<code>check-k8s.ps1</code> <strong>只 render YAML</strong>，不證明叢集活著。  </li>
 <li><strong>要「整個服務跑通」</strong>：優先 L3（compose），成本低、與 <code>docker-compose.yml</code> 一致。  </li>
 <li><strong>要「K8s 敘事／GitOps 示意」</strong>：才上 L4；前置必須先修好 kubeconfig 指到活 API。  </li>
-<li>出現 <code>dial tcp 127.0.0.1:xxxxx: connection refused</code> → <strong>先查叢集／Docker，不要改業務 Java</strong>。</li>
+<li>出現 <code>dial tcp 127.0.0.1:xxxxx: connection refused</code> → <strong>先查叢集／Docker，不要改業務 Java</strong>。  </li>
+<li><strong>權威步驟見 SPEC §3.1</strong>；前端頁頂亦有相同提醒。</li>
 </ol>
 <hr>
 <h2>2. 本專案 K8s 產物長什麼樣</h2>
@@ -164,9 +165,19 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <tr>
 <td>API</td>
 <td><code>kubectl get --raw=/readyz</code></td>
-<td>exit 0</td>
+<td>exit 0／<code>ok</code></td>
 </tr>
 </tbody></table>
+<p><strong>網頁入口（複製指令）</strong>：前端 <a href="http://localhost:5173/blueprint#k8s-verify">系統運作藍圖 → K8s 驗證</a>（登入頁／nav「K8s 指令」同錨點）。</p>
+<h3>4.1b 建議驗證指令（貼 PowerShell）</h3>
+<pre><code class="language-powershell">docker info
+kubectl config current-context
+kubectl get --raw=/readyz
+kubectl get nodes
+kubectl get all -n fintech-demo
+kubectl get pods -A
+</code></pre>
+<p>期望：<code>readyz=ok</code>、node Ready、<code>fintech-demo</code> 內 gateway／order／risk／account 皆 Running。</p>
 <h3>4.2 本案已發生過的錯誤（保留解法）</h3>
 <p><strong>症狀：</strong></p>
 <pre><code class="language-text">couldn&#39;t get current server API group list:

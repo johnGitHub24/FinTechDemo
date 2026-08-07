@@ -4,7 +4,6 @@
  * 【與後端關係】守衛依認證 store 保存的 JWT 與後端登入回傳角色，控制可進入的畫面。
  */
 import { createRouter, createWebHistory } from 'vue-router';
-import { unref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import LoginView from '../views/LoginView.vue';
 import TradeView from '../views/TradeView.vue';
@@ -33,13 +32,26 @@ const router = createRouter({
  */
 router.beforeEach((to) => {
   const auth = useAuthStore();
-  const loggedIn = unref(auth.isLoggedIn);
-  if (to.meta.requiresAuth && !loggedIn) return '/login';
+  const loggedIn = !!auth.isLoggedIn;
+  if (to.meta.requiresAuth && !loggedIn) {
+    if (to.path && to.path !== '/login') {
+      sessionStorage.setItem('fintech_demo_next_path', to.path);
+    }
+    return '/login';
+  }
   if (to.meta.guest && loggedIn) return '/trade';
   if (to.meta.admin) {
     const roles = auth.roles || [];
     if (!roles.includes('ROLE_ADMIN') && !roles.includes('ADMIN')) return '/portal';
   }
+});
+
+router.afterEach((to) => {
+  if (!to.hash) return;
+  const id = to.hash.replace(/^#/, '');
+  requestAnimationFrame(() => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 });
 
 export default router;

@@ -648,6 +648,31 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 </tbody></table>
 <p>三業務微服務：<strong>order + risk + account</strong>（job／gateway 為基礎設施角色）。<br>詳見 <a href="../architecture/distributed.html">分散式系統落地</a>。</p>
+<h3>3.1 本機啟動前置：Docker Desktop（必記）</h3>
+<blockquote>
+<p><strong>精簡操作</strong>：開 Docker Desktop → <code>docker info</code> 見 <strong>Server Version</strong> → 雙擊 <code>開啟Demo.cmd</code>（或 <code>.\scripts\doctor-demo.ps1 -Fix</code>）。<br>最短成交（Order＋Risk＋Vite／H2）<strong>可不開</strong> Docker。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>場景</th>
+<th>Docker？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最短成交（H2）</td>
+<td>可不開</td>
+</tr>
+<tr>
+<td>Compose／Kafka／監控</td>
+<td><strong>要</strong></td>
+</tr>
+<tr>
+<td>kind／<code>kubectl</code></td>
+<td><strong>要</strong></td>
+</tr>
+</tbody></table>
+<p><strong>常見錯誤</strong>：<code>connection refused</code> → 引擎未開或 Vite／bootRun 行程沒跑（不是業務 bug）。<br><strong>UI</strong>：頁頂一行摘要（可點「詳情」）；K8s 指令在藍圖 <code>#k8s-verify</code>。權威細節見 <a href="../deploy/k8s-tips.html">k8s-tips</a>。</p>
 <hr>
 <h2>4. 業務規則（保持簡單、但前後台一致）</h2>
 <h3>4.1 帳戶與餘額</h3>
@@ -957,7 +982,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </thead>
 <tbody><tr>
 <td><strong>本 SPEC</strong></td>
-<td>權威：目的、劇情、RBAC、EOS、API、Phase</td>
+<td>權威：目的、劇情、RBAC、EOS、API、Phase、<strong>§3.1 Docker Desktop 前置</strong></td>
 </tr>
 <tr>
 <td><a href="./claude.html">CLAUDE.md</a></td>
@@ -994,6 +1019,18 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <tr>
 <td><a href="../architecture/testing.html">testing</a></td>
 <td>測試案例</td>
+</tr>
+<tr>
+<td><a href="docs/%E6%B8%AC%E8%A9%A6%E8%88%87CI.md">測試與CI</a></td>
+<td>check／pipeline／壓測／觀測</td>
+</tr>
+<tr>
+<td><a href="docs/%E9%A9%97%E6%94%B6%E6%B8%85%E5%96%AE.md">驗收清單</a></td>
+<td>loop-engineering 總驗收勾選</td>
+</tr>
+<tr>
+<td><a href="docs/architecture/%E7%B3%BB%E7%B5%B1%E9%81%8B%E4%BD%9C%E8%97%8D%E5%9C%96.md">系統運作藍圖</a></td>
+<td>技術棧／Mermaid 圖文（含 Eureka 升級口徑）</td>
 </tr>
 <tr>
 <td><a href="../portals/codeGraphic.html">codeGraphic</a></td>

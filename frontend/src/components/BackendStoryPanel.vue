@@ -2,8 +2,16 @@
   <div class="story-panel card">
     <div class="row" style="align-items:center;margin-bottom:0.5rem">
       <h3 style="margin:0;flex:2">後端過程（PROCESS FLOW）</h3>
-      <button class="secondary" type="button" @click="refresh">刷新拓撲</button>
+      <button
+        class="secondary"
+        type="button"
+        :class="{ 'is-refreshing': topoRefreshing }"
+        :disabled="topoRefreshing"
+        :aria-busy="topoRefreshing"
+        @click="refreshManual"
+      >{{ topoRefreshing ? '刷新中…' : topoDone ? '已更新' : '刷新拓撲' }}</button>
     </div>
+    <p v-if="topoHint" class="refresh-hint" :class="topoHintOk ? 'ok' : ''" role="status">{{ topoHint }}</p>
     <p class="story-meta" v-if="story.state.lastTrace">
       動作 <strong>{{ story.state.lastTrace.action }}</strong>
       <span v-if="story.state.lastTrace.orderId"> · 訂單 #{{ story.state.lastTrace.orderId }}</span>
@@ -26,7 +34,7 @@
     <p v-if="!story.flowSteps.value.length" class="story-meta">（等待第一次帶 demoTrace 的 API）</p>
 
     <h4 class="story-sub">服務儀表板</h4>
-    <div class="lamp-row">
+    <div class="lamp-row" :class="{ 'is-refreshing': topoRefreshing }">
       <div
         v-for="s in services"
         :key="s.id"
@@ -101,12 +109,17 @@
  * 【頁面角色】嵌在 Trade／Portal，不另開路由。
  * 【與後端關係】讀 demoTrace（經 API client）與 GET /api/demo/topology。
  */
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useDemoStoryStore } from '../stores/demoStory';
 
 const story = useDemoStoryStore();
 const stages = ['S1', 'S2', 'S3'];
 const orderStates = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
+const topoRefreshing = ref(false);
+const topoDone = ref(false);
+const topoHint = ref('');
+const topoHintOk = ref(false);
+let topoDoneTimer = null;
 
 const services = computed(() => story.state.topology?.services || []);
 const displayStage = computed(() => story.displayStage.value);
@@ -116,6 +129,35 @@ let timer = null;
 
 async function refresh() {
   await story.refreshTopology();
+}
+
+/**
+ * 【目的】手動刷新拓撲燈號，顯示 loading／完成狀態（與背景輪詢分開）。
+ */
+async function refreshManual() {
+  if (topoRefreshing.value) return;
+  topoRefreshing.value = true;
+  topoDone.value = false;
+  topoHint.value = '探測服務中…';
+  topoHintOk.value = false;
+  try {
+    await refresh();
+    const list = story.state.topology?.services || [];
+    const up = list.filter((s) => s.up).length;
+    topoHint.value = `拓撲已更新 · ${up}/${list.length || 0} UP`;
+    topoHintOk.value = true;
+    topoDone.value = true;
+    if (topoDoneTimer) clearTimeout(topoDoneTimer);
+    topoDoneTimer = setTimeout(() => {
+      topoDone.value = false;
+      if (topoHintOk.value) topoHint.value = '';
+    }, 1800);
+  } catch (e) {
+    topoHint.value = e?.message || story.state.topologyError || '拓撲刷新失敗';
+    topoHintOk.value = false;
+  } finally {
+    topoRefreshing.value = false;
+  }
 }
 
 function togglePin(s) {

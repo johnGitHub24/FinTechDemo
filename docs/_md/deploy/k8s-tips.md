@@ -22,7 +22,8 @@
 1. **CI／日常綠燈**以 L0～L2 為準；`check-k8s.ps1` **只 render YAML**，不證明叢集活著。  
 2. **要「整個服務跑通」**：優先 L3（compose），成本低、與 `docker-compose.yml` 一致。  
 3. **要「K8s 敘事／GitOps 示意」**：才上 L4；前置必須先修好 kubeconfig 指到活 API。  
-4. 出現 `dial tcp 127.0.0.1:xxxxx: connection refused` → **先查叢集／Docker，不要改業務 Java**。
+4. 出現 `dial tcp 127.0.0.1:xxxxx: connection refused` → **先查叢集／Docker，不要改業務 Java**。  
+5. **權威步驟見 SPEC §3.1**；前端頁頂亦有相同提醒。
 
 ---
 
@@ -76,7 +77,22 @@ cd D:\ClaudeCode\FinTechDemo
 | Docker 引擎 | `docker info` 出現 **Server Version** | Client-only 不夠 |
 | kind 可用 | `kind version` 或 `TradingKubernetes\tools\kind.exe` | PATH 或專案 tools |
 | kubectl context | `kubectl config current-context` | 指到**活的**叢集 |
-| API | `kubectl get --raw=/readyz` | exit 0 |
+| API | `kubectl get --raw=/readyz` | exit 0／`ok` |
+
+**網頁入口（複製指令）**：前端 [系統運作藍圖 → K8s 驗證](http://localhost:5173/blueprint#k8s-verify)（登入頁／nav「K8s 指令」同錨點）。
+
+### 4.1b 建議驗證指令（貼 PowerShell）
+
+```powershell
+docker info
+kubectl config current-context
+kubectl get --raw=/readyz
+kubectl get nodes
+kubectl get all -n fintech-demo
+kubectl get pods -A
+```
+
+期望：`readyz=ok`、node Ready、`fintech-demo` 內 gateway／order／risk／account 皆 Running。
 
 ### 4.2 本案已發生過的錯誤（保留解法）
 

@@ -3,7 +3,7 @@
  * 【主要匯出】useAuthStore composable，以及登入狀態的讀取與更新操作。
  * 【與後端關係】保存後端登入 API 回傳的 JWT、使用者名稱與角色，不自行驗證 Token。
  */
-import { reactive, computed } from 'vue';
+import { reactive } from 'vue';
 
 // 【概念】固定鍵名讓重新整理頁面後可從 localStorage 還原登入工作階段。
 const TOKEN_KEY = 'fintech_demo_token';
@@ -52,7 +52,8 @@ export function useAuthStore() {
     get token() { return state.token; },
     get username() { return state.username; },
     get roles() { return state.roles; },
-    isLoggedIn: computed(() => !!state.token),
+    /** 布林 getter（勿回傳 ComputedRef，避免模板誤判為永遠 truthy） */
+    get isLoggedIn() { return !!state.token; },
     setSession,
     clearSession
   };

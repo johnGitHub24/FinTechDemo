@@ -1,7 +1,7 @@
 /**
- * 【職責】Demo／簡報用外部連結（與 StartupInfoLogger 橫幅關鍵 URL 對齊）。
- * 【技巧】單一設定檔給 Login 快捷列與 App nav 共用，避免兩處漂移。
- * 【概念】Console 文字無法點；登入頁把同一組 URL 變成可點連結。服務未啟動時會連不上——登入頁拓撲燈會標示。
+ * 【職責】Demo 連結與頂欄／快捷面板設定（單一來源）。
+ * 【技巧】nav 分 kind=external｜spa｜panel；SPA 用 path，禁止 target=_blank 開需登入頁。
+ * 【概念】「總是出問題」常見於：新分頁無 JWT、Audit 非 ADMIN、觀測服務未起卻無提示。
  */
 const env = import.meta.env || {};
 
@@ -21,15 +21,11 @@ export const demoLinks = {
   orderOpenApi: 'http://localhost:8081/v3/api-docs',
   orderH2: 'http://localhost:8081/h2-console/',
   orderPrometheus: 'http://localhost:8081/actuator/prometheus',
-  orderLoginApi: 'http://localhost:8081/api/auth/login',
   riskHealth: 'http://localhost:8082/actuator/health',
-  // POST API 無法直接用瀏覽器開 → Demo 頁會自動送出並顯示結果
   riskCheck: 'http://localhost:5173/demo/risk-check.html',
   jobHealth: 'http://localhost:8083/actuator/health',
   accountHealth: 'http://localhost:8084/actuator/health',
-  // 需 JWT → Demo 頁先 login 再查 /api/accounts/me
   accountMe: 'http://localhost:5173/demo/account-me.html',
-  accountPositions: 'http://localhost:8084/api/positions',
   docsIndex: 'http://127.0.0.1:5500/docs/index.html',
   docsDemoFlow: 'http://127.0.0.1:5500/docs/portals/demo-flow.html',
   docsHandbook: 'http://127.0.0.1:5500/docs/portals/handbook.html',
@@ -37,26 +33,63 @@ export const demoLinks = {
   docsCodeGraphic: 'http://127.0.0.1:5500/docs/portals/codeGraphic.html'
 };
 
-/** 登入後頂部 nav：觀測＋壓測 */
+/**
+ * 頂欄按鈕。
+ * kind: external＝先探測再開；spa＝router；panel＝展開 Demo 快捷
+ */
 export const navDemoButtons = [
-  { label: 'Grafana', href: demoLinks.grafana, hint: '需 docker compose --profile monitoring' },
-  { label: 'Prometheus', href: demoLinks.prometheusUi, hint: '需 monitoring profile' },
-  { label: '壓測 UI', href: demoLinks.locust, hint: '.\\scripts\\run-loadtest.ps1 -WebUi' }
+  {
+    id: 'grafana',
+    label: 'Grafana',
+    kind: 'external',
+    href: demoLinks.grafana,
+    probe: 'http://localhost:3000/login',
+    hint: '需 docker compose --profile monitoring',
+    startHint: '.\\scripts\\ensure-demo-links.ps1（勿 SkipDocker）或 compose --profile monitoring'
+  },
+  {
+    id: 'prometheus',
+    label: 'Prometheus',
+    kind: 'external',
+    href: demoLinks.prometheusUi,
+    probe: 'http://localhost:9090/-/healthy',
+    hint: '需 monitoring profile',
+    startHint: 'docker compose --profile monitoring up -d prometheus'
+  },
+  {
+    id: 'locust',
+    label: '壓測 UI',
+    kind: 'external',
+    href: demoLinks.locust,
+    probe: 'http://localhost:8089/',
+    hint: 'Locust Web UI',
+    startHint: '.\\scripts\\run-loadtest.ps1 -WebUi'
+  },
+  {
+    id: 'k8s',
+    label: 'K8s 指令',
+    kind: 'spa',
+    to: '/blueprint',
+    hash: 'k8s-verify',
+    hint: '藍圖頁一鍵複製 kubectl'
+  },
+  {
+    id: 'demo',
+    label: 'Demo 快捷',
+    kind: 'panel',
+    hint: '展開下方快捷面板（Trade／Health／Docs）'
+  }
 ];
 
-/**
- * 登入頁快捷分組 — 對齊 StartupInfoLogger 橫幅。
- * needLogin: 需先登入才能進 SPA 頁（仍提供連結，未登入會被導回）。
- */
 export const loginDemoGroups = [
   {
     title: '前端頁面',
     items: [
-      { label: 'Login', href: demoLinks.login },
-      { label: 'Trade', href: demoLinks.trade, needLogin: true },
-      { label: 'Portal', href: demoLinks.portal, needLogin: true },
-      { label: 'Audit', href: demoLinks.audit, needLogin: true },
-      { label: '藍圖', href: demoLinks.blueprint }
+      { label: 'Trade', spaPath: '/trade', needLogin: true },
+      { label: 'Portal', spaPath: '/portal', needLogin: true },
+      { label: 'Audit', spaPath: '/portal/audit', needLogin: true, needAdmin: true },
+      { label: '藍圖', spaPath: '/blueprint' },
+      { label: '藍圖·K8s', spaPath: '/blueprint#k8s-verify' }
     ]
   },
   {
@@ -70,7 +103,7 @@ export const loginDemoGroups = [
     ]
   },
   {
-    title: 'Risk ★ :8082（成交必開）',
+    title: 'Risk ★ :8082',
     items: [
       { label: 'Health', href: demoLinks.riskHealth },
       { label: 'Risk Check', href: demoLinks.riskCheck }
@@ -79,24 +112,39 @@ export const loginDemoGroups = [
   {
     title: '其他後端',
     items: [
-      { label: 'Gateway Health', href: demoLinks.gatewayHealth },
-      { label: 'Job Health', href: demoLinks.jobHealth },
-      { label: 'Account Health', href: demoLinks.accountHealth },
+      { label: 'Gateway', href: demoLinks.gatewayHealth },
+      { label: 'Job', href: demoLinks.jobHealth },
+      { label: 'Account', href: demoLinks.accountHealth },
       { label: 'Account Me', href: demoLinks.accountMe }
     ]
   },
   {
     title: '觀測／壓測',
     items: [
-      { label: 'Grafana', href: demoLinks.grafana },
-      { label: 'Prometheus UI', href: demoLinks.prometheusUi },
-      { label: 'Locust UI', href: demoLinks.locust }
+      {
+        label: 'Grafana',
+        href: demoLinks.grafana,
+        probe: 'http://localhost:3000/login',
+        startHint: 'docker compose --profile monitoring up -d'
+      },
+      {
+        label: 'Prometheus',
+        href: demoLinks.prometheusUi,
+        probe: 'http://localhost:9090/-/healthy',
+        startHint: 'docker compose --profile monitoring up -d prometheus'
+      },
+      {
+        label: 'Locust',
+        href: demoLinks.locust,
+        probe: 'http://localhost:8089/',
+        startHint: '.\\scripts\\run-loadtest.ps1 -WebUi'
+      }
     ]
   },
   {
-    title: '學習文件（需 serve-docs）',
+    title: '學習文件',
     items: [
-      { label: 'Docs 入口', href: demoLinks.docsIndex },
+      { label: 'Docs', href: demoLinks.docsIndex, probe: demoLinks.docsIndex },
       { label: 'Demo 流程', href: demoLinks.docsDemoFlow },
       { label: '學習手冊', href: demoLinks.docsHandbook },
       { label: 'Swagger 靜態', href: demoLinks.docsSwagger },
@@ -104,3 +152,8 @@ export const loginDemoGroups = [
     ]
   }
 ];
+
+export const NEXT_PATH_KEY = 'fintech_demo_next_path';
+
+export const ENSURE_SERVICES_CMD =
+  'cd /d D:\\ClaudeCode\\FinTechDemo && .\\scripts\\start-interview-demo.ps1 -FreeKind -OpenBrowser';

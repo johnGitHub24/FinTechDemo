@@ -47,9 +47,10 @@
 | 採納 | 來源技巧 | FinTechDemo 落點 |
 |------|----------|------------------|
 | 依職責拆服務 | 各服務自有 API | **order／risk／account**（≥3 業務 MS）+ job |
-| Feign 契約 | Java interface 當跨服務 API | `RiskClient`、`AccountClient` |
+| Feign 契約 | Java interface 當跨服務 API | `RiskClient`、`AccountClient`（**固定 URL**，先跑穩交易鏈） |
 | 啟動敘事 | 先業務再生 Gateway | scripts／README |
-| **不搬** | Eureka、Config Server、Resilience4j 示範開關 | |
+| **不搬（本版）** | Eureka、Config Server、Resilience4j 示範開關 | 升級口頭：拿掉 Feign `url` → 服務名＋Eureka；Gateway 改 `lb://`（發現機制升級，非重寫業務）；完整串接見 TradingMicroService |
+| **勿混淆** | — | APIGatewayMQ **無** Eureka（主軸 Kafka 削峰） |
 
 ### 6. APIGatewayMQ（Kafka）
 | 採納 | 來源技巧 | FinTechDemo 落點 |

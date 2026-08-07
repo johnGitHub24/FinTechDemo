@@ -70,75 +70,23 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 <tr>
 <td>Integration</td>
-<td>MockMvc 或 <code>@SpringBootTest</code></td>
-<td>Auth、CRUD、分頁、風控拒絕、未授權 401</td>
+<td>MockMvc + <code>DemoTestFixtures</code></td>
+<td>Auth、CRUD、分頁、風控、未授權 401</td>
 </tr>
 <tr>
 <td>Performance</td>
 <td><code>loadtest/</code></td>
-<td>baseline 可跑；p95／錯誤率門檻寫於下方（可依機器調整）</td>
+<td>baseline／fullflow；錯誤率 &lt; 1%</td>
 </tr>
 </tbody></table>
-<p>成對一致性：契約變更 → 單元＋整合案例一起改（<code>eos-minimal/knowledge/testing.md</code>）。<br>感測：<code>EngineeringOS/eos-minimal/hooks/scan-paired-tests.ps1 -ProjectRoot .</code></p>
-<h2>建議案例 ID</h2>
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>層</th>
-<th>情境</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>U-ORD-01</td>
-<td>Unit</td>
-<td>createOrder 合法 → ACCEPTED／PENDING</td>
-</tr>
-<tr>
-<td>U-RSK-01</td>
-<td>Unit</td>
-<td>超限額 → reject</td>
-</tr>
-<tr>
-<td>I-AUTH-01</td>
-<td>Int</td>
-<td>login 成功取得 token</td>
-</tr>
-<tr>
-<td>I-ORD-01</td>
-<td>Int</td>
-<td>Bearer 下單 201</td>
-</tr>
-<tr>
-<td>I-ORD-02</td>
-<td>Int</td>
-<td>無 token 401</td>
-</tr>
-<tr>
-<td>I-ORD-03</td>
-<td>Int</td>
-<td>分頁 page=0 size=10 結構正確</td>
-</tr>
-<tr>
-<td>I-RSK-01</td>
-<td>Int</td>
-<td>超限額 422／REJECTED</td>
-</tr>
-<tr>
-<td>P-BASE-01</td>
-<td>Perf</td>
-<td>Locust 下單+列表 30s</td>
-</tr>
-</tbody></table>
-<h2>Performance 門檻（初版，可調）</h2>
-<ul>
-<li>錯誤率 &lt; 1%（排除刻意風控拒絕情境）  </li>
-<li>本機 baseline 不設死 TPS；Demo 展示「有腳本、有報告」即可</li>
-</ul>
+<p>成對一致性：契約變更 → 單元＋整合案例一起改（<code>eos-minimal/knowledge/testing.md</code>）。</p>
+<h2>Case ID（摘要）</h2>
+<p>見 <a href="../%E6%B8%AC%E8%A9%A6%E8%A6%8F%E6%A0%BC%E6%9B%B8.md">測試規格書.md</a>。Fixture：<code>docs/test-data/...</code>。</p>
+<h2>觀測</h2>
+<p><code>monitoring/prometheus.yml</code> + compose profile <code>monitoring</code>；前端登入頁／nav 可開 Grafana／Prometheus／Locust。</p>
 <h2>驗證入口</h2>
 <pre><code class="language-powershell">.\scripts\check.ps1
 </code></pre>
-<p>對齊各 Trading* 專案：<code>gradlew check</code> = unit + integration。</p>
 
     </article>
   </main>

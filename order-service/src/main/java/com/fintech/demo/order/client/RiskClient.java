@@ -7,13 +7,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * 【職責】呼叫 risk-service 風控 API（固定 URL Feign）。
- * 【技巧】url 來自設定，固定 URL 示意服務拆分。
- * 【概念】可說明：下一步可換成服務發現。
+ * 【職責】呼叫 risk-service 風控 API（本版：固定 URL OpenFeign）。
+ * 【技巧】{@code @FeignClient(name=..., url="${fintech.services.risk-url}")}；成交路徑同步等待風控結果。
+ * 【概念】固定 URL 先把交易鏈跑穩。升級時拿掉 {@code url}、改依服務名＋Eureka，
+ *         Gateway 改 {@code lb://}——這是發現機制升級，不是重寫業務（見 FinTechDemo-SPEC §2.3；
+ *         完整串接見 TradingMicroService）。
  */
 @FeignClient(name = "risk-service", url = "${fintech.services.risk-url}")
 public interface RiskClient {
 
+    /** 【職責】送出名目金額風控檢查請求。 */
     @PostMapping("/api/risk/check")
     RiskCheckResponse check(@RequestBody RiskCheckRequest request);
 }

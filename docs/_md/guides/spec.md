@@ -271,7 +271,12 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
                                    Redis (account cache)
 ```
 
-- **不做**：Eureka／Config（固定 URL；可口述改 `lb://`）  
+- **服務發現（本版做法與升級路徑）**  
+  - **本 Demo 採用固定 URL Feign**（例：`@FeignClient(..., url = "${fintech.services.risk-url}")`），先把交易鏈（下單 → 風控 → 成交）跑穩；Gateway 亦可直連下游埠。  
+  - **明確不做（本版）**：Eureka／Config Server——避免最短可成交再多一個必須先起的註冊中心。  
+  - **升級敘事（評量／加分口頭即可；不必本倉實作）**：  
+    > 現在用固定 URL Feign 先把交易鏈跑穩；升級只要拿掉 `url`、改服務名＋Eureka，Gateway 改 `lb://`——這是**發現機制升級，不是重寫業務**。  
+  - 對照練習倉：Eureka／`lb://` 完整串接見 **TradingMicroService**（非 APIGatewayMQ；後者主軸是 Kafka 削峰，無 Eureka）。  
 - **Kafka**：demo／docker **必開**；local 可暫同步風控（先把前後台劇情跑順）
 
 ---
@@ -432,7 +437,8 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 
 - §1.5「明確不做」表（行情流、改單、部分成交、出入金、KYC…）  
 - R001～R010 全套；本 Demo **一條**風控規則  
-- Eureka／Config、Node BFF、mini-ioc  
+- Eureka／Config Server（**本版**固定 URL Feign；升級路徑見 §2.3——發現機制升級非重寫業務；完整 Eureka Demo 見 TradingMicroService）  
+- Node BFF、mini-ioc  
 - 華麗 UI；**前後台配合跑通優先於完美**  
 - 展示主敘事散落各 Trading* 練習倉  
 

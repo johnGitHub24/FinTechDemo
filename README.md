@@ -48,6 +48,8 @@ cd frontend; npm install; npm run dev
 | [docs/architecture/api-spec.html](docs/architecture/api-spec.html) | API 表格 |
 | [docs/portals/codeGraphic.html](docs/portals/codeGraphic.html) | 架構圖 |
 | [docs/architecture/系統運作藍圖.md](docs/architecture/系統運作藍圖.md) | **系統運作藍圖（圖文／GitHub·Redmine）** |
+| [docs/測試與CI.md](docs/測試與CI.md) | 測試／CI／壓測／觀測 |
+| [docs/驗收清單.md](docs/驗收清單.md) | **總驗收勾選（loop-engineering）** |
 | [docs/architecture/architecture.html](docs/architecture/architecture.html) | 模組化／分散式 |
 
 ## Pipeline
@@ -64,6 +66,6 @@ cd frontend; npm install; npm run dev
 3. execute（Swagger 或 UI）  
 4. `/portal` 看餘額／持倉／歷史  
 5. 換 admin 看 `/portal/audit`  
-6. （加分）講 Gateway／3 MS／Kafka／Redis；Eureka＝可升級項  
+6. （加分）講 Gateway／3 MS／Kafka／Redis；**Eureka＝升級項**：固定 URL Feign 跑穩後，拿掉 `url`、改服務名＋Eureka，Gateway 改 `lb://`——發現機制升級，不是重寫業務（完整串接見 TradingMicroService）
 
 權威規格：[FinTechDemo-SPEC.md](FinTechDemo-SPEC.md)（瀏覽請開 [docs/guides/spec.html](docs/guides/spec.html)）

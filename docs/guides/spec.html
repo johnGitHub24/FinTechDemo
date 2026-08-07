@@ -569,7 +569,16 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
                                    Redis (account cache)
 </code></pre>
 <ul>
-<li><strong>不做</strong>：Eureka／Config（固定 URL；可口述改 <code>lb://</code>）  </li>
+<li><strong>服務發現（本版做法與升級路徑）</strong>  <ul>
+<li><strong>本 Demo 採用固定 URL Feign</strong>（例：<code>@FeignClient(..., url = &quot;${fintech.services.risk-url}&quot;)</code>），先把交易鏈（下單 → 風控 → 成交）跑穩；Gateway 亦可直連下游埠。  </li>
+<li><strong>明確不做（本版）</strong>：Eureka／Config Server——避免最短可成交再多一個必須先起的註冊中心。  </li>
+<li><strong>升級敘事（評量／加分口頭即可；不必本倉實作）</strong>：  <blockquote>
+<p>現在用固定 URL Feign 先把交易鏈跑穩；升級只要拿掉 <code>url</code>、改服務名＋Eureka，Gateway 改 <code>lb://</code>——這是<strong>發現機制升級，不是重寫業務</strong>。  </p>
+</blockquote>
+</li>
+<li>對照練習倉：Eureka／<code>lb://</code> 完整串接見 <strong>TradingMicroService</strong>（非 APIGatewayMQ；後者主軸是 Kafka 削峰，無 Eureka）。</li>
+</ul>
+</li>
 <li><strong>Kafka</strong>：demo／docker <strong>必開</strong>；local 可暫同步風控（先把前後台劇情跑順）</li>
 </ul>
 <hr>
@@ -932,7 +941,8 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <ul>
 <li>§1.5「明確不做」表（行情流、改單、部分成交、出入金、KYC…）  </li>
 <li>R001～R010 全套；本 Demo <strong>一條</strong>風控規則  </li>
-<li>Eureka／Config、Node BFF、mini-ioc  </li>
+<li>Eureka／Config Server（<strong>本版</strong>固定 URL Feign；升級路徑見 §2.3——發現機制升級非重寫業務；完整 Eureka Demo 見 TradingMicroService）  </li>
+<li>Node BFF、mini-ioc  </li>
 <li>華麗 UI；<strong>前後台配合跑通優先於完美</strong>  </li>
 <li>展示主敘事散落各 Trading* 練習倉</li>
 </ul>

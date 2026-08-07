@@ -216,7 +216,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <tr>
 <td>Feign 契約</td>
 <td>Java interface 當跨服務 API</td>
-<td><code>RiskClient</code>、<code>AccountClient</code></td>
+<td><code>RiskClient</code>、<code>AccountClient</code>（<strong>固定 URL</strong>，先跑穩交易鏈）</td>
 </tr>
 <tr>
 <td>啟動敘事</td>
@@ -224,9 +224,14 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <td>scripts／README</td>
 </tr>
 <tr>
-<td><strong>不搬</strong></td>
+<td><strong>不搬（本版）</strong></td>
 <td>Eureka、Config Server、Resilience4j 示範開關</td>
-<td></td>
+<td>升級口頭：拿掉 Feign <code>url</code> → 服務名＋Eureka；Gateway 改 <code>lb://</code>（發現機制升級，非重寫業務）；完整串接見 TradingMicroService</td>
+</tr>
+<tr>
+<td><strong>勿混淆</strong></td>
+<td>—</td>
+<td>APIGatewayMQ <strong>無</strong> Eureka（主軸 Kafka 削峰）</td>
 </tr>
 </tbody></table>
 <h3>6. APIGatewayMQ（Kafka）</h3>

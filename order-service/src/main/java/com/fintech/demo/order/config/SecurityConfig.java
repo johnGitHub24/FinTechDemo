@@ -27,6 +27,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC = {
             "/api/auth/**",
+            "/api/demo/**",
             "/api/internal/jobs/**",
             "/actuator/health",
             "/actuator/info",

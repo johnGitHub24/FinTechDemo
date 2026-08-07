@@ -19,3 +19,9 @@ logs/
 .superpowers/
 scripts/node_modules/
 scripts/package-lock.json
+**/__pycache__/
+*.pyc
+
+tools/
+*.zip
+

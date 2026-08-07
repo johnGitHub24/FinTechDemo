@@ -1,0 +1,3 @@
+{
+  "note": "ACCOUNT-001 為 GET 契約案例；無 request body。整合測試以 JWT + /api/accounts/me 驗證種子帳戶。"
+}

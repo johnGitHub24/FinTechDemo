@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo · Account Me</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 10px; overflow: auto; }
+    button { background: #2563eb; color: #fff; border: 0; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; margin-right: 0.4rem; }
+    button:hover { background: #1d4ed8; }
+    .ok { color: #047857; } .bad { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>Account Me（Demo）</h1>
+  <p>先向 Order 登入取得 JWT，再呼叫 Account <code>GET /api/accounts/me</code>。</p>
+  <button type="button" id="run">登入並查帳戶</button>
+  <button type="button" id="health">只測 Account Health</button>
+  <p id="status"></p>
+  <pre id="out">（尚未送出）</pre>
+  <script>
+    const statusEl = document.getElementById('status');
+    const out = document.getElementById('out');
+    async function loginAndMe() {
+      statusEl.textContent = '登入 Order…';
+      try {
+        const loginRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'trader1', password: 'password' })
+        });
+        const loginBody = await loginRes.json();
+        if (!loginRes.ok || !loginBody.token) {
+          statusEl.innerHTML = '<span class="bad">登入失敗（需 Order :8081）</span>';
+          out.textContent = JSON.stringify(loginBody, null, 2);
+          return;
+        }
+        statusEl.textContent = '查詢 Account…';
+        const meRes = await fetch('/proxy/account-api/accounts/me', {
+          headers: { Authorization: 'Bearer ' + loginBody.token, Accept: 'application/json' }
+        });
+        const meText = await meRes.text();
+        let meBody = meText;
+        try { meBody = JSON.stringify(JSON.parse(meText), null, 2); } catch (_) {}
+        out.textContent = meBody;
+        statusEl.innerHTML = meRes.ok
+          ? '<span class="ok">HTTP ' + meRes.status + ' — Account Me 成功</span>'
+          : '<span class="bad">HTTP ' + meRes.status + '（需 Account :8084）</span>';
+      } catch (e) {
+        statusEl.innerHTML = '<span class="bad">連線失敗</span>';
+        out.textContent = String(e);
+      }
+    }
+    async function healthOnly() {
+      try {
+        const res = await fetch('/proxy/account-health');
+        const body = await res.json();
+        out.textContent = JSON.stringify(body, null, 2);
+        statusEl.innerHTML = res.ok
+          ? '<span class="ok">Account Health UP</span>'
+          : '<span class="bad">Health HTTP ' + res.status + '</span>';
+      } catch (e) {
+        statusEl.innerHTML = '<span class="bad">Account :8084 未啟動</span>';
+        out.textContent = String(e);
+      }
+    }
+    document.getElementById('run').onclick = loginAndMe;
+    document.getElementById('health').onclick = healthOnly;
+    loginAndMe();
+  </script>
+</body>
+</html>

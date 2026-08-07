@@ -1,5 +1,7 @@
 package com.fintech.demo.risk;
 
+import com.fintech.demo.support.DemoTestFixtures;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,58 +13,39 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * 【職責】風控 API 整合測試（Fixture 驅動）。
+ * 【技巧】DemoTestFixtures 載入 RISK-001／002。
+ * 【概念】與 RiskServiceTest 單元 Case 成對。
+ */
+@Tag("integration")
 @SpringBootTest
 @AutoConfigureMockMvc
-/**
- * 【職責】驗證風控檢查 HTTP API 的 JSON 繫結與 allowed 回應契約。
- * 【技巧】使用 MockMvc 送出真實 JSON 請求，並以 JSONPath 驗證回應內容。
- * 【概念】API 整合測試保護 Controller、服務層與序列化格式的協作。
- */
 class RiskApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     /**
-     * CASE-RISK-API-001：Given 現金足夠且未超過限額的買單，When 呼叫風控端點，Then 回傳 allowed=true。
+     * CASE RISK-001：現金足夠 → allowed=true。
      */
     @Test
-    void checkEndpoint_shouldReturnAllowed() throws Exception {
-        String body = """
-                {
-                  "userId": 1,
-                  "symbol": "AAPL",
-                  "side": "BUY",
-                  "quantity": 1,
-                  "price": 100,
-                  "cashBalance": 1000
-                }
-                """;
+    void RISK_001_check_shouldAllow() throws Exception {
         mockMvc.perform(post("/api/risk/check")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(DemoTestFixtures.loadJson("risk", "RISK-001-PASS")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.allowed").value(true));
     }
 
     /**
-     * CASE-RISK-API-002：Given 現金不足的買單，When 呼叫風控端點，Then 回傳 allowed=false。
+     * CASE RISK-002：現金不足 → allowed=false。
      */
     @Test
-    void checkEndpoint_shouldRejectOverCash() throws Exception {
-        String body = """
-                {
-                  "userId": 1,
-                  "symbol": "AAPL",
-                  "side": "BUY",
-                  "quantity": 10,
-                  "price": 100,
-                  "cashBalance": 50
-                }
-                """;
+    void RISK_002_check_shouldReject() throws Exception {
         mockMvc.perform(post("/api/risk/check")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(DemoTestFixtures.loadJson("risk", "RISK-002-REJECT")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.allowed").value(false));
     }

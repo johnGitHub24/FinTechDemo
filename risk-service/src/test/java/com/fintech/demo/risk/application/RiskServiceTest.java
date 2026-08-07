@@ -1,7 +1,9 @@
 package com.fintech.demo.risk.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintech.demo.common.dto.RiskCheckRequest;
 import com.fintech.demo.common.dto.RiskCheckResponse;
+import com.fintech.demo.support.DemoTestFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,11 +12,13 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 【職責】覆蓋 RiskService 現金與名義金額風控規則。
- * 【技巧】純單元：構造 RiskCheckRequest 驗證 allow／reject。
+ * 【職責】覆蓋 RiskService 現金與名義金額風控規則（與 Fixture Case 成對）。
+ * 【技巧】RISK-001／002 由 DemoTestFixtures 載入；另測超額名目。
  * 【概念】風控規則改動時，這裡是最快的迴歸網。
  */
 class RiskServiceTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private RiskService riskService;
 
@@ -24,30 +28,32 @@ class RiskServiceTest {
     }
 
     /**
-     * CASE-RISK-001：Given 買入名義金額小於現金與上限 When check Then allowed。
+     * CASE RISK-001：Given RISK-001-PASS When check Then allowed。
      */
     @Test
-    void buyWithinCashAndLimit_shouldAllow() {
-        RiskCheckRequest req = request("BUY", 10, "100", "5000");
+    void RISK_001_buyWithinCash_shouldAllow() throws Exception {
+        RiskCheckRequest req = MAPPER.readValue(
+                DemoTestFixtures.loadJson("risk", "RISK-001-PASS"), RiskCheckRequest.class);
         assertThat(riskService.check(req).allowed()).isTrue();
     }
 
     /**
-     * CASE-RISK-002：Given 買入超過現金 When check Then reject（insufficient cash）。
+     * CASE RISK-002：Given RISK-002-REJECT When check Then reject。
      */
     @Test
-    void buyOverCash_shouldReject() {
-        RiskCheckRequest req = request("BUY", 10, "100", "500");
+    void RISK_002_buyOverCash_shouldReject() throws Exception {
+        RiskCheckRequest req = MAPPER.readValue(
+                DemoTestFixtures.loadJson("risk", "RISK-002-REJECT"), RiskCheckRequest.class);
         RiskCheckResponse resp = riskService.check(req);
         assertThat(resp.allowed()).isFalse();
         assertThat(resp.reason()).contains("insufficient cash");
     }
 
     /**
-     * CASE-RISK-003：Given 名義金額超過上限 When check Then reject（max）。
+     * CASE RISK-003：Given 名義金額超過上限 When check Then reject（max）。
      */
     @Test
-    void overMaxNotional_shouldReject() {
+    void RISK_003_overMaxNotional_shouldReject() {
         RiskCheckRequest req = request("BUY", 1000, "100", "1000000");
         RiskCheckResponse resp = riskService.check(req);
         assertThat(resp.allowed()).isFalse();

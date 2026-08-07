@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo · Risk Check</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 10px; overflow: auto; }
+    button { background: #2563eb; color: #fff; border: 0; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .ok { color: #047857; } .bad { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>Risk Check（Demo）</h1>
+  <p>對 <code>POST http://localhost:8082/api/risk/check</code> 送出範例 JSON（瀏覽器直接開 API 路徑會失敗，故用本頁）。</p>
+  <button type="button" id="run">送出 Risk Check</button>
+  <p id="status"></p>
+  <pre id="out">（尚未送出）</pre>
+  <script>
+    const payload = {
+      userId: 1, symbol: 'AAPL', side: 'BUY', quantity: 1, price: 100, cashBalance: 1000
+    };
+    document.getElementById('run').onclick = async () => {
+      const status = document.getElementById('status');
+      const out = document.getElementById('out');
+      status.textContent = '請求中…';
+      try {
+        const res = await fetch('/proxy/risk-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        let body = text;
+        try { body = JSON.stringify(JSON.parse(text), null, 2); } catch (_) {}
+        out.textContent = body;
+        status.innerHTML = res.ok
+          ? '<span class="ok">HTTP ' + res.status + ' — 連線成功</span>'
+          : '<span class="bad">HTTP ' + res.status + '</span>';
+      } catch (e) {
+        status.innerHTML = '<span class="bad">連線失敗：請先啟動 RiskServiceApplication (:8082)</span>';
+        out.textContent = String(e);
+      }
+    };
+    document.getElementById('run').click();
+  </script>
+</body>
+</html>

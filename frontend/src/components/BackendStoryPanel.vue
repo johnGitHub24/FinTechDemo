@@ -47,12 +47,15 @@
         :key="s"
         type="button"
         class="stage-chip"
-        :class="{ active: displayStage === s, pinned: story.state.pinStage === s }"
+        :class="[
+          `stage-${s.toLowerCase()}`,
+          { active: displayStage === s, pinned: story.state.pinStage === s }
+        ]"
         @click="togglePin(s)"
       >
         {{ s }}
       </button>
-      <button class="secondary" type="button" @click="story.setPinStage(null)">清除釘住</button>
+      <button class="secondary sm" type="button" @click="story.setPinStage(null)">清除釘住</button>
     </div>
     <p class="story-meta">目前顯示：{{ displayStage }}（點階段可釘住講解；清除後跟拓撲事實）</p>
     <aside class="story-note">
@@ -71,23 +74,23 @@
     </aside>
 
     <h4 class="story-sub">訂單狀態機</h4>
-    <div class="stage-row">
+    <div class="stage-row order-state-row">
       <span
         v-for="st in orderStates"
         :key="st"
-        class="stage-chip"
-        :class="{ active: currentOrderStatus === st }"
+        class="order-state-chip"
+        :class="[`st-${st}`, { active: currentOrderStatus === st }]"
       >{{ st }}</span>
     </div>
     <aside class="story-note">
       <strong>NOTE · 這一筆單子到哪？</strong>
       <ul>
-        <li><strong>PENDING</strong>：已建立，尚未成交／取消</li>
-        <li><strong>ACCEPTED</strong>：點「成交」且 Risk 通過 → 接受</li>
-        <li><strong>REJECTED</strong>：成交時風控拒絕（名目超限等）</li>
-        <li><strong>CANCELLED</strong>：使用者取消或排程逾時取消</li>
+        <li><strong>PENDING</strong>：已建立，尚未成交／取消（藍）</li>
+        <li><strong>ACCEPTED</strong>：點「成交」且 Risk 通過 → 接受（青）</li>
+        <li><strong>REJECTED</strong>：成交時風控拒絕（紅）</li>
+        <li><strong>CANCELLED</strong>：使用者取消或排程逾時取消（靛）</li>
       </ul>
-      <p>與部署階梯無關：訂單狀態跟<strong>這一筆業務結果</strong>；S 階跟<strong>哪些服務在跑</strong>。</p>
+      <p>與部署階梯無關：訂單狀態跟<strong>這一筆業務結果</strong>；S 階跟<strong>哪些服務在跑</strong>。目前態會高亮放大。</p>
     </aside>
   </div>
 </template>

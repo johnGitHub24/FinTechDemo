@@ -1,0 +1,3 @@
+{
+  "note": "ACCOUNT-002 為未授權案例；整合測試不帶 Authorization 呼叫 /api/accounts/me 預期 401。"
+}

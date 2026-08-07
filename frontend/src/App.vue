@@ -6,6 +6,17 @@
       <router-link to="/blueprint">系統運作藍圖</router-link>
       <router-link to="/portal">會員後台</router-link>
       <router-link v-if="isAdmin" to="/portal/audit">審計</router-link>
+      <span class="nav-demo-links" aria-label="觀測與壓測">
+        <a
+          v-for="btn in navDemoButtons"
+          :key="btn.href"
+          class="demo-nav-btn"
+          :href="btn.href"
+          :title="btn.hint"
+          target="_blank"
+          rel="noopener noreferrer"
+        >{{ btn.label }}</a>
+      </span>
       <span class="user-chip">{{ auth.username }}</span>
       <button class="secondary sm" type="button" @click="logout">登出</button>
     </nav>
@@ -18,12 +29,13 @@
 <script setup>
 /**
  * 【職責】應用程式根元件，提供登入後的導覽列與路由頁面容器。
- * 【頁面角色】依使用者角色顯示交易、會員後台與管理員審計入口。
+ * 【頁面角色】依使用者角色顯示交易、會員後台與管理員審計入口；並提供 Grafana／Prometheus／Locust 快捷。
  * 【與後端關係】透過認證 store 的 JWT／角色資訊決定畫面，不直接呼叫後端。
  */
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
+import { navDemoButtons } from './config/demoLinks';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -31,7 +43,7 @@ const isAdmin = computed(() => (auth.roles || []).includes('ROLE_ADMIN') || auth
 
 /**
  * 【目的】結束目前登入工作階段並回到登入頁。
- * 【副作用】呼叫 store 清除記憶體與 localStorage 的認證資料，接著改變前端路由。
+ * 【副作用】呼叫 store 清除認證資料，接著改變前端路由。
  */
 function logout() {
   auth.clearSession();

@@ -25,13 +25,16 @@ cd frontend; npm install; npm run dev
 # 開啟 docs\javadoc\index.html
 ```
 
-- 前端：http://localhost:5173  
+- 前端：http://localhost:5173/login（**Demo 快捷入口**＝Console 橫幅可點版；含服務燈號）  
 - 系統運作藍圖：http://localhost:5173/blueprint（可不登入；圖文版見 [docs/architecture/系統運作藍圖.md](docs/architecture/系統運作藍圖.md)）  
 - 帳號：`trader1` / `password`（ADMIN：`admin` / `password`）  
 - Swagger：http://localhost:8081/swagger-ui.html  
 - Risk health：http://localhost:8082/actuator/health  
+- 觀測：`docker compose --profile monitoring up -d` → Grafana http://localhost:3000 · Prometheus http://localhost:9090  
+- 壓測：`.\scripts\run-loadtest.ps1 -WebUi` → http://localhost:8089  
 - JavaDoc：`docs/javadoc/index.html`（需先跑 `aggregateJavadoc`）  
-- 成交必開 Risk(:8082)；只開 Order 會 Feign Connection refused。
+- 成交必開 Risk(:8082)；只開 Order 會 Feign Connection refused。  
+- 測試：`.\scripts\check.ps1` · Fixture：`docs/test-data/` · 見 [docs/測試與CI.md](docs/測試與CI.md)
 
 ## 學習入口（HTML）
 

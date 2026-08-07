@@ -4,26 +4,26 @@
  */
 
 export const TECH_STACK = [
-  { layer: '前端', tech: 'Vue', version: '^3.5.13', note: 'SPA 元件化 UI（Composition API）；交易前台／會員後台／藍圖頁' },
-  { layer: '前端', tech: 'Vue Router', version: '^4.5.0', note: '前端路由；JWT 守衛（requiresAuth／admin）；公開／blueprint' },
-  { layer: '前端', tech: 'Axios', version: '^1.7.9', note: '呼叫 Order／Gateway API；自動帶 Authorization Bearer；401 清 session' },
-  { layer: '前端', tech: 'Vite', version: '^6.0.7', note: '開發伺服器 :5173、HMR、production build（npm run build）' },
-  { layer: '前端', tech: 'Mermaid', version: '^11.16', note: '僅藍圖頁動態載入；渲染分層／流程／狀態機圖，不進其他頁主包' },
-  { layer: '後端', tech: 'Java', version: '21', note: '全模組 Gradle toolchain；虛擬執行緒可用環境；Lombok 輔助' },
-  { layer: '後端', tech: 'Spring Boot', version: '3.2.2', note: 'gateway／order／risk／account／job 各服務基底與自動設定' },
-  { layer: '後端', tech: 'Spring Cloud', version: '2023.0.0', note: '依賴 BOM；對齊 Gateway MVC、OpenFeign 版本' },
-  { layer: '後端', tech: 'Gateway MVC', version: 'spring-cloud-gateway-server-mvc', note: ':8080 統一 HTTP 入口；路由轉發至 Order；可加 X-Demo-Via-Gateway' },
-  { layer: '後端', tech: 'OpenFeign', version: 'spring-cloud-starter-openfeign', note: 'Order 同步呼叫 Risk 風控 API（成交路徑）；宣告式 HTTP 客戶端' },
-  { layer: '後端', tech: 'Spring Security', version: 'Boot starter', note: '登入認證、JWT 過濾、ROLE_USER／ROLE_ADMIN 授權（RBAC）' },
-  { layer: '後端', tech: 'JJWT', version: '0.12.5', note: 'io.jsonwebtoken：簽發／驗證 JWT（HS）；≠ JWT 標準本身。前端把 Token 存 localStorage，後續帶 Bearer' },
-  { layer: '後端', tech: 'Spring Data JPA', version: 'Boot starter', note: 'Order／Account 等實體持久化；Repository＋交易邊界' },
-  { layer: '後端', tech: 'H2', version: 'runtime', note: 'local／test 記憶體庫（jdbc:h2:mem:…）；免 Docker 即可 Demo' },
-  { layer: '後端', tech: 'springdoc OpenAPI', version: '2.3.0', note: 'Order :8081 Swagger UI／OpenAPI 文件（/swagger-ui.html）' },
-  { layer: '後端', tech: 'Actuator + Prometheus', version: 'Micrometer', note: '/actuator/health 拓撲燈；/actuator/prometheus 指標刮取' },
-  { layer: '基建', tech: 'Kafka', version: 'spring-kafka', note: 'order／account 非同步事件（可選）；本機無 broker 時功能降級' },
-  { layer: '基建', tech: 'Redis', version: 'starter-data-redis', note: 'Account 餘額／狀態快取（可選）；無 Redis 時降級處理' },
-  { layer: '基建', tech: 'PostgreSQL', version: 'prod 敘述', note: '正式／docker profile 持久庫；與 H2 切換，schema 對齊 JPA' },
-  { layer: '排程', tech: 'Job Service', version: 'Spring Boot 3.2', note: ':8083 @Scheduled 風格；逾時未成交 PENDING → CANCELLED（可選，不進 S 公式）' }
+  { layer: '前端', tech: 'Vue', version: '^3.5.13', purpose: '組前端畫面與互動（SPA）', note: 'Composition API；交易前台／會員後台／藍圖頁' },
+  { layer: '前端', tech: 'Vue Router', version: '^4.5.0', purpose: '前端頁面路由與導覽守衛', note: 'JWT 守衛（requiresAuth／admin）；公開／blueprint' },
+  { layer: '前端', tech: 'Axios', version: '^1.7.9', purpose: '瀏覽器發 HTTP 呼叫後端 API', note: 'Order／Gateway；自動帶 Bearer；401 清 session' },
+  { layer: '前端', tech: 'Vite', version: '^6.0.7', purpose: '前端開發伺服器與打包建置', note: ':5173 HMR；npm run build 產 dist' },
+  { layer: '前端', tech: 'Mermaid', version: '^11.16', purpose: '把流程／架構圖文字渲染成圖', note: '僅藍圖頁動態載入，不進其他頁主包' },
+  { layer: '後端', tech: 'Java', version: '21', purpose: '後端業務邏輯的執行語言', note: 'Gradle toolchain；Lombok；虛擬執行緒可用' },
+  { layer: '後端', tech: 'Spring Boot', version: '3.2.2', purpose: '快速啟動 Web／微服務應用', note: 'gateway／order／risk／account／job 各服務基底' },
+  { layer: '後端', tech: 'Spring Cloud', version: '2023.0.0', purpose: '統一鎖定微服務相關套件版本（BOM）', note: 'BOM＝Bill of Materials；Gateway／OpenFeign 版本自動對齊，不必手寫版號' },
+  { layer: '後端', tech: 'Gateway MVC', version: 'spring-cloud-gateway-server-mvc', purpose: '統一 API 入口、轉發到後端服務', note: ':8080 轉發 Order；可加 X-Demo-Via-Gateway' },
+  { layer: '後端', tech: 'OpenFeign', version: 'spring-cloud-starter-openfeign', purpose: '服務間用介面做同步 HTTP 呼叫', note: '成交時 Order → Risk :8082 名目風控；通過 ACCEPTED／拒絕 REJECTED' },
+  { layer: '後端', tech: 'Spring Security', version: 'Boot starter', purpose: '認證與授權（誰能打哪些 API）', note: '登入、JWT 過濾、ROLE_USER／ROLE_ADMIN（RBAC）' },
+  { layer: '後端', tech: 'JJWT', version: '0.12.5', purpose: '在 Java 裡簽發／驗證 JWT 字串', note: '≠ JWT 標準本身；HS 簽驗；前端 Token 存 localStorage' },
+  { layer: '後端', tech: 'Spring Data JPA', version: 'Boot starter', purpose: '用物件操作資料庫（ORM）', note: 'Order／Account 實體；Repository＋交易邊界' },
+  { layer: '後端', tech: 'H2', version: 'runtime', purpose: '本機／測試用輕量資料庫', note: 'jdbc:h2:mem:…；免 Docker 即可 Demo' },
+  { layer: '後端', tech: 'springdoc OpenAPI', version: '2.3.0', purpose: '自動產生 API 文件與試打介面', note: 'Order :8081 /swagger-ui.html' },
+  { layer: '後端', tech: 'Actuator + Prometheus', version: 'Micrometer', purpose: '健康檢查與監控指標輸出', note: '/actuator/health 拓撲燈；/actuator/prometheus 刮取' },
+  { layer: '基建', tech: 'Kafka', version: 'spring-kafka', purpose: '非同步訊息／事件串流', note: 'order／account 事件（可選）；無 broker 時降級' },
+  { layer: '基建', tech: 'Redis', version: 'starter-data-redis', purpose: '高速快取／暫存狀態', note: 'Account 餘額等（可選）；無 Redis 時降級' },
+  { layer: '基建', tech: 'PostgreSQL', version: 'prod 敘述', purpose: '正式環境持久化關聯式資料庫', note: 'docker／prod profile；local 改用 H2' },
+  { layer: '排程', tech: 'Job Service', version: 'Spring Boot 3.2', purpose: '定時背景工作（排程任務）', note: ':8083 逾時 PENDING→CANCELLED（可選；不進 S 公式）' }
 ];
 
 /** 技術棧分組順序與框標題說明 */

@@ -1,0 +1,35 @@
+# FinTechDemo — Prometheus scrape（Demo／簡報）
+# 本機 IntelliJ bootRun + Docker 監控時，用 host.docker.internal 打宿主機埠。
+# 若全走 compose 服務名，可改回 gateway / order-service 等。
+#
+# 啟動：docker compose up -d --no-deps prometheus grafana
+# UI：http://localhost:9090
+
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: fintech-gateway
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+
+  - job_name: fintech-order
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8081"]
+
+  - job_name: fintech-risk
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8082"]
+
+  - job_name: fintech-job
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8083"]
+
+  - job_name: fintech-account
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8084"]

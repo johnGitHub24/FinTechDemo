@@ -1,8 +1,7 @@
 /**
  * 【職責】Vite 開發伺服器與前端建置設定。
- * 【主要匯出】Vue 外掛、開發埠、後端 API proxy 與 dist 輸出目錄。
- * 【與後端關係】開發時將 /api 請求代理到單體後端 :8081，
- * 或以 VITE_API_TARGET 指向分散式 Gateway（例如 :8080），避免瀏覽器跨來源問題。
+ * 【主要匯出】Vue 外掛、開發埠、後端 API／Demo proxy。
+ * 【與後端關係】/api → order；/proxy/* → 各服務 health 與 Demo API（免 CORS）。
  */
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
@@ -10,14 +9,49 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
   plugins: [vue()],
   server: {
-    // 【概念】前端開發伺服器固定使用 5173，啟動後直接開啟登入頁。
     port: 5173,
     open: '/login',
     proxy: {
-      // 【技巧】保留 /api 路徑並轉送至後端；環境變數可切換為 Gateway。
       '/api': {
         target: process.env.VITE_API_TARGET || 'http://localhost:8081',
         changeOrigin: true
+      },
+      '/proxy/order-health': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
+      '/proxy/risk-health': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
+      '/proxy/gateway-health': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
+      '/proxy/job-health': {
+        target: 'http://localhost:8083',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
+      '/proxy/account-health': {
+        target: 'http://localhost:8084',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
+      // Demo Risk Check 頁：POST JSON
+      '/proxy/risk-check': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        rewrite: () => '/api/risk/check'
+      },
+      // Demo Account Me：轉發 /api/**
+      '/proxy/account-api': {
+        target: 'http://localhost:8084',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/proxy\/account-api/, '/api')
       }
     }
   },

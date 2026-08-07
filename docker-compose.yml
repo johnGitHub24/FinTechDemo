@@ -231,3 +231,39 @@ services:
       - "5173:80"
     profiles:
       - full
+
+  # -------------------------------------------------------------------------
+  # Prometheus — scrape 各服務 /actuator/prometheus（簡報觀測）
+  # 【職責】抓取 gateway／order／risk／account／job 指標
+  # 【技巧】profiles: [monitoring]；設定見 monitoring/prometheus.yml
+  # 【概念】與業務容器同 network，用服務名當 scrape target
+  # -------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: fintech-demo-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    # 不依賴業務容器：本機常以 IntelliJ bootRun，監控可單獨起
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: fintech-demo-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_DEFAULT_THEME: light
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring

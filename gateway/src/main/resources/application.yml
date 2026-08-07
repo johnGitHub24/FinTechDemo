@@ -29,5 +29,5 @@ management:
   endpoints:
     web:
       exposure:
-        # 【技巧】探針夠用即可；gateway 通常不暴露 prometheus（可依需求加）
-        include: health,info
+        # 【技巧】health／info／prometheus：Demo 監控 scrape 用
+        include: health,info,prometheus

@@ -1,7 +1,9 @@
 package com.fintech.demo.account;
 
+import com.fintech.demo.support.DemoTestFixtures;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,13 +20,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * 【職責】帳戶 API 整合測試（Fixture 文件對照 ACCOUNT Case）。
+ * 【技巧】JWT 含 uid；ACCOUNT-* JSON 為契約註記（GET 無 body）。
+ * 【概念】與單元／種子資料成對，保護 /api/accounts/me。
+ */
+@Tag("integration")
 @SpringBootTest
 @AutoConfigureMockMvc
-/**
- * 【職責】驗證帳戶 HTTP API 的 JWT 驗證與目前使用者帳戶查詢。
- * 【技巧】以 MockMvc 模擬請求，並用相同 HMAC 密鑰簽發含 uid claim 的測試 JWT。
- * 【概念】整合測試保護 Security Filter、Controller 與種子帳戶資料的跨層契約。
- */
 class AccountApiIntegrationTest {
 
     private static final String SECRET = "fintech-demo-dev-secret-key-32bytes!!";
@@ -33,19 +36,21 @@ class AccountApiIntegrationTest {
     private MockMvc mockMvc;
 
     /**
-     * CASE-ACCOUNT-API-001：Given 未攜帶授權 Token，When 查詢目前帳戶，Then 回應 401 Unauthorized。
+     * CASE ACCOUNT-002：無 Token → 401（對照 ACCOUNT-002-UNAUTHORIZED fixture 註記）。
      */
     @Test
-    void accountsMe_withoutToken_shouldUnauthorized() throws Exception {
+    void ACCOUNT_002_withoutToken_shouldUnauthorized() throws Exception {
+        DemoTestFixtures.loadJson("account", "ACCOUNT-002-UNAUTHORIZED");
         mockMvc.perform(get("/api/accounts/me"))
                 .andExpect(status().isUnauthorized());
     }
 
     /**
-     * CASE-ACCOUNT-API-002：Given 含有效 uid 的 JWT，When 查詢目前帳戶，Then 回傳對應種子帳戶。
+     * CASE ACCOUNT-001：有效 JWT → 種子帳戶（對照 ACCOUNT-001-SUCCESS）。
      */
     @Test
-    void accountsMe_withJwtUid_shouldReturnSeedAccount() throws Exception {
+    void ACCOUNT_001_withJwt_shouldReturnSeedAccount() throws Exception {
+        DemoTestFixtures.loadJson("account", "ACCOUNT-001-SUCCESS");
         String token = tokenWithUid("trader1", 1L, List.of("ROLE_USER"));
         mockMvc.perform(get("/api/accounts/me")
                         .header("Authorization", "Bearer " + token)

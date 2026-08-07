@@ -40,7 +40,8 @@
       <h2>1. 技術棧與版本</h2>
       <p class="story-meta">
         權威來源：<code>frontend/package.json</code>、<code>build.gradle</code>（Java 21 · Boot 3.2.2 · Cloud 2023.0.0）。
-        「Boot starter」表示版本跟隨 Spring Boot BOM，不另鎖號。同一層收在同一個框。
+        「Boot starter／Cloud BOM」表示版本跟著官方清單走，不必逐一手鎖。同一層收在同一個框。
+        <strong>BOM</strong>＝Bill of Materials（依賴版本總表）。
       </p>
       <div class="stack-groups">
         <div
@@ -55,13 +56,14 @@
           </header>
           <table>
             <thead>
-              <tr><th>技術</th><th>版本</th><th>說明</th></tr>
+              <tr><th>技術</th><th>版本</th><th>主要目的</th><th>本專案怎麼用</th></tr>
             </thead>
             <tbody>
               <tr v-for="(row, i) in g.items" :key="i">
                 <td>{{ row.tech }}</td>
                 <td><code>{{ row.version }}</code></td>
-                <td>{{ row.note }}</td>
+                <td class="col-purpose">{{ row.purpose }}</td>
+                <td class="col-note">{{ row.note }}</td>
               </tr>
             </tbody>
           </table>
@@ -100,7 +102,7 @@
             Spring Security 過濾器驗 Token 後做 RBAC</li>
           <li><strong>下單</strong>：JPA 寫入，狀態 <code>PENDING</code></li>
           <li><strong>入口</strong>：最短直連 Order；完整敘事可經 Gateway <code>:8080</code></li>
-          <li><strong>成交</strong>：Order OpenFeign → Risk <code>:8082</code> 名目風控</li>
+          <li><strong>成交</strong>：Order 以 <strong>OpenFeign</strong>（宣告式 HTTP 客戶端）同步呼叫 Risk <code>:8082</code> 名目風控</li>
           <li><strong>結果</strong>：通過 <code>ACCEPTED</code>／拒絕 <code>REJECTED</code></li>
           <li><strong>帳務（可選）</strong>：Account <code>:8084</code> + Redis + Kafka</li>
           <li><strong>逾時（可選）</strong>：Job <code>:8083</code> 久未成交的 PENDING → <code>CANCELLED</code></li>

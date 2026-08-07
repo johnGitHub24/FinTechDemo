@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 【職責】Demo 拓撲探測 API（需 JWT，與其他 /api 一致）。
+ * 【職責】Demo 拓撲探測 API（公開，登入頁亦可呼叫）。
  * 【技巧】GET /api/demo/topology；由 {@link TopologyService} 代 ping health。
- * 【概念】避開瀏覽器跨埠 CORS，仍呈現環境事實燈。
+ * 【概念】避開瀏覽器跨埠 CORS；訪客可在 /login 看到 Risk 是否 UP（成交必要條件）。
  */
 @RestController
 @RequestMapping("/api/demo")

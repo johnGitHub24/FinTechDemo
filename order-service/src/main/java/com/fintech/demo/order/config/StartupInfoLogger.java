@@ -38,8 +38,8 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         out.println("║   前端：cd frontend && npm run dev → http://localhost:5173                       ║");
         out.println("║   帳號：trader1 / password   ·   ADMIN：admin / password                         ║");
         out.println("╠══════════════════════════════════════════════════════════════════════════════════╣");
-        out.println("║ 【前端】                                                                          ║");
-        out.println("║   Vue Dev      http://localhost:5173                                             ║");
+        out.println("║ 【前端】 ★ 可點連結在瀏覽器：http://localhost:5173/login （右側 Demo 快捷入口）   ║");
+        out.println("║   Vue Dev      http://localhost:5173     ← 需另開：cd frontend && npm run dev     ║");
         out.println("║   Login        http://localhost:5173/login                                       ║");
         out.println("║   Trade        http://localhost:5173/trade                                       ║");
         out.println("║   Portal       http://localhost:5173/portal                                      ║");
@@ -69,6 +69,12 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         out.println("║   Positions    http://localhost:8084/api/positions                               ║");
         out.println("║   Apply Trade  http://localhost:8084/api/internal/accounts/{userId}/apply-trade  ║");
         out.println("╠══════════════════════════════════════════════════════════════════════════════════╣");
+        out.println("║ 【觀測／壓測 Demo】  docker compose --profile monitoring up -d                     ║");
+        out.println("║   Grafana      http://localhost:3000  （admin/admin · FinTechDemo Overview）      ║");
+        out.println("║   Prometheus   http://localhost:9090                                             ║");
+        out.println("║   Locust UI    http://localhost:8089  （.\\scripts\\run-loadtest.ps1 -WebUi）      ║");
+        out.println("║   前端快捷     http://localhost:5173/login  （登入頁可點上述連結）                ║");
+        out.println("╠══════════════════════════════════════════════════════════════════════════════════╣");
         out.println("║ 【學習文件】 先跑 .\\scripts\\serve-docs.ps1 → http://127.0.0.1:5500/docs/…        ║");
         out.println("║   統一入口     http://127.0.0.1:5500/docs/index.html                              ║");
         out.println("║   Demo 流程    http://127.0.0.1:5500/docs/portals/demo-flow.html                  ║");
@@ -79,6 +85,7 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         out.println("║ 【建議啟動順序】                                                                  ║");
         out.println("║   1) 最短可成交：Risk(:8082) → Order(:8081) → frontend(:5173)                     ║");
         out.println("║   2) 完整：Risk → Account → Order → Gateway（+ Job 可選）                        ║");
+        out.println("║   3) 觀測：再加 --profile monitoring（Grafana/Prometheus）                       ║");
         out.println("║   H2 JDBC：jdbc:h2:mem:fintechdemo  ·  User：sa  ·  Password：（空白）            ║");
         out.println("╚══════════════════════════════════════════════════════════════════════════════════╝");
         out.println();

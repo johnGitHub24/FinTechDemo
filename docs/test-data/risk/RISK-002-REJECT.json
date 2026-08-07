@@ -1,0 +1,8 @@
+{
+  "userId": 1,
+  "symbol": "AAPL",
+  "side": "BUY",
+  "quantity": 10,
+  "price": 100,
+  "cashBalance": 50
+}

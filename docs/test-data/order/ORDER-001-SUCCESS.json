@@ -1,0 +1,7 @@
+{
+  "clientOrderId": "fixture-order-001",
+  "symbol": "AAPL",
+  "side": "BUY",
+  "quantity": 1,
+  "price": 150.00
+}

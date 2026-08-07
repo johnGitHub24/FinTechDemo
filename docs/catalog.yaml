@@ -1,6 +1,6 @@
-# FinTechDemo docs catalog — 唯一清單（書櫃／閱讀器／HTML 產生器共用）
-# 權威 MD 在 _md/；瀏覽請開 .html（同路徑 .md 為導向 stub）
-# 重新產生：.\scripts\generate-docs-html.ps1
+# FinTechDemo docs catalog — 精簡傳承清單
+# 權威 MD：`_md/` · 瀏覽 HTML：同路徑 .html · 產生：`.\scripts\generate-docs-html.ps1`
+# 入口：docs/index.html · 總驗收：docs/驗收清單.md
 
 docs:
   - id: why
@@ -9,10 +9,6 @@ docs:
     title: 技術次序與架構為什麼
     md: _md/guides/why.md
     html: guides/why.html
-    legacy:
-      - guides/why.md
-      - 技術次序與架構為什麼.md
-      - pages/why.md
 
   - id: fusion
     section: guides
@@ -20,10 +16,6 @@ docs:
     title: 技術融合對照
     md: _md/guides/fusion.md
     html: guides/fusion.html
-    legacy:
-      - guides/fusion.md
-      - 技術融合對照.md
-      - pages/fusion.md
 
   - id: story-ui
     section: guides
@@ -31,10 +23,6 @@ docs:
     title: 產品劇情-前台與後台
     md: _md/guides/story-ui.md
     html: guides/story-ui.html
-    legacy:
-      - guides/story-ui.md
-      - 產品劇情-前台與後台.md
-      - pages/story-ui.md
 
   - id: story-rbac
     section: guides
@@ -42,10 +30,6 @@ docs:
     title: 產品劇情與RBAC
     md: _md/guides/story-rbac.md
     html: guides/story-rbac.html
-    legacy:
-      - guides/story-rbac.md
-      - 產品劇情與RBAC.md
-      - pages/story-rbac.md
 
   - id: spec
     section: guides
@@ -53,10 +37,6 @@ docs:
     title: FinTechDemo-SPEC（權威規格）
     md: _md/guides/spec.md
     html: guides/spec.html
-    legacy:
-      - guides/spec.md
-      - pages/spec.md
-      - FinTechDemo-SPEC.md
 
   - id: claude
     section: guides
@@ -64,9 +44,6 @@ docs:
     title: CLAUDE.md（專案規則）
     md: _md/guides/claude.md
     html: guides/claude.html
-    legacy:
-      - guides/claude.md
-      - pages/claude.md
 
   - id: architecture
     section: architecture
@@ -74,10 +51,6 @@ docs:
     title: architecture
     md: _md/architecture/architecture.md
     html: architecture/architecture.html
-    legacy:
-      - architecture/architecture.md
-      - architecture.md
-      - architecture.html
 
   - id: eng-config
     section: architecture
@@ -85,10 +58,6 @@ docs:
     title: engineering-config
     md: _md/architecture/engineering-config.md
     html: architecture/engineering-config.html
-    legacy:
-      - architecture/engineering-config.md
-      - engineering-config.md
-      - engineering-config.html
 
   - id: distributed
     section: architecture
@@ -96,10 +65,6 @@ docs:
     title: 分散式系統落地
     md: _md/architecture/distributed.md
     html: architecture/distributed.html
-    legacy:
-      - architecture/distributed.md
-      - 分散式系統落地.md
-      - pages/distributed.md
 
   - id: api-spec
     section: architecture
@@ -107,10 +72,6 @@ docs:
     title: API規格書
     md: _md/architecture/api-spec.md
     html: architecture/api-spec.html
-    legacy:
-      - architecture/api-spec.md
-      - API規格書.md
-      - pages/api-spec.md
 
   - id: db
     section: architecture
@@ -118,10 +79,6 @@ docs:
     title: 資料庫設計
     md: _md/architecture/db.md
     html: architecture/db.html
-    legacy:
-      - architecture/db.md
-      - 資料庫設計.md
-      - pages/db.md
 
   - id: testing
     section: architecture
@@ -129,10 +86,6 @@ docs:
     title: testing
     md: _md/architecture/testing.md
     html: architecture/testing.html
-    legacy:
-      - architecture/testing.md
-      - testing.md
-      - testing.html
 
   - id: verify-design
     section: architecture
@@ -140,10 +93,6 @@ docs:
     title: 驗證設計
     md: _md/architecture/verify-design.md
     html: architecture/verify-design.html
-    legacy:
-      - architecture/verify-design.md
-      - 驗證設計.md
-      - pages/verify-design.md
 
   - id: k8s-tips
     section: deploy
@@ -151,21 +100,13 @@ docs:
     title: K8s跑通與驗證技巧
     md: _md/deploy/k8s-tips.md
     html: deploy/k8s-tips.html
-    legacy:
-      - deploy/k8s-tips.md
-      - K8s跑通與驗證技巧.md
-      - pages/k8s-tips.md
 
   - id: stages-md
     section: deploy
     group: 部署
-    title: 上線部署階段層次（MD）
+    title: 上線部署階段層次
     md: _md/deploy/stages.md
     html: deploy/stages-doc.html
-    legacy:
-      - deploy/stages.md
-      - 上線部署階段層次.md
-      - pages/stages.md
 
   - id: deploy-readme
     section: deploy
@@ -173,68 +114,36 @@ docs:
     title: deploy/README
     md: _md/deploy/deploy-readme.md
     html: deploy/deploy-readme.html
-    legacy:
-      - deploy/deploy-readme.md
-      - pages/deploy-readme.md
-
-  - id: portal-design
-    section: architecture
-    group: 設計備註
-    title: 統一入口設計 spec
-    md: superpowers/specs/2026-08-06-docs-unified-portal-design.md
-    html: architecture/portal-design.html
-
-  - id: roadmap-design
-    section: architecture
-    group: 設計備註
-    title: 學習導引地圖設計 spec
-    md: superpowers/specs/2026-08-06-learning-roadmap-design.md
-    html: architecture/roadmap-design.html
-
-  - id: topic-html-design
-    section: architecture
-    group: 設計備註
-    title: 主題目錄 HTML catalog 設計
-    md: superpowers/specs/2026-08-06-docs-topic-html-catalog-design.md
-    html: architecture/topic-html-design.html
 
 portals:
   - id: learning-map
-    title: 學習導引地圖（雙軌）
+    title: 學習導引地圖
     html: portals/learning-map.html
-    legacy: [learning-map.html, 學習導引地圖.html]
 
   - id: loop-guide
     title: 部署跑通 · Loop Engineering
     html: portals/loop-guide.html
-    legacy: [loop-guide.html, 部署跑通-LoopEngineering教學指導.html]
 
   - id: stages
     title: 上線部署階段層次（S0→S6）
     html: portals/stages.html
-    legacy: [stages.html, 上線部署階段層次.html]
 
   - id: boot-entrypoint
     title: 啟動流程 · EntryPoint
     html: portals/boot-entrypoint.html
-    legacy: [boot-entrypoint.html, 啟動流程-從執行到EntryPoint.html]
 
   - id: demo-flow
     title: 啟動與 Demo 運作流程
     html: portals/demo-flow.html
-    legacy: [demo-flow.html, 啟動與Demo運作流程.html]
 
   - id: handbook
     title: 完整學習手冊
     html: portals/handbook.html
-    legacy: [handbook.html, FinTechDemo-完整學習手冊.html]
 
   - id: codeGraphic
     title: CodeGraphic
     html: portals/codeGraphic.html
-    legacy: [codeGraphic.html]
 
   - id: swagger
     title: Swagger UI
     html: portals/swagger.html
-    legacy: [swagger.html]

@@ -1,54 +1,48 @@
 # FinTechDemo — 測試與 CI
 
+總驗收勾選：[驗收清單.md](驗收清單.md)
+
 ## 驗證入口
 
 ```powershell
-.\scripts\check.ps1                 # unit + integration
-.\scripts\verify-pipeline.ps1       # check + compose config + k8s
-.\scripts\verify-pipeline.ps1 -Up -Smoke   # 可選：起容器 + API 煙霧
+.\scripts\check.ps1                          # unit + integration
+.\scripts\verify-pipeline.ps1                # check + compose config + k8s
+.\scripts\verify-pipeline.ps1 -Up -Smoke     # 可選：容器 + API 煙霧
+cd frontend; npm run build                   # 前端建置
 ```
 
-前端：
+## Case ID（Fixture：`docs/test-data/`）
+
+| Case ID | 層 | 說明 |
+|---------|----|------|
+| AUTH-001 | Int | 登入成功 → token |
+| AUTH-002 | Int | 錯誤密碼 → 401 |
+| AUTH-003 | Int | 缺欄位 → 400 |
+| ORDER-001 | Int | 下單 201 PENDING |
+| ORDER-003 | Int | 缺必填 → 400 |
+| ORDER-004 | Int | quantity 非法 → 400 |
+| ORDER-008 | Int | 列表分頁 meta |
+| SEC-001 | Int | 無 Token → 401 |
+| RISK-001 | Unit+Int | 風控通過 |
+| RISK-002 | Unit+Int | 風控拒絕 |
+| ACCOUNT-001 | Int | JWT → 種子帳戶 |
+| ACCOUNT-002 | Int | 無 Token → 401 |
+| P-BASE-01 | Perf | Locust baseline |
+
+載入器：`com.fintech.demo.support.DemoTestFixtures`（`testFixtures(project(':common'))`）
+
+## 壓測／觀測
 
 ```powershell
-cd frontend; npm run build
-```
-
-總驗收勾選：[驗收清單.md](驗收清單.md)
-
-= 各模組 unit + integration（`gradlew check`）。
-
-## Fixture
-
-- 路徑：`docs/test-data/{category}/{CASE-ID}.json`
-- 類別：`com.fintech.demo.support.DemoTestFixtures`（`testFixtures(project(':common'))`）
-
-## 壓測
-
-```powershell
-.\scripts\run-loadtest.ps1
-.\scripts\run-loadtest.ps1 -Scenario fullflow
-.\scripts\run-loadtest.ps1 -WebUi   # http://localhost:8089
+.\scripts\run-loadtest.ps1 -WebUi            # http://localhost:8089
+docker compose --profile monitoring up -d    # Grafana :3000 · Prometheus :9090
 ```
 
 門檻：錯誤率 &lt; 1%。報告：`loadtest/reports/`。
 
-## 觀測（Demo）
-
-```powershell
-docker compose --profile monitoring up -d
-# 或
-.\scripts\start-monitoring-local.ps1
-```
-
-- Grafana http://localhost:3000 （admin/admin）· dashboard `FinTechDemo Overview`
-- Prometheus http://localhost:9090
-- 前端快捷：http://localhost:5173/login
-
 ## 簡報一條龍
 
-1. Risk(:8082) + Order(:8081) + `cd frontend && npm run dev`
-2. 開 `/login` 看服務燈號與 Demo 快捷；`/blueprint` 講技術棧
-3. `.\scripts\check.ps1` → `.\scripts\verify-pipeline.ps1`
-4. monitoring profile → Grafana；Locust `-WebUi` → 壓測 UI
-5. （加分口頭）Eureka 升級路徑見 SPEC §2.3／TradingMicroService
+1. Risk(:8082) + Order(:8081) + frontend `:5173`  
+2. `/login` → `/trade` 成交 → `/blueprint`  
+3. `.\scripts\check.ps1` → `.\scripts\verify-pipeline.ps1`  
+4. （加分）Eureka 升級口徑見 SPEC §2.3／TradingMicroService  

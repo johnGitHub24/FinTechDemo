@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # order-service — 預設 application.yml（local／test 基線）
 # 【職責】下單服務的埠、H2、JPA、Kafka（預設關）、JWT、下游 URL、Actuator／OpenAPI
 # 【技巧】Spring Boot 鬆散綁定：環境變數 FINTECH_KAFKA_ENABLED ↔ fintech.kafka.enabled
@@ -66,8 +66,8 @@ fintech:
     # 【概念】WebConfig：允許 Vue :5173 直連 order API（Vite proxy 以外的路徑）
     allowed-origins: "http://localhost:5173,http://127.0.0.1:5173"
   startup:
-    # 【概念】Order 就緒後自動跑 ensure-demo-links（Loop Engineering）補齊 DOWN 服務
-    # 【技巧】預設也拉 Grafana/Prometheus（Docker 或本機 fallback）與 Locust；要省 RAM 才改 true
+    # 【概念】Order 就緒後自動跑 ensure-demo-links（Loop Engineering）補齊橫幅全部服務
+    # 【技巧】FromOrder：Order+Risk+Vite + Gateway/Job/Account/Docs/Grafana/Prom/Locust；要省 RAM 才改 skip=true
     ensure-stack: true
     ensure-skip-docker: false
     ensure-skip-locust: false

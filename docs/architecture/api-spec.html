@@ -196,8 +196,12 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <td>資源不存在或不屬於你</td>
 </tr>
 <tr>
+<td>409</td>
+<td>資源狀態衝突（與目前狀態矛盾，例如已成交／已取消不可再改、樂觀鎖版本不符）</td>
+</tr>
+<tr>
 <td>422</td>
-<td>業務規則（重複 clientOrderId 等）</td>
+<td>業務規則無法受理（本專案：重複 <code>clientOrderId</code>、參數語意不合法等）</td>
 </tr>
 </tbody></table>
 <h2>埠</h2>

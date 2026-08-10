@@ -88,12 +88,12 @@ flowchart TB
   end
 
   subgraph PREP["啟動前：類別路徑就緒"]
-    CP["Classpath 含：<br/>order-service/classes<br/>+ common.jar<br/>+ Spring Boot / 依賴 jars"]
-    RES["resources 進 classpath：<br/>application.yml<br/>application-demo.yml（若有）"]
+    CP["Classpath 含<br/>order-service classes<br/>common.jar<br/>Spring Boot 依賴 jars"]
+    RES["resources 進 classpath<br/>application.yml<br/>application-demo.yml 若有"]
   end
 
   subgraph ENTRY["Entry Point"]
-    MAIN["OrderServiceApplication.main(String[] args)"]
+    MAIN["OrderServiceApplication.main args"]
   end
 
   IDE --> CP
@@ -102,7 +102,7 @@ flowchart TB
   CP --> RES
   RES --> MAIN
 
-  MAIN --> SAR["SpringApplication.run(<br/>OrderServiceApplication.class, args)"]
+  MAIN --> SAR["SpringApplication.run<br/>OrderServiceApplication.class, args"]
       </div>
       <table>
         <thead><tr><th>方式</th><th>相關檔</th><th>說明</th></tr></thead>
@@ -144,18 +144,18 @@ sequenceDiagram
 
   JVM->>CL: 載入主類 OrderServiceApplication
   CL-->>JVM: 解析注解中繼資料完成
-  JVM->>App: 呼叫 main(args)【Entry Point】
-  App->>SA: SpringApplication.run(App.class, args)
+  JVM->>App: 呼叫 main — Entry Point
+  App->>SA: SpringApplication.run App.class, args
   SA->>SA: 建立實例並推斷 SERVLET
   SA->>SA: 準備 Environment / listeners
       </div>
       <p class="note">ClassLoader 會讀 <code>.class</code> 並解析 <code>@SpringBootApplication</code>／<code>@EnableFeignClients</code> 中繼資料；<code>main</code> 是你寫的第一行業務啟動碼，其餘 Bean 要等 <code>refresh()</code>。</p>
       <div class="mermaid">
 flowchart LR
-  A["main()"] --> B["new SpringApplication(primarySources)"]
+  A["main"] --> B["new SpringApplication primarySources"]
   B --> C["推斷 WebApplicationType.SERVLET"]
-  C --> D["建立 ApplicationContext<br/>AnnotationConfigServletWebServer..."]
-  D --> E["refresh() 載入 Bean"]
+  C --> D["建立 ApplicationContext Servlet WebServer"]
+  D --> E["refresh 載入 Bean"]
       </div>
       <p class="note">對照原始碼：<code>OrderServiceApplication.java</code> 只有 <code>main</code> → <code>SpringApplication.run</code>。其餘 Controller／Service 都是 refresh 階段才變成 Bean。</p>
     </section>
@@ -171,13 +171,13 @@ flowchart LR
       <div class="mermaid">
 flowchart TB
   subgraph SRC["設定來源（後者可覆寫前者，簡化示意）"]
-    Y1["classpath:/application.yml<br/>order-service/src/main/resources/"]
-    Y2["classpath:/application-demo.yml<br/>僅當 profile=demo"]
+    Y1["classpath application.yml<br/>order-service src main resources"]
+    Y2["classpath application-demo.yml<br/>僅當 profile=demo"]
     ENV["環境變數<br/>例 KAFKA_BOOTSTRAP_SERVERS<br/>FINTECH_SERVICES_RISK_URL"]
-    ARG["命令列 args<br/>--server.port=18081<br/>--spring.profiles.active=demo"]
+    ARG["命令列 args<br/>server.port=18081<br/>spring.profiles.active=demo"]
   end
 
-  subgraph ENVOBJ["Environment（Spring 抽象）"]
+  subgraph ENVOBJ["Environment Spring 抽象"]
     PROP["PropertySourcesPropertyResolver<br/>統一用 key 取值"]
   end
 
@@ -186,7 +186,7 @@ flowchart TB
   ENV --> PROP
   ARG --> PROP
 
-  PROP --> BIND["綁定到：<br/>@Value / @ConfigurationProperties<br/>server.port、spring.*、fintech.*、app.jwt.*"]
+  PROP --> BIND["綁定到 Value 與 ConfigurationProperties<br/>server.port、spring、fintech、app.jwt"]
       </div>
       <table>
         <thead><tr><th>檔案／來源</th><th>典型內容</th><th>何時生效</th></tr></thead>
@@ -231,36 +231,36 @@ flowchart TB
       </ul>
       <div class="mermaid">
 flowchart TB
-  RUN["SpringApplication.run"] --> REF["AbstractApplicationContext.refresh()"]
+  RUN["SpringApplication.run"] --> REF["AbstractApplicationContext.refresh"]
 
-  REF --> SCAN["ComponentScan<br/>套件 com.fintech.demo.order.*"]
+  REF --> SCAN["ComponentScan<br/>套件 com.fintech.demo.order"]
   REF --> AUTO["AutoConfiguration<br/>依 jar + 條件注解"]
-  REF --> PROP2["綁定 ConfigurationProperties<br/>／注入 @Value"]
+  REF --> PROP2["綁定 ConfigurationProperties<br/>與 Value 注入"]
 
-  SCAN --> BEANS["建立 Bean 例：<br/>OrderController<br/>TradingService<br/>JwtTokenProvider<br/>StartupInfoLogger<br/>SecurityConfig …"]
-  AUTO --> INFRA["DataSource / EntityManager<br/>Tomcat / DispatcherServlet<br/>SecurityFilterChain<br/>KafkaTemplate（若啟用）"]
+  SCAN --> BEANS["建立 Bean 例<br/>OrderController TradingService<br/>JwtTokenProvider StartupInfoLogger<br/>SecurityConfig"]
+  AUTO --> INFRA["DataSource EntityManager<br/>Tomcat DispatcherServlet<br/>SecurityFilterChain<br/>KafkaTemplate 若啟用"]
   PROP2 --> BEANS
 
-  BEANS --> WIRE["依賴注入完成<br/>構造子／欄位注入"]
+  BEANS --> WIRE["依賴注入完成"]
   INFRA --> WIRE
   WIRE --> WEB["WebServer 綁定 server.port<br/>預設 8081"]
       </div>
       <div class="mermaid">
 flowchart LR
-  subgraph FILES["你會對到的程式／設定"]
+  subgraph FILES["你會對到的程式與設定"]
     APP["OrderServiceApplication.java"]
     YML["application.yml"]
-    SEC["SecurityConfig / Jwt*"]
-    API["*Controller"]
-    SVC["*Service"]
-    ENT["*Entity + Repository"]
+    SEC["SecurityConfig Jwt"]
+    API["Controller 類"]
+    SVC["Service 類"]
+    ENT["Entity 與 Repository"]
     LOG["StartupInfoLogger"]
   end
   APP -.->|掃描起點| API
   APP -.->|掃描起點| SVC
   YML -.->|Environment| SEC
   YML -.->|Environment| ENT
-  LOG -.->|ApplicationReadyEvent| LOG
+  LOG -.->|ApplicationReadyEvent| SIL2["印出就緒橫幅"]
       </div>
       <p class="note"><code>common</code> 模組的 DTO／Event 是依賴 jar，通常<strong>不會</strong>被 order 的 ComponentScan 掃成 Bean；它們是型別／契約，由 Feign／Kafka／Service 使用。</p>
     </section>
@@ -283,22 +283,22 @@ sequenceDiagram
 
   Ctx->>Tomcat: start WebServer
   Tomcat-->>Ctx: 埠就緒
-  Ctx->>SIL: ApplicationReadyEvent（先印燈號）
-  Ctx->>BOOT: ApplicationReadyEvent（背景 ensure）
+  Ctx->>SIL: ApplicationReadyEvent 先印燈號
+  Ctx->>BOOT: ApplicationReadyEvent 背景 ensure
   BOOT->>BOOT: PowerShell ensure-demo-links.ps1
-  Note over BOOT: Risk→Account→Order KEEP→Gateway→Job→Vite→Docs
+  Note over BOOT: Risk then Account then Order KEEP then Gateway Job Vite Docs
   Ctx-->>Ctx: 日誌 Started OrderServiceApplication
   Client->>Tomcat: POST /api/auth/login
   Tomcat->>Ctx: DispatcherServlet 至 AuthController
       </div>
       <div class="mermaid">
 flowchart TB
-  REQ["HTTP 請求"] --> FIL["JwtAuthenticationFilter<br/>（Security Filter Chain）"]
-  FIL --> CTRL["*Controller"]
-  CTRL --> SVC["*Service @Transactional"]
+  REQ["HTTP 請求"] --> FIL["JwtAuthenticationFilter<br/>Security Filter Chain"]
+  FIL --> CTRL["Controller"]
+  CTRL --> SVC["Service Transactional"]
   SVC --> REPO["JPA Repository / H2"]
-  SVC --> FEIGN["Feign → risk-service :8082<br/>（LOOP 會自動補 Risk）"]
-  SVC --> KAFKA["Kafka 發布／消費<br/>（profile=demo 且 enabled）"]
+  SVC --> FEIGN["Feign 到 risk-service 8082<br/>LOOP 會自動補 Risk"]
+  SVC --> KAFKA["Kafka 發布與消費<br/>profile demo 且 enabled"]
       </div>
       <p class="note">
         <strong>Loop Engineering：</strong>Order 就緒後 <code>DemoStackBootstrap</code> 預設開啟
@@ -320,13 +320,13 @@ flowchart TB
       <div class="mermaid">
 flowchart TB
   GMAIN["GatewayApplication.main"] --> GRUN["SpringApplication.run"]
-  GRUN --> GYML["載入 gateway/.../application.yml"]
-  GYML --> REC["綁定 ServiceUrlsProperties record<br/>orderUrl / riskUrl / accountUrl"]
-  REC --> ENABLE["@EnableConfigurationProperties<br/>GatewayAppConfig"]
-  ENABLE --> ROUTE["GatewayRouteConfig<br/>urls.orderUrl() / accountUrl()"]
-  ROUTE --> READY["Started GatewayApplication :8080"]
+  GRUN --> GYML["載入 gateway application.yml"]
+  GYML --> REC["綁定 ServiceUrlsProperties record<br/>orderUrl riskUrl accountUrl"]
+  REC --> ENABLE["EnableConfigurationProperties<br/>GatewayAppConfig"]
+  ENABLE --> ROUTE["GatewayRouteConfig<br/>urls.orderUrl accountUrl"]
+  ROUTE --> READY["Started GatewayApplication 8080"]
 
-  READY --> PROXY["請求 /api/** → http(orderUrl)<br/>/api/accounts/** → http(accountUrl)"]
+  READY --> PROXY["請求 api 轉到 orderUrl<br/>api accounts 轉到 accountUrl"]
       </div>
       <table>
         <thead><tr><th>檔案</th><th>角色</th></tr></thead>

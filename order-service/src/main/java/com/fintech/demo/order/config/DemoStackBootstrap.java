@@ -10,6 +10,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,15 +21,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 【職責】Order 就緒後自動跑 Loop Engineering：{@code scripts/ensure-demo-links.ps1}，補齊 DOWN 的服務。
- * 【技巧】{@link ApplicationReadyEvent} 後另開執行緒呼叫 PowerShell，不阻塞主啟動；
- *         腳本內對已 UP 的埠會 KEEP，不會再起第二個 Order。
- * 【概念】IntelliJ 只開 OrderServiceApplication 時，Risk／Vite／Gateway／Account／Job／docs
- *         ／Grafana／Prometheus／Locust 常是 DOWN → 橫幅連結點了會連不上。
- *         本類把「啟動主入口＝整棧可連（含觀測／壓測）」做成 Loop Engineering 預設。
- * 【邊界】預設不略過 monitoring／Locust。省 RAM 才設
- *         {@code fintech.startup.ensure-skip-docker=true} 或 {@code ensure-skip-locust=true}。
- *         測試用 {@code fintech.startup.ensure-stack=false} 關閉整段 ensure。
+ * 【職責】Order 就緒後自動跑 Loop Engineering：{@code scripts/ensure-demo-links.ps1 -FromOrder}。
+ * 【技巧】背景執行；失敗會重試，直到橫幅服務全 UP（或耗盡重試）。
+ * 【概念】Windows 上 bat／npm 必須用 cmd /c（腳本內已根修）；FromOrder 跳過 javadoc／test 長工。
+ * 【邊界】省 RAM：{@code ensure-skip-docker}／{@code ensure-skip-locust}；測試關 {@code ensure-stack=false}。
  */
 @Component
 @Order(100)
@@ -34,6 +33,8 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
 
     private static final Logger log = LoggerFactory.getLogger(DemoStackBootstrap.class);
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
+    /** FromOrder 腳本整輪失敗時的額外重試次數（腳本內部已有 round）。 */
+    private static final int MAX_SCRIPT_ATTEMPTS = 2;
 
     private final boolean skipDocker;
     private final boolean skipLocust;
@@ -47,7 +48,6 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
 
     /**
      * 【職責】非同步觸發 ensure-demo-links，避免拖慢 ApplicationReady。
-     * 【技巧】{@link AtomicBoolean} 防止同一 JVM 重複觸發；找不到腳本只 warn。
      */
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -66,40 +66,127 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
     }
 
     private void runEnsure(Path script) {
+        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         try {
-            List<String> cmd = new ArrayList<>();
-            cmd.add("powershell.exe");
-            cmd.add("-NoProfile");
-            cmd.add("-ExecutionPolicy");
-            cmd.add("Bypass");
-            cmd.add("-File");
-            cmd.add(script.toAbsolutePath().toString());
-            if (skipDocker) {
-                cmd.add("-SkipDocker");
-            }
-            if (skipLocust) {
-                cmd.add("-SkipLocust");
-            }
-
             Path root = script.getParent().getParent();
-            Path out = root.resolve("logs").resolve("ensure-from-order.out.log");
-            Path err = root.resolve("logs").resolve("ensure-from-order.err.log");
-            Files.createDirectories(out.getParent());
+            Path outLog = root.resolve("logs").resolve("ensure-from-order.out.log");
+            Path errLog = root.resolve("logs").resolve("ensure-from-order.err.log");
+            Files.createDirectories(outLog.getParent());
 
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.directory(root.toFile());
-            pb.redirectOutput(out.toFile());
-            pb.redirectError(err.toFile());
-            Process p = pb.start();
-            int code = p.waitFor();
-            if (code == 0) {
-                log.info("LOOP ensure-demo-links OK (exit 0). See logs/ensure-from-order.*.log");
+            int code = -1;
+            for (int attempt = 1; attempt <= MAX_SCRIPT_ATTEMPTS; attempt++) {
+                List<String> cmd = buildEnsureCommand(script);
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                pb.directory(root.toFile());
+                // 追加寫入，保留上一輪診斷
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outLog.toFile()));
+                pb.redirectError(ProcessBuilder.Redirect.appendTo(errLog.toFile()));
+                Files.writeString(outLog,
+                        System.lineSeparator()
+                                + "===== DemoStackBootstrap attempt " + attempt + "/" + MAX_SCRIPT_ATTEMPTS
+                                + " =====" + System.lineSeparator(),
+                        java.nio.file.StandardOpenOption.CREATE,
+                        java.nio.file.StandardOpenOption.APPEND);
+                Process p = pb.start();
+                code = p.waitFor();
+                if (code == 0 && isTradeReady()) {
+                    break;
+                }
+                log.warn("LOOP ensure attempt {}/{} exit={} tradeReady={}",
+                        attempt, MAX_SCRIPT_ATTEMPTS, code, isTradeReady());
+                if (attempt < MAX_SCRIPT_ATTEMPTS) {
+                    Thread.sleep(5_000L);
+                }
+            }
+
+            out.println();
+            out.println("======== LOOP ensure finished (exit " + code + ") ========");
+            out.println("  log: logs/ensure-from-order.out.log");
+            printStackStatus(out);
+            out.println("==========================================================");
+            out.println();
+
+            if (code == 0 && isTradeReady()) {
+                log.info("LOOP ensure-demo-links OK — banner stack ready. See logs/ensure-from-order.*.log");
             } else {
-                log.warn("LOOP ensure-demo-links exit={} — see logs/ensure-from-order.*.log then .\\scripts\\doctor-demo.ps1 -Fix",
-                        code);
+                log.warn("LOOP ensure-demo-links exit={} tradeReady={} — see logs/ensure-from-order.*.log then .\\scripts\\doctor-demo.ps1 -Fix",
+                        code, isTradeReady());
             }
         } catch (Exception ex) {
             log.warn("LOOP ensure-demo-links failed to start: {}", ex.toString());
+            out.println("LOOP ensure failed to start: " + ex);
+        }
+    }
+
+    private List<String> buildEnsureCommand(Path script) {
+        List<String> cmd = new ArrayList<>();
+        cmd.add("powershell.exe");
+        cmd.add("-NoProfile");
+        cmd.add("-ExecutionPolicy");
+        cmd.add("Bypass");
+        cmd.add("-File");
+        cmd.add(script.toAbsolutePath().toString());
+        cmd.add("-FromOrder");
+        if (skipDocker) {
+            cmd.add("-SkipDocker");
+        }
+        if (skipLocust) {
+            cmd.add("-SkipLocust");
+        }
+        return cmd;
+    }
+
+    /**
+     * 【目的】LOOP 結束後重印橫幅服務狀態（與啟動快照分開）。
+     */
+    private static void printStackStatus(PrintStream out) {
+        boolean order = probe("http://127.0.0.1:8081/actuator/health");
+        boolean risk = probe("http://127.0.0.1:8082/actuator/health");
+        boolean vite = probe("http://127.0.0.1:5173/login") || probe("http://localhost:5173/login");
+        boolean gateway = probe("http://127.0.0.1:8080/actuator/health");
+        boolean job = probe("http://127.0.0.1:8083/actuator/health");
+        boolean account = probe("http://127.0.0.1:8084/actuator/health");
+        boolean docs = probe("http://127.0.0.1:5500/docs/index.html");
+        boolean grafana = probe("http://127.0.0.1:3000/login");
+        boolean prom = probe("http://127.0.0.1:9090/-/healthy");
+        boolean locust = probe("http://127.0.0.1:8089/");
+        out.println("trade-ready  Order [" + up(order) + "]  Risk [" + up(risk) + "]  Vite [" + up(vite) + "]");
+        out.println("stack        Gateway [" + up(gateway) + "]  Job [" + up(job) + "]  Account [" + up(account) + "]");
+        out.println("             Docs [" + up(docs) + "]  Grafana [" + up(grafana) + "]  Prom [" + up(prom)
+                + "]  Locust [" + up(locust) + "]");
+        if (order && risk && vite) {
+            out.println("TRADE-READY OK → http://127.0.0.1:5173/login  (trader1 / password)");
+        } else {
+            out.println("TRADE-READY FAIL — run: .\\scripts\\ensure-demo-links.ps1 -FromOrder");
+        }
+    }
+
+    private static String up(boolean ok) {
+        return ok ? "UP" : "DOWN";
+    }
+
+    private static boolean isTradeReady() {
+        boolean order = probe("http://127.0.0.1:8081/actuator/health");
+        boolean risk = probe("http://127.0.0.1:8082/actuator/health");
+        boolean vite = probe("http://127.0.0.1:5173/login") || probe("http://localhost:5173/login");
+        return order && risk && vite;
+    }
+
+    private static boolean probe(String url) {
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
+            conn.setConnectTimeout(800);
+            conn.setReadTimeout(800);
+            conn.setRequestMethod("GET");
+            int code = conn.getResponseCode();
+            return code >= 200 && code < 500;
+        } catch (Exception ex) {
+            return false;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 

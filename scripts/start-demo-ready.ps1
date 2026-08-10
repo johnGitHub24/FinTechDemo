@@ -56,7 +56,16 @@ function Test-HttpOk([string] $Url) {
     try {
         $r = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 3
         return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 500)
-    } catch { return $false }
+    } catch {
+        $resp = $_.Exception.Response
+        if ($null -ne $resp) {
+            try {
+                $code = [int]$resp.StatusCode
+                return ($code -ge 200 -and $code -lt 500)
+            } catch { return $true }
+        }
+        return $false
+    }
 }
 
 function Wait-HttpOk([string] $Url, [int] $Seconds = 180) {
@@ -217,10 +226,11 @@ function Ensure-Boot([string] $Name, [string] $Task, [string] $Health, [string[]
     if ($ExtraArgs -and $ExtraArgs.Count -gt 0) {
         $argStr = $argStr + ' ' + ($ExtraArgs -join ' ')
     }
-    Start-Process -FilePath $gradlew -ArgumentList $argStr `
-        -WorkingDirectory $Root -WindowStyle Minimized `
-        -RedirectStandardOutput $outLog `
-        -RedirectStandardError $errLog
+    # Windows 根修復：勿對 .bat 用 Start-Process + RedirectStandard*（常空 log／不起程）
+    $inner = "`"$gradlew`" $argStr"
+    $wrapped = "$inner > `"$outLog`" 2> `"$errLog`""
+    Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', $wrapped) `
+        -WorkingDirectory $Root -WindowStyle Minimized | Out-Null
     if (Wait-HttpOk $Health 240) {
         Write-Host "  OK UP $Name" -ForegroundColor Green
         Start-Sleep -Seconds 2
@@ -260,11 +270,11 @@ function Ensure-Vite {
     Write-Host '  START frontend ...' -ForegroundColor Cyan
     $outLog = Join-Path $logs 'frontend.out.log'
     $errLog = Join-Path $logs 'frontend.err.log'
-    # 不用 cmd /c：避免子行程結束後 Vite 被收掉；直接打 npm.cmd
-    Start-Process -FilePath $npm -ArgumentList @('run', 'dev', '--', '--host', '127.0.0.1', '--port', '5173', '--strictPort') `
-        -WorkingDirectory $frontend -WindowStyle Minimized `
-        -RedirectStandardOutput $outLog `
-        -RedirectStandardError $errLog
+    # Windows 根修復：cmd /c + 完整 npm 路徑；綁 0.0.0.0 避免 localhost→::1 假 DOWN
+    $inner = "`"$npm`" run dev -- --host 0.0.0.0 --port 5173 --strictPort"
+    $wrapped = "$inner > `"$outLog`" 2> `"$errLog`""
+    Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', $wrapped) `
+        -WorkingDirectory $frontend -WindowStyle Minimized | Out-Null
 
     if (Wait-HttpOk 'http://127.0.0.1:5173/login' 90) {
         Write-Host '  OK UP frontend' -ForegroundColor Green
@@ -272,6 +282,10 @@ function Ensure-Vite {
     }
     if (Wait-HttpOk 'http://127.0.0.1:5173/' 15) {
         Write-Host '  OK UP frontend (root)' -ForegroundColor Green
+        return $true
+    }
+    if (Wait-HttpOk 'http://localhost:5173/login' 15) {
+        Write-Host '  OK UP frontend (localhost)' -ForegroundColor Green
         return $true
     }
     Write-Host '  FAIL frontend — logs\frontend.*.log' -ForegroundColor Red

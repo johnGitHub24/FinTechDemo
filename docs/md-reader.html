@@ -97,7 +97,7 @@
     <main>
       <div class="viewer-head">
         <h2 id="title">選擇左側文件</h2>
-        <div class="meta" id="meta">建議從專案根 <code>npx --yes serve -p 5500</code> 後開本頁。</div>
+        <div class="meta" id="meta">請用 <code>.\scripts\serve-docs.ps1</code> 開本頁（支援無 <code>.html</code> 副檔名）。</div>
         <div class="actions" id="actions"></div>
       </div>
       <div class="viewer-body" id="body">
@@ -131,14 +131,10 @@
 
       { id: "k8s-tips", group: "部署", title: "K8s跑通與驗證技巧", path: "_md/deploy/k8s-tips.md", html: "deploy/k8s-tips.html" },
       { id: "stages-md", group: "部署", title: "上線部署階段層次（MD）", path: "_md/deploy/stages.md", html: "deploy/stages-doc.html" },
-      { id: "deploy-readme", group: "部署", title: "deploy/README", path: "_md/deploy/deploy-readme.md", html: "deploy/deploy-readme.html" },
-
-      { id: "portal-design", group: "設計備註", title: "統一入口設計 spec", path: "superpowers/specs/2026-08-06-docs-unified-portal-design.md", html: "architecture/portal-design.html" },
-      { id: "roadmap-design", group: "設計備註", title: "學習導引地圖設計 spec", path: "superpowers/specs/2026-08-06-learning-roadmap-design.md", html: "architecture/roadmap-design.html" },
-      { id: "topic-html-design", group: "設計備註", title: "主題目錄 HTML catalog", path: "superpowers/specs/2026-08-06-docs-topic-html-catalog-design.md", html: "architecture/topic-html-design.html" }
+      { id: "deploy-readme", group: "部署", title: "deploy/README", path: "_md/deploy/deploy-readme.md", html: "deploy/deploy-readme.html" }
     ];
 
-    const GROUP_ORDER = ["權威／產品", "架構／設定", "資料／驗證", "部署", "設計備註"];
+    const GROUP_ORDER = ["權威／產品", "架構／設定", "資料／驗證", "部署"];
 
     const navEl = document.getElementById("nav");
     const searchEl = document.getElementById("search");

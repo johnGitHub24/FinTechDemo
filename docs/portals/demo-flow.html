@@ -49,7 +49,7 @@
   <div class="brand">FinTechDemo</div>
   <h2>流程</h2>
   <a href="#s1">1. 30 秒目標</a>
-  <a href="#s2">2. 最短啟動（展示用）</a>
+  <a href="#s2">2. 啟動優先順序（LOOP）</a>
   <a href="#s3">3. 前後台操作劇本</a>
   <a href="#s4">4. API／Swagger 驗證</a>
   <a href="#s5">5. 測試與 Pipeline</a>
@@ -72,34 +72,98 @@
   </header>
 
   <div class="one-liner">
-    <b>一句話：</b>先起 <code>order-service</code> + 前端 → 登入 → 前台下單 → 後台看餘額／歷史。分散式（Gateway／Kafka／Redis）是加分展示，不是入場門檻。
+    <b>一句話：</b>IntelliJ 只跑 <code>OrderServiceApplication</code> → 就緒後
+    <code>DemoStackBootstrap</code> 自動跑 Loop（<code>ensure-demo-links.ps1</code>）補齊缺的服務。
+    已 UP 的 KEEP；DOWN 的才起。等 1～3 分鐘再點橫幅連結。
   </div>
 
   <section id="s1">
     <h2>1. 30 秒目標</h2>
     <div class="mermaid">
 flowchart LR
-  A[啟動後端] --> B[啟動前端]
-  B --> C[登入]
-  C --> D[前台下單]
-  D --> E[後台查歷史餘額]
+  A[跑 OrderServiceApplication] --> B[ApplicationReady]
+  B --> C[DemoStackBootstrap<br/>背景 LOOP]
+  C --> D[Risk Vite Gateway… UP]
+  D --> E[登入 /trade 成交]
     </div>
   </section>
 
   <section id="s2">
-    <h2>2. 最短啟動（展示用）</h2>
-    <h3>終端 A — 後端</h3>
-    <pre>cd D:\ClaudeCode\FinTechDemo
-.\gradlew.bat :order-service:bootRun</pre>
-    <p>看到 <code>Started OrderServiceApplication</code> → 開 <a href="http://localhost:8081/swagger-ui.html" target="_blank">http://localhost:8081/swagger-ui.html</a></p>
+    <h2>2. 啟動優先順序（Loop Engineering）</h2>
+    <p>
+      權威腳本：<code>scripts/ensure-demo-links.ps1</code> ·
+      診斷修復：<code>.\scripts\doctor-demo.ps1 -Fix</code> ·
+      雙擊：<code>開啟Demo.cmd</code>
+    </p>
 
-    <h3>終端 B — 前端</h3>
-    <pre>cd D:\ClaudeCode\FinTechDemo\frontend
-npm install
-npm run dev</pre>
-    <p>瀏覽器：<a href="http://localhost:5173" target="_blank">http://localhost:5173</a>（會導向登入）</p>
+    <h3>2.1 誰觸發？</h3>
+    <table>
+      <tr><th>優先</th><th>入口</th><th>接著發生什麼</th></tr>
+      <tr>
+        <td><strong>P0（推薦）</strong></td>
+        <td>IntelliJ 跑 <code>OrderServiceApplication</code> :8081</td>
+        <td>就緒 → <code>DemoStackBootstrap</code>（預設 <code>fintech.startup.ensure-stack=true</code>）背景執行 ensure 腳本</td>
+      </tr>
+      <tr>
+        <td>P0′</td>
+        <td>雙擊 <code>開啟Demo.cmd</code></td>
+        <td>直接跑同一套 <code>ensure-demo-links.ps1</code>（含 Grafana／Prometheus／Locust；省 RAM 加 <code>-SkipDocker -SkipLocust</code>）</td>
+      </tr>
+      <tr>
+        <td>P1</td>
+        <td><code>.\scripts\doctor-demo.ps1 -Fix</code></td>
+        <td>先診斷埠，再 ensure</td>
+      </tr>
+    </table>
 
-    <h3>種子帳號</h3>
+    <h3>2.2 ensure 腳本內部順序（KEEP／只補 DOWN）</h3>
+    <div class="mermaid">
+flowchart TB
+  subgraph ORDER_READY["Order 已就緒 :8081"]
+    L["StartupInfoLogger 印燈號 UP/DOWN"]
+    B["DemoStackBootstrap 背景執行緒"]
+  end
+  subgraph ENSURE["ensure-demo-links.ps1"]
+    R["① Risk :8082"]
+    A["② Account :8084"]
+    O["③ Order :8081（已 UP→KEEP）"]
+    G["④ Gateway :8080"]
+    J["⑤ Job :8083"]
+    V["⑥ Vite :5173"]
+    D["⑦ Docs :5500"]
+    M["⑧ Grafana :3000 / Prom :9090"]
+    Lct["⑨ Locust :8089"]
+  end
+  L --> B --> R --> A --> O --> G --> J --> V --> D --> M --> Lct
+  Lct --> VFY["Verify probe 含觀測／壓測"]
+    </div>
+    <ol>
+      <li><strong>Risk</strong> 最先補：沒它就不能「成交」（Feign）。</li>
+      <li><strong>Account</strong>：帳務／Redis 敘事（S3）。</li>
+      <li><strong>Order</strong>：若已由 IntelliJ 啟動 → 探測 UP 直接 KEEP，不重複起。</li>
+      <li><strong>Gateway</strong>：統一入口（S3）。</li>
+      <li><strong>Job</strong>：逾時取消（不進 S 公式）。</li>
+      <li><strong>Vite</strong>：前端登入／藍圖。</li>
+      <li><strong>Docs</strong>：<code>serve-docs</code> :5500 學習 HTML。</li>
+      <li><strong>Grafana／Prometheus</strong>：Docker <code>--profile monitoring</code>；引擎未 Ready 則 fallback <code>start-monitoring-local.ps1</code>。</li>
+      <li><strong>Locust</strong>：本機 Python Web UI :8089。</li>
+    </ol>
+    <p>
+      預設<strong>一併拉起</strong> Grafana／Prometheus／Locust（對齊 Demo 快捷可點）。
+      省 RAM：設 <code>fintech.startup.ensure-skip-docker=true</code>／<code>ensure-skip-locust=true</code>，
+      或手動腳本加 <code>-SkipDocker -SkipLocust</code>。
+    </p>
+
+    <h3>2.3 你怎麼確認齊了？</h3>
+    <ul>
+      <li>全快捷驗證：<code>.\scripts\verify-demo-shortcuts.ps1</code>（全綠才算可講）</li>
+      <li>Console 橫幅：<code>【LOOP】…背景進行中</code> → 看 <code>logs/ensure-from-order.*.log</code></li>
+      <li>約 1～3 分鐘後：Risk／Vite／Gateway／Grafana／Locust… 應變 <code>[UP]</code></li>
+      <li>登入：<a href="http://localhost:5173/login" target="_blank">http://localhost:5173/login</a>（trader1／password）</li>
+      <li>藍圖：<a href="http://localhost:5173/blueprint" target="_blank">http://localhost:5173/blueprint</a></li>
+    </ul>
+
+    <h3>2.4 種子帳號</h3>
     <table>
       <tr><th>帳號</th><th>密碼</th><th>角色</th><th>展示重點</th></tr>
       <tr><td><code>trader1</code></td><td><code>password</code></td><td>USER</td><td>下單、自己的歷史／餘額／持倉</td></tr>

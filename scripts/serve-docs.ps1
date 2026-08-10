@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  本機靜態文件伺服（避開 npx serve 對中文檔名 404；亦提供 ASCII 入口）。
+  本機靜態文件伺服（專案根；無 .html 副檔名會回退到 .html/.md）。
 
 .EXAMPLE
   .\scripts\serve-docs.ps1
-  # 瀏覽器開 http://127.0.0.1:5500/docs/index.html
-  # 或 http://127.0.0.1:5500/docs/learning-map.html
+  # http://127.0.0.1:5500/docs/index.html
+  # http://127.0.0.1:5500/docs/md-reader  → md-reader.html
 #>
 param(
     [int]$Port = 5500
@@ -15,18 +15,27 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path $PSScriptRoot -Parent
 Set-Location $Root
 
+$conns = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+foreach ($c in $conns) {
+    $ownerPid = [int]$c.OwningProcess
+    if ($ownerPid -gt 0) {
+        Write-Host "Stopping old listener pid=$ownerPid on :$Port" -ForegroundColor DarkGray
+        Stop-Process -Id $ownerPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 500
+    }
+}
+
 Write-Host "Serving $Root on http://127.0.0.1:$Port/" -ForegroundColor Cyan
 Write-Host "MUST open: http://127.0.0.1:$Port/docs/index.html" -ForegroundColor Green
-Write-Host "  (do NOT use http://127.0.0.1:$Port/docs  without index.html — relative links 404)" -ForegroundColor Yellow
+Write-Host "  Extensionless OK: /docs/md-reader -> md-reader.html" -ForegroundColor DarkCyan
 Write-Host "Ctrl+C to stop." -ForegroundColor Yellow
 
-# Prefer Python (UTF-8 path friendly)
 $py = Get-Command python -ErrorAction SilentlyContinue
 if ($py) {
-    python -m http.server $Port --bind 127.0.0.1
+    $server = Join-Path $PSScriptRoot "serve_docs_http.py"
+    & python $server --port $Port --bind 127.0.0.1 --root $Root
     exit $LASTEXITCODE
 }
 
-# Fallback: npx serve (ASCII paths only)
-Write-Host "python not found — using npx serve (use ASCII URLs only)" -ForegroundColor Yellow
+Write-Host "python not found — using npx serve (no extensionless fallback)" -ForegroundColor Yellow
 npx --yes serve -l $Port .

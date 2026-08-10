@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 單元／整合測試報告</title>
+  <style>
+    :root {
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #eef2f6; --border: #d5dde6;
+      --text: #1f2937; --muted: #5b6b7c; --accent: #0d7377; --warn: #b45309;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .top { border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #e6f3f2 0%, #e8eef5 55%, #f5f7fa 100%); padding: 1.5rem 2rem; }
+    .top h1 { font-size: 1.45rem; margin: 0 0 0.35rem; }
+    .top .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 0.75rem; }
+    .top .links a { color: var(--accent); text-decoration: none; margin-right: 1rem; font-size: 0.85rem; }
+    .top .links a:hover { text-decoration: underline; }
+    main { padding: 1.5rem 2rem 3rem; max-width: 960px; }
+    section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; }
+    section h2 { font-size: 1.15rem; margin: 0 0 0.5rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.35rem; }
+    .blurb { color: #334155; font-size: 0.92rem; margin: 0 0 0.85rem; }
+    .cmd { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.85rem; font-family: Consolas, monospace; font-size: 0.85rem; overflow-x: auto; }
+    .mod-grid { display: grid; gap: 0.55rem; margin-top: 0.75rem; }
+    .mod-grid a {
+      display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+      padding: 0.55rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
+      text-decoration: none; color: var(--text); background: var(--surface2);
+    }
+    .mod-grid a:hover { border-color: var(--accent); background: #e6f3f2; }
+    .mod-grid .path { color: var(--muted); font-size: 0.78rem; font-family: Consolas, monospace; }
+    .note { margin-top: 0.85rem; background: #fff8e6; border-left: 3px solid var(--warn); padding: 0.55rem 0.8rem; font-size: 0.85rem; color: var(--muted); }
+    .cls { font-size: 0.85rem; color: var(--muted); margin: 0.35rem 0 0; }
+    .cls code { font-size: 0.8rem; }
+    footer { padding: 0 2rem 2rem; color: var(--muted); font-size: 0.8rem; }
+    @media (max-width: 700px) {
+      .top, main, footer { padding-left: 1rem; padding-right: 1rem; }
+      .mod-grid a { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo — 測試報告入口</h1>
+    <p class="sub">Gradle HTML 報表（跑過 check 後才有檔）。單元與整合目前同屬 <code>test</code> task，報表路徑相同；下方依類別名稱分區導覽。</p>
+    <p class="links">
+      <a href="../index.html">Docs 首頁</a>
+      <a href="../測試與CI.md">測試與 CI（MD）</a>
+      <a href="../architecture/testing.html">testing HTML</a>
+      <a href="../javadoc/index.html">Javadoc</a>
+    </p>
+  </header>
+
+  <main>
+    <section id="how">
+      <h2>產生報表</h2>
+      <p class="blurb">先跑驗證，再開本頁各模組連結（需 <code>serve-docs</code> :5500，或直接開本機檔案）。</p>
+      <div class="cmd">.\scripts\check.ps1<br /># 或 .\gradlew.bat check</div>
+      <p class="note">報表路徑：<code>{module}/build/reports/tests/test/index.html</code>。若 404，代表尚未跑過該模組測試。</p>
+    </section>
+
+    <section id="unit">
+      <h2>單元測試報告</h2>
+      <p class="blurb">偏純邏輯／Mock：Service、Filter、Jwt、Topology 等（類名多為 <code>*Test</code>，不含 Integration）。點模組開 Gradle HTML，再於報表內點對應 class。</p>
+      <p class="cls">例：<code>RiskServiceTest</code>、<code>TradingServiceTest</code>、<code>AuthServiceTest</code>、<code>JwtTokenProviderTest</code>、<code>RateLimitWebFilterTest</code>、<code>TopologyServiceInferStageTest</code>、<code>AccountLedgerServiceTest</code>、<code>StaleOrderServiceTest</code></p>
+      <div class="mod-grid" data-kind="unit"></div>
+    </section>
+
+    <section id="integration">
+      <h2>整合測試報告</h2>
+      <p class="blurb">偏 Spring Boot／API／DB：類名含 <code>Integration</code> 或 <code>*ApplicationTest</code>。同一個模組 HTML 報表裡可看到綠燈／失敗細節。</p>
+      <p class="cls">例：<code>OrderApiIntegrationTest</code>、<code>AuthIntegrationTest</code>、<code>TradingFlowIntegrationTest</code>、<code>RiskApiIntegrationTest</code>、<code>AccountApiIntegrationTest</code>、各服務 <code>*ApplicationTest</code></p>
+      <div class="mod-grid" data-kind="integration"></div>
+    </section>
+  </main>
+
+  <footer>
+    Demo 快捷面板 → 學習文件 →「單元測試／整合測試」會連到本頁錨點。Javadoc 另見 <code>docs/javadoc/</code>（<code>.\gradlew.bat aggregateJavadoc</code>）。
+  </footer>
+
+  <script>
+    const modules = [
+      { id: 'order-service', label: 'order-service ★' },
+      { id: 'risk-service', label: 'risk-service ★' },
+      { id: 'account-service', label: 'account-service' },
+      { id: 'gateway', label: 'gateway' },
+      { id: 'job-service', label: 'job-service' },
+      { id: 'common', label: 'common（若有）' }
+    ];
+
+    function reportHref(modId) {
+      // portals/ → 專案根 → {mod}/build/reports/tests/test/
+      return '../../' + modId + '/build/reports/tests/test/index.html';
+    }
+
+    document.querySelectorAll('.mod-grid').forEach((grid) => {
+      const kind = grid.getAttribute('data-kind');
+      modules.forEach((m) => {
+        const a = document.createElement('a');
+        a.href = reportHref(m.id);
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML = '<span>' + m.label + ' · ' + (kind === 'unit' ? '單元' : '整合') + '報表</span>'
+          + '<span class="path">' + m.id + '/build/reports/tests/test/</span>';
+        grid.appendChild(a);
+      });
+    });
+
+    // 錨點滾動（Demo 快捷 #unit / #integration）
+    const hash = (location.hash || '').replace(/^#/, '');
+    if (hash) {
+      document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>

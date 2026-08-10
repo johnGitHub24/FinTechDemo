@@ -86,6 +86,13 @@
             </div>
           </li>
           <li class="howto-step">
+            <span class="howto-n" aria-hidden="true">2b</span>
+            <div class="howto-body">
+              <a href="#mechanisms">邊緣機制</a>
+              <p>RateLimit · CORS · Redis Cache</p>
+            </div>
+          </li>
+          <li class="howto-step">
             <span class="howto-n" aria-hidden="true">3</span>
             <div class="howto-body">
               <a href="#flow">運作過程</a>
@@ -131,6 +138,8 @@
       <a href="#stack">技術棧</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#layers">分層架構</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#mechanisms">邊緣機制</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#flow">運作過程</a>
       <span class="toc-sep" aria-hidden="true">·</span>
@@ -190,9 +199,43 @@
       <aside class="story-note">
         <strong>NOTE · 圖怎麼讀</strong>
         <ul>
-          <li>現場 Demo 最短：Vue <code>:5173</code> → Order <code>:8081</code> → Feign Risk <code>:8082</code></li>
-          <li>講「統一入口」時再開 Gateway <code>:8080</code>（轉發並可帶 <code>X-Demo-Via-Gateway</code>）</li>
-          <li>Account／Redis／Kafka、Job 屬加分敘事，不擋最短成交</li>
+          <li>現場 Demo 最短：跑 Order → LOOP 自動補 Risk／Vite（等 1～3 分鐘）→ 登入成交</li>
+          <li>講「統一入口」時再開 Gateway <code>:8080</code>（LOOP 也會試著起）</li>
+          <li>啟動優先順序見藍圖文件 §0／<code>demo-flow.html#s2</code></li>
+        </ul>
+      </aside>
+    </section>
+
+    <section id="mechanisms" class="card">
+      <h2>2b. 邊緣機制（限流 · CORS · Redis Cache）</h2>
+      <p class="story-meta">
+        Demo 要能講「我有這三個機制」。對齊 MVP／APIGatewayMQ 敘事；細節見類別路徑。
+      </p>
+      <div class="mech-list">
+        <article v-for="m in EDGE_MECHANISMS" :key="m.name" class="mech-card">
+          <header class="mech-card-head">
+            <strong>{{ m.name }}</strong>
+            <code>{{ m.where }}</code>
+          </header>
+          <p class="mech-what">{{ m.what }}</p>
+          <dl class="mech-meta">
+            <div>
+              <dt>設定／關鍵</dt>
+              <dd><code>{{ m.config }}</code></dd>
+            </div>
+            <div>
+              <dt>怎麼 Demo</dt>
+              <dd>{{ m.demo }}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+      <aside class="story-note">
+        <strong>NOTE · 一句話</strong>
+        <ul>
+          <li><strong>限流</strong>：擋在 Gateway 入口，保護下游 Order／Risk</li>
+          <li><strong>CORS</strong>：瀏覽器允許 Vue 跨埠打 Order API（≠ JWT 授權）</li>
+          <li><strong>Redis Cache</strong>：Account 讀快、寫後清；沒 Redis 仍可跑</li>
         </ul>
       </aside>
     </section>
@@ -210,11 +253,12 @@
             <strong>JWT</strong>＝權杖標準、<strong>JJWT</strong>＝Java 簽驗函式庫（0.12.5）；
             Spring Security 過濾器驗 Token 後做 RBAC</li>
           <li><strong>下單</strong>：JPA 寫入，狀態 <code>PENDING</code></li>
-          <li><strong>入口</strong>：最短直連 Order；完整敘事可經 Gateway <code>:8080</code></li>
+          <li><strong>入口</strong>：最短直連 Order；完整敘事經 Gateway（先限流再轉發）</li>
           <li><strong>成交</strong>：Order 以 <strong>OpenFeign</strong>（宣告式 HTTP 客戶端）同步呼叫 Risk <code>:8082</code> 名目風控</li>
           <li><strong>結果</strong>：通過 <code>ACCEPTED</code>／拒絕 <code>REJECTED</code></li>
-          <li><strong>帳務（可選）</strong>：Account <code>:8084</code> + Redis + Kafka</li>
+          <li><strong>帳務（可選）</strong>：Account <code>:8084</code> + Redis Cache（cache-aside／evict）+ Kafka</li>
           <li><strong>逾時（可選）</strong>：Job <code>:8083</code> 久未成交的 PENDING → <code>CANCELLED</code></li>
+          <li>細節見上方 <a href="#mechanisms">邊緣機制</a></li>
         </ol>
       </aside>
     </section>
@@ -237,18 +281,22 @@
     <section id="stages" class="card">
       <h2>5. 部署階梯（敘事）S1–S3</h2>
       <p class="story-meta">
-        依「哪些服務有起來」講環境完整度。Trade／Portal 的 PROCESS FLOW 會依 health 推斷並可釘住講解。
+        <strong>誰決定？</strong>預設是程式公式，不是你手動選業務結果。
+        Order 的 <code>TopologyService.inferStage</code> 依各服務
+        <code>/actuator/health</code> 綠燈算出 <code>inferredStage</code>；
+        Trade／Portal 面板顯示它。點 S1／S2／S3 只是「釘住講解」，清除後回到公式。
       </p>
       <table>
         <thead>
-          <tr><th>階</th><th>條件</th><th>意義</th></tr>
+          <tr><th>階</th><th>綠燈條件（公式）</th><th>你能做什麼</th></tr>
         </thead>
         <tbody>
-          <tr><td><strong>S1</strong></td><td>Order :8081</td><td>可登入／建 PENDING</td></tr>
-          <tr><td><strong>S2</strong></td><td>Order + Risk :8082</td><td>最短可成交（必開這兩個）</td></tr>
-          <tr><td><strong>S3</strong></td><td>S2 + Gateway <em>或</em> Account</td><td>統一入口／帳務敘事</td></tr>
-          <tr><td>—</td><td>Job :8083</td><td>可選排程；<strong>不進</strong> S 公式</td></tr>
-          <tr><td>S4+</td><td>K8s 等</td><td>僅文件／手動講解，本頁不自動宣稱</td></tr>
+          <tr><td><strong>S0</strong></td><td>Order 紅</td><td>環境未起</td></tr>
+          <tr><td><strong>S1</strong></td><td>僅 Order 綠</td><td>登入／建 PENDING</td></tr>
+          <tr><td><strong>S2</strong></td><td>Order + Risk 綠</td><td>最短可成交</td></tr>
+          <tr><td><strong>S3</strong></td><td>S2 +（Gateway 或 Account）綠</td><td>統一入口／帳務敘事</td></tr>
+          <tr><td>—</td><td>Job 綠不進公式</td><td>可選排程</td></tr>
+          <tr><td>S4+</td><td>面板不自動判定</td><td>K8s 用文件講</td></tr>
         </tbody>
       </table>
     </section>
@@ -362,6 +410,7 @@ import {
   DIAGRAM_FLOW,
   DIAGRAM_LAYERS,
   DIAGRAM_ORDER_STATE,
+  EDGE_MECHANISMS,
   PORTS,
   groupTechStack
 } from '../blueprint/diagrams';

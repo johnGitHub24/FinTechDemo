@@ -11,7 +11,7 @@
       <p class="muted small demo-shortcuts-lead">
         <template v-if="loggedIn">
           點 Trade／Portal／藍圖＝同頁切換（已帶 JWT）。
-          Audit 需用 <code>admin</code> 登入。觀測按鈕會先探測埠。
+          Audit 需用 <code>admin</code> 登入。觀測／Docs／Javadoc／測試報告會先探測埠。
         </template>
         <template v-else>
           點需登入頁會<strong>記住目標</strong>，登入後自動前往。

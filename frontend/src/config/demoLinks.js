@@ -30,7 +30,10 @@ export const demoLinks = {
   docsDemoFlow: 'http://127.0.0.1:5500/docs/portals/demo-flow.html',
   docsHandbook: 'http://127.0.0.1:5500/docs/portals/handbook.html',
   docsSwagger: 'http://127.0.0.1:5500/docs/portals/swagger.html',
-  docsCodeGraphic: 'http://127.0.0.1:5500/docs/portals/codeGraphic.html'
+  docsCodeGraphic: 'http://127.0.0.1:5500/docs/portals/codeGraphic.html',
+  docsJavadoc: 'http://127.0.0.1:5500/docs/javadoc/index.html',
+  docsTestUnit: 'http://127.0.0.1:5500/docs/portals/test-reports.html#unit',
+  docsTestIntegration: 'http://127.0.0.1:5500/docs/portals/test-reports.html#integration'
 };
 
 /**
@@ -45,7 +48,7 @@ export const navDemoButtons = [
     href: demoLinks.grafana,
     probe: 'http://localhost:3000/login',
     hint: '需 docker compose --profile monitoring',
-    startHint: '.\\scripts\\ensure-demo-links.ps1（勿 SkipDocker）或 compose --profile monitoring'
+    startHint: '.\\scripts\\ensure-demo-links.ps1（Loop：含 monitoring）'
   },
   {
     id: 'prometheus',
@@ -53,8 +56,8 @@ export const navDemoButtons = [
     kind: 'external',
     href: demoLinks.prometheusUi,
     probe: 'http://localhost:9090/-/healthy',
-    hint: '需 monitoring profile',
-    startHint: 'docker compose --profile monitoring up -d prometheus'
+    hint: '需 monitoring（ensure 會拉起）',
+    startHint: '.\\scripts\\ensure-demo-links.ps1'
   },
   {
     id: 'locust',
@@ -63,7 +66,7 @@ export const navDemoButtons = [
     href: demoLinks.locust,
     probe: 'http://localhost:8089/',
     hint: 'Locust Web UI',
-    startHint: '.\\scripts\\run-loadtest.ps1 -WebUi'
+    startHint: '.\\scripts\\ensure-demo-links.ps1'
   },
   {
     id: 'k8s',
@@ -125,19 +128,19 @@ export const loginDemoGroups = [
         label: 'Grafana',
         href: demoLinks.grafana,
         probe: 'http://localhost:3000/login',
-        startHint: 'docker compose --profile monitoring up -d'
+        startHint: '.\\scripts\\ensure-demo-links.ps1'
       },
       {
         label: 'Prometheus',
         href: demoLinks.prometheusUi,
         probe: 'http://localhost:9090/-/healthy',
-        startHint: 'docker compose --profile monitoring up -d prometheus'
+        startHint: '.\\scripts\\ensure-demo-links.ps1'
       },
       {
         label: 'Locust',
         href: demoLinks.locust,
         probe: 'http://localhost:8089/',
-        startHint: '.\\scripts\\run-loadtest.ps1 -WebUi'
+        startHint: '.\\scripts\\ensure-demo-links.ps1'
       }
     ]
   },
@@ -148,7 +151,25 @@ export const loginDemoGroups = [
       { label: 'Demo 流程', href: demoLinks.docsDemoFlow },
       { label: '學習手冊', href: demoLinks.docsHandbook },
       { label: 'Swagger 靜態', href: demoLinks.docsSwagger },
-      { label: 'codeGraphic', href: demoLinks.docsCodeGraphic }
+      { label: 'codeGraphic', href: demoLinks.docsCodeGraphic },
+      {
+        label: 'Javadoc',
+        href: demoLinks.docsJavadoc,
+        probe: demoLinks.docsJavadoc,
+        startHint: '.\\scripts\\ensure-demo-links.ps1（會跑 serve-docs／aggregateJavadoc）'
+      },
+      {
+        label: '單元測試',
+        href: demoLinks.docsTestUnit,
+        probe: 'http://127.0.0.1:5500/docs/portals/test-reports.html',
+        startHint: '.\\scripts\\ensure-demo-links.ps1（缺報表會自動 gradlew test）'
+      },
+      {
+        label: '整合測試',
+        href: demoLinks.docsTestIntegration,
+        probe: 'http://127.0.0.1:5500/docs/portals/test-reports.html',
+        startHint: '.\\scripts\\ensure-demo-links.ps1（缺報表會自動 gradlew test）'
+      }
     ]
   }
 ];
@@ -156,4 +177,4 @@ export const loginDemoGroups = [
 export const NEXT_PATH_KEY = 'fintech_demo_next_path';
 
 export const ENSURE_SERVICES_CMD =
-  'cd /d D:\\ClaudeCode\\FinTechDemo && .\\scripts\\start-demo-ready.ps1 -FreeKind -OpenBrowser';
+  'cd /d D:\\ClaudeCode\\FinTechDemo && .\\scripts\\ensure-demo-links.ps1';

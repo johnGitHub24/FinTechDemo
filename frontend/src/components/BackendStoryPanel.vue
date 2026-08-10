@@ -65,20 +65,35 @@
       </button>
       <button class="secondary sm" type="button" @click="story.setPinStage(null)">清除釘住</button>
     </div>
-    <p class="story-meta">目前顯示：{{ displayStage }}（點階段可釘住講解；清除後跟拓撲事實）</p>
+    <p class="story-meta">
+      目前顯示：<strong>{{ displayStage }}</strong>
+      <span v-if="story.state.pinStage">（已釘住講解，真實拓撲仍是 {{ factStage }}）</span>
+      <span v-else>（自動＝跟上方綠燈；點 S1–S3 可暫時釘住講解）</span>
+    </p>
+    <p class="story-why" v-if="stageWhy">{{ stageWhy }}</p>
     <aside class="story-note">
-      <strong>NOTE · 部署階梯是什麼？</strong>
-      <p>回答「環境開到哪」——依上方<strong>服務儀表板</strong>綠燈推斷，不是訂單狀態。</p>
-      <ul>
-        <li><strong>S1</strong>：僅 <code>Order:8081</code>（可登入／建 PENDING；成交尚缺風控）</li>
-        <li><strong>S2</strong>：<code>Order:8081</code> + <code>Risk:8082</code>（最短可成交：Feign 名目風控）</li>
-        <li><strong>S3</strong>：S2 再加 <code>Gateway:8080</code> <em>或</em> <code>Account:8084</code>（統一入口／帳務敘事）</li>
-      </ul>
+      <strong>NOTE · 誰決定 S1／S2／S3？</strong>
       <p>
-        <code>Job:8083</code> 為可選排程，<strong>不進</strong> S1–S3 公式。
-        S4–S6（K8s 等）請用文件講解，面板不自動宣稱已上叢集。
-        「釘住」只改講解焦點，不改變真實 health。
+        <strong>決定者＝程式公式</strong>（不是你點選業務結果，也不是訂單狀態）。
+        Order 後端 <code>TopologyService.inferStage</code> 探測各服務
+        <code>/actuator/health</code>，算出 <code>inferredStage</code>；
+        前端每 5 秒拉 <code>GET /api/demo/topology</code> 顯示。
+        你點 S1／S2／S3 只是「釘住講解」；清釘住後又聽公式的。
       </p>
+      <p><strong>判定公式（取最高符合）</strong></p>
+      <ol class="stage-formula">
+        <li><strong>S3</strong>＝ Order 綠 <strong>且</strong> Risk 綠 <strong>且</strong>（Gateway 綠 <em>或</em> Account 綠）</li>
+        <li><strong>S2</strong>＝ Order 綠 <strong>且</strong> Risk 綠（還沒 Gateway／Account）</li>
+        <li><strong>S1</strong>＝ 只有 Order 綠</li>
+        <li><strong>S0</strong>＝ Order 也紅</li>
+      </ol>
+      <p><strong>為什麼要分階？</strong></p>
+      <ul>
+        <li><strong>S1</strong>：能登入、建 PENDING；成交缺 Risk</li>
+        <li><strong>S2</strong>：最短可成交（Feign → Risk）</li>
+        <li><strong>S3</strong>：能講統一入口（Gateway）或帳務／Redis（Account）</li>
+      </ul>
+      <p><code>Job</code> 不進公式。釘住不改真實 health。</p>
     </aside>
 
     <h4 class="story-sub">訂單狀態機</h4>
@@ -111,6 +126,7 @@
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useDemoStoryStore } from '../stores/demoStory';
+import { inferStage } from '../demo/inferStage.js';
 
 const story = useDemoStoryStore();
 const stages = ['S1', 'S2', 'S3'];
@@ -123,6 +139,24 @@ let topoDoneTimer = null;
 
 const services = computed(() => story.state.topology?.services || []);
 const displayStage = computed(() => story.displayStage.value);
+const factStage = computed(() => {
+  if (story.state.topology?.inferredStage) return story.state.topology.inferredStage;
+  return inferStage(story.state.topology?.services);
+});
+const stageWhy = computed(() => {
+  const list = services.value || [];
+  if (!list.length) return '尚未取得拓撲：按「刷新拓撲」或等自動輪詢。';
+  const lamp = (id) => {
+    const s = list.find((x) => x.id === id);
+    if (!s) return `${id}?`;
+    return `${s.label}:${s.up ? '綠' : '紅'}`;
+  };
+  const bits = [lamp('order'), lamp('risk'), lamp('gateway'), lamp('account')].join(' · ');
+  if (story.state.pinStage) {
+    return `釘住中：顯示 ${story.state.pinStage}；公式事實仍是 ${factStage.value}（${bits}）`;
+  }
+  return `公式結果 ${factStage.value} ← ${bits}（Job 不計）`;
+});
 const currentOrderStatus = computed(() => story.state.lastTrace?.orderStatus || '');
 
 let timer = null;

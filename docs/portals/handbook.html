@@ -105,11 +105,15 @@
     <h2>第 2 章　10 分鐘啟動</h2>
   </header>
   <div class="md-content">
-<pre>終端A: .\gradlew.bat :order-service:bootRun
-終端B: cd frontend; npm install; npm run dev
-瀏覽: http://localhost:5173
-帳密: trader1 / password</pre>
-    <p>詳細逐步：<a href="demo-flow.html">啟動與Demo運作流程.html</a></p>
+<pre>IntelliJ: 跑 OrderServiceApplication（:8081）
+→ DemoStackBootstrap 自動 ensure-demo-links（背景 1～3 分鐘）
+→ 補齊 Risk / Vite / Gateway / Account / Job / Docs
+瀏覽: http://localhost:5173/login
+帳密: trader1 / password
+
+手動一鍵: 開啟Demo.cmd
+修復: .\scripts\doctor-demo.ps1 -Fix</pre>
+    <p>啟動<strong>優先順序</strong>與 LOOP 圖：<a href="demo-flow.html#s2">啟動與 Demo 運作流程 §2</a> · Entry Point：<a href="boot-entrypoint.html">從執行到 Entry Point</a></p>
   </div>
 </article>
 

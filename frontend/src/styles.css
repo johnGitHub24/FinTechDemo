@@ -349,6 +349,21 @@ tbody tr:hover { background: var(--surface2); }
   padding-left: 1.15rem;
 }
 .story-note li { margin: 0.2rem 0; }
+.story-note ol.stage-formula {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+.story-note ol.stage-formula li { margin: 0.25rem 0; }
+.story-why {
+  margin: 0.35rem 0 0.55rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text);
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
 .story-note code {
   font-size: 0.78em;
   padding: 0.05rem 0.3rem;
@@ -529,6 +544,63 @@ tbody tr:hover { background: var(--surface2); }
 
 .blueprint table {
   width: 100%;
+}
+
+.blueprint table code.path-cell {
+  font-size: 0.75rem;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.mech-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+.mech-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--surface, #fff);
+}
+.mech-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.4rem;
+}
+.mech-card-head strong {
+  font-size: 1.05rem;
+}
+.mech-card-head code {
+  font-size: 0.78rem;
+  word-break: break-all;
+  color: var(--muted, #5b6b7c);
+}
+.mech-what {
+  margin: 0 0 0.65rem;
+  line-height: 1.45;
+}
+.mech-meta {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+.mech-meta dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted, #5b6b7c);
+  margin: 0;
+}
+.mech-meta dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.mech-meta code {
+  font-size: 0.82rem;
+  word-break: break-word;
 }
 
 .stack-group table {

@@ -62,6 +62,15 @@ app:
     expiration-ms: 86400000
 
 fintech:
+  cors:
+    # 【概念】WebConfig：允許 Vue :5173 直連 order API（Vite proxy 以外的路徑）
+    allowed-origins: "http://localhost:5173,http://127.0.0.1:5173"
+  startup:
+    # 【概念】Order 就緒後自動跑 ensure-demo-links（Loop Engineering）補齊 DOWN 服務
+    # 【技巧】預設也拉 Grafana/Prometheus（Docker 或本機 fallback）與 Locust；要省 RAM 才改 true
+    ensure-stack: true
+    ensure-skip-docker: false
+    ensure-skip-locust: false
   kafka:
     enabled: false
   account:

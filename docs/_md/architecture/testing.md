@@ -12,7 +12,7 @@
 
 ## Case ID（摘要）
 
-見 [測試規格書.md](../測試規格書.md)。Fixture：`docs/test-data/...`。
+見 [測試與CI.md](../測試與CI.md)。Fixture：`docs/test-data/...`。
 
 ## 觀測
 

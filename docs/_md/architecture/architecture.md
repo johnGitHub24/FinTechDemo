@@ -65,8 +65,8 @@ flowchart TB
 | 模組 | 埠 | 產品職責 | 技術職責 | 為何獨立 |
 |------|-----|----------|----------|----------|
 | `frontend` | 5173 | 登入／前台下單／後台查詢 | Vue Router、JWT、分頁 | 現場可見劇情 |
-| `gateway` | 8080 | 唯一 API 入口 | Path 路由到 order／account | Middleware |
-| `order-service` | 8081 | 訂單生命週期、登入、審計 | JWT、JPA、Kafka **Producer**、AOP、Feign | 交易編排 |
+| `gateway` | 8080 | 唯一 API 入口 | Path 路由到 order／account；**RateLimitWebFilter**（固定窗口，超限 429） | Middleware |
+| `order-service` | 8081 | 訂單生命週期、登入、審計 | JWT、JPA、Kafka **Producer**、AOP、Feign、**WebConfig CORS** | 交易編排 |
 | `risk-service` | 8082 | 名義金額風控 | 無狀態規則服務 | 與下單生命週期分離 |
 | `account-service` | 8084 | 餘額／持倉 | JPA 帳本、Kafka **Consumer**、**Redis** | 第三業務 MS；帳本邊界 |
 | `job-service` | 8083 | 逾時取消觸發 | `@Scheduled` → HTTP | 排程與請求路徑分離 |
@@ -106,6 +106,14 @@ POST /api/orders/{id}/execute
 | users / orders / audit_log | order-service | 登入與委託真相 |
 | accounts / positions | **account-service**（正式敘事） | 現金／持倉；Redis 快取讀路徑 |
 | order 內 H2 帳本 | order（standalone 便道） | 方便只起一個服務學習；可說明「正式走 account」 |
+
+### 邊緣機制（Demo 可講）
+
+| 機制 | 類別／位置 | 說明 |
+|------|------------|------|
+| 入口限流 | `gateway/.../filter/RateLimitWebFilter` | 每秒固定視窗；超限 **429**；Demo 用進程內計數（多副本見 APIGatewayMQ Redis） |
+| CORS | `order-service/.../config/WebConfig` | 允許 Vue `:5173` 呼叫 `/api/**`（Security 鏈已 `.cors`） |
+| Redis Cache | `account-service` `AccountQueryService` | cache-aside；key `account:{id}`／`positions:{id}`；TTL 60s；入帳 evict；`fintech.redis.enabled` 可關 |
 
 ---
 

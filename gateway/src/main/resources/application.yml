@@ -24,6 +24,11 @@ fintech:
     risk-url: http://localhost:8082
     # → ServiceUrlsProperties.accountUrl()；路由：GatewayRouteConfig.accountRoutes
     account-url: http://localhost:8084
+  gateway:
+    rate-limit:
+      # 【概念】Demo 入口限流（RateLimitWebFilter）；超限 429。多副本正式版可改 Redis（見 APIGatewayMQ）
+      enabled: true
+      per-second: 80
 
 management:
   endpoints:

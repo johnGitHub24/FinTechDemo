@@ -87,18 +87,19 @@
   <header class="top">
     <h1>FinTechDemo — 統一學習入口</h1>
     <p class="sub">
-      一個入口看齊：應用／Compose／K8s 設定、教學 HTML、架構文件。API 請走 Swagger（不在此重做）。
-      請用下方<strong>絕對路徑</strong>連結（避免 <code>/docs</code> 無尾斜線時相對連結變 404）。
+      一個入口看齊：應用／Compose／K8s 設定、教學 HTML、架構文件。API 請走 Swagger。
+      請開 <code>http://127.0.0.1:5500/docs/index.html</code>（用 <code>.\scripts\serve-docs.ps1</code>；支援無 <code>.html</code> 副檔名）。
     </p>
     <p class="links">
-      <a href="/docs/portals/learning-map.html">學習導引地圖（雙軌）</a>
-      <a href="/docs/md-reader.html">MD 閱讀器</a>
-      <a href="/docs/portals/swagger.html">API（Swagger）</a>
-      <a href="/docs/portals/loop-guide.html">部署跑通教學</a>
-      <a href="/docs/portals/stages.html">S0→S6</a>
-      <a href="/docs/portals/handbook.html">完整學習手冊</a>
-      <a href="/docs/architecture/architecture.html">Architecture</a>
-      <a href="/docs/guides/claude.html">CLAUDE</a>
+      <!-- 相對路徑：掛在 /docs/index.html 下；serve 亦支援無 .html 的絕對路徑 -->
+      <a href="portals/learning-map.html">學習導引地圖（雙軌）</a>
+      <a href="md-reader.html">MD 閱讀器</a>
+      <a href="portals/swagger.html">API（Swagger）</a>
+      <a href="portals/loop-guide.html">部署跑通教學</a>
+      <a href="portals/stages.html">S0→S6</a>
+      <a href="portals/handbook.html">完整學習手冊</a>
+      <a href="architecture/architecture.html">Architecture</a>
+      <a href="guides/claude.html">CLAUDE</a>
     </p>
   </header>
 
@@ -124,24 +125,24 @@
               <li>瀏覽器開 <code>http://127.0.0.1:5500/docs/index.html</code>（務必含 <code>index.html</code>）</li>
             </ol>
           </div>
-          <p style="font-size:0.9rem;color:#334155;">學習路徑（點連結，勿手打相對檔名）：</p>
+          <p style="font-size:0.9rem;color:#334155;">學習路徑（點連結）：</p>
           <ul>
-            <li>不知道從哪讀起 → <a href="/docs/portals/learning-map.html">/docs/portals/learning-map.html</a></li>
-            <li>舒適讀 MD → <a href="/docs/md-reader.html">/docs/md-reader.html</a></li>
+            <li>不知道從哪讀起 → <a href="portals/learning-map.html">學習導引地圖</a></li>
+            <li>舒適讀 MD → <a href="md-reader.html">MD 閱讀器</a></li>
             <li>教學 →
-              <a href="/docs/portals/loop-guide.html">loop-guide</a> ·
-              <a href="/docs/portals/stages.html">stages</a> ·
-              <a href="/docs/portals/handbook.html">handbook</a> ·
-              <a href="/docs/portals/boot-entrypoint.html">boot-entrypoint</a>
+              <a href="portals/loop-guide.html">loop-guide</a> ·
+              <a href="portals/stages.html">stages</a> ·
+              <a href="portals/handbook.html">handbook</a> ·
+              <a href="portals/boot-entrypoint.html">boot-entrypoint</a>
             </li>
-            <li>架構 → <a href="/docs/architecture/architecture.html">architecture.html</a> · 為什麼 → <a href="/docs/guides/why.html">guides/why.html</a></li>
+            <li>架構 → <a href="architecture/architecture.html">architecture</a> · 為什麼 → <a href="guides/why.html">why</a></li>
             <li>對照左側「應用設定」與「Compose／K8s」</li>
-            <li>打 API → <a href="/docs/portals/swagger.html">/docs/portals/swagger.html</a></li>
+            <li>打 API → <a href="portals/swagger.html">Swagger</a></li>
           </ul>
           <div class="gate warn" style="margin-top:0.75rem">
-            <strong>404 常見原因</strong>：開了 <code>/docs</code>（無 <code>/</code> 或無 <code>index.html</code>），
-            相對連結會變成 <code>http://127.0.0.1:5500/learning-map.html</code> 而找不到。
-            請固定用 <code>/docs/index.html</code>，或點本頁上方絕對路徑連結。
+            <strong>404 常見原因</strong>：開了舊的 <code>python -m http.server</code>（不支援無副檔名），
+            或開成 <code>/docs</code> 沒有 <code>index.html</code>。
+            請重跑 <code>.\scripts\serve-docs.ps1</code>，再開 <code>/docs/index.html</code>。
           </div>
         </div>
       </div>
@@ -199,6 +200,7 @@
       { id: "h-book", group: "教學 HTML", title: "完整學習手冊", kind: "link", path: "/docs/portals/handbook.html", badge: "link" },
       { id: "h-cg", group: "教學 HTML", title: "CodeGraphic", kind: "link", path: "/docs/portals/codeGraphic.html", badge: "link" },
       { id: "h-javadoc", group: "教學 HTML", title: "Javadoc 總入口", kind: "link", path: "/docs/javadoc/index.html", badge: "link" },
+      { id: "h-test-reports", group: "教學 HTML", title: "單元／整合測試報告", kind: "link", path: "/docs/portals/test-reports.html", badge: "link" },
 
       { id: "m-arch", group: "架構／設計", title: "architecture（HTML）", kind: "link", path: "/docs/architecture/architecture.html", badge: "link" },
       { id: "m-dist", group: "架構／設計", title: "分散式系統落地", kind: "link", path: "/docs/architecture/distributed.html", badge: "link" },
@@ -212,7 +214,7 @@
       { id: "m-story", group: "架構／設計", title: "產品劇情-前台與後台", kind: "link", path: "/docs/guides/story-ui.html", badge: "link" },
       { id: "m-rbac", group: "架構／設計", title: "產品劇情與RBAC", kind: "link", path: "/docs/guides/story-rbac.html", badge: "link" },
       { id: "m-spec", group: "架構／設計", title: "FinTechDemo SPEC", kind: "link", path: "/docs/guides/spec.html", badge: "link" },
-      { id: "m-portal-spec", group: "架構／設計", title: "本入口設計 spec", kind: "link", path: "/docs/architecture/portal-design.html", badge: "link" }
+      { id: "m-portal-spec", group: "架構／設計", title: "統一學習入口說明", kind: "link", path: "/docs/index.html", badge: "link" }
     ];
 
     const GROUP_ORDER = ["API", "應用設定", "Compose／K8s", "教學 HTML", "架構／設計"];

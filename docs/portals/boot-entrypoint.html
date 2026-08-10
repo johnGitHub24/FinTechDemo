@@ -278,12 +278,15 @@ sequenceDiagram
   participant Ctx as ApplicationContext
   participant Tomcat as Tomcat :8081
   participant SIL as StartupInfoLogger
+  participant BOOT as DemoStackBootstrap
   participant Client as 瀏覽器／前端／curl
 
   Ctx->>Tomcat: start WebServer
   Tomcat-->>Ctx: 埠就緒
-  Ctx->>SIL: ApplicationReadyEvent
-  SIL->>SIL: 讀 Environment 並印 Console URL
+  Ctx->>SIL: ApplicationReadyEvent（先印燈號）
+  Ctx->>BOOT: ApplicationReadyEvent（背景 ensure）
+  BOOT->>BOOT: PowerShell ensure-demo-links.ps1
+  Note over BOOT: Risk→Account→Order KEEP→Gateway→Job→Vite→Docs
   Ctx-->>Ctx: 日誌 Started OrderServiceApplication
   Client->>Tomcat: POST /api/auth/login
   Tomcat->>Ctx: DispatcherServlet 至 AuthController
@@ -294,10 +297,16 @@ flowchart TB
   FIL --> CTRL["*Controller"]
   CTRL --> SVC["*Service @Transactional"]
   SVC --> REPO["JPA Repository / H2"]
-  SVC --> FEIGN["Feign → risk-service :8082<br/>（需 Risk 已啟動）"]
+  SVC --> FEIGN["Feign → risk-service :8082<br/>（LOOP 會自動補 Risk）"]
   SVC --> KAFKA["Kafka 發布／消費<br/>（profile=demo 且 enabled）"]
       </div>
-      <p class="note">最短可成交：除 Order(:8081) 外還需 Risk(:8082)。見 Console 的 StartupInfoLogger 提示。</p>
+      <p class="note">
+        <strong>Loop Engineering：</strong>Order 就緒後 <code>DemoStackBootstrap</code> 預設開啟
+        （<code>fintech.startup.ensure-stack=true</code>），背景跑
+        <code>scripts/ensure-demo-links.ps1</code>。優先順序見
+        <a href="demo-flow.html#s2">啟動與 Demo 運作流程 §2</a>。
+        日誌：<code>logs/ensure-from-order.*.log</code>。
+      </p>
     </section>
 
     <!-- ⑥ -->

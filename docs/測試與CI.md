@@ -40,6 +40,16 @@ docker compose --profile monitoring up -d    # Grafana :3000 · Prometheus :9090
 
 門檻：錯誤率 &lt; 1%。報告：`loadtest/reports/`。
 
+## HTML 報表入口
+
+| 類型 | 路徑 |
+|------|------|
+| Javadoc | `docs/javadoc/index.html`（`.\gradlew.bat aggregateJavadoc`） |
+| 單元／整合測試導覽 | [docs/portals/test-reports.html](portals/test-reports.html) |
+| 各模組 Gradle 報表 | `{module}/build/reports/tests/test/index.html`（先 `.\scripts\check.ps1`） |
+
+Demo 快捷「學習文件」已含 **Javadoc／單元測試／整合測試** 連結（需 `serve-docs` :5500）。
+
 ## 簡報一條龍
 
 1. Risk(:8082) + Order(:8081) + frontend `:5173`  

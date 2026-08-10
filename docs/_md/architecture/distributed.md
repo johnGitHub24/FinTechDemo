@@ -6,11 +6,11 @@
 
 | 服務 | 埠 | 職責 |
 |------|-----|------|
-| `order-service` | 8081 | 登入 JWT、訂單、審計、發 Kafka |
+| `order-service` | 8081 | 登入 JWT、訂單、審計、發 Kafka；**WebConfig CORS** |
 | `risk-service` | 8082 | 名義金額風控（Feign 被叫） |
 | `account-service` | 8084 | 餘額／持倉帳本、**Redis cache**、消費 trade-events |
 | `job-service` | 8083 | 排程輔助（非業務主鏈） |
-| `gateway` | 8080 | 依路徑路由到 order／account |
+| `gateway` | 8080 | 依路徑路由到 order／account；**RateLimitWebFilter** |
 
 ## Kafka Event Bus
 
@@ -53,8 +53,10 @@ POST /api/orders
 
 - `/api/accounts/**`、`/api/positions` → account:8084
 - 其餘 `/api/**` → order:8081
+- **限流**：`RateLimitWebFilter`（`fintech.gateway.rate-limit.*`）；超限 429
 
-前端 Vite：standalone 預設 `:8081`；分散式設 `VITE_API_TARGET=http://localhost:8080`。
+前端 Vite：standalone 預設 `:8081`；分散式設 `VITE_API_TARGET=http://localhost:8080`。  
+Order 另有 `WebConfig` CORS（允許 `:5173` 直連，不必只靠 proxy）。
 
 ## 驗證
 

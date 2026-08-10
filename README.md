@@ -17,21 +17,22 @@
 
 ## 10 分鐘進入展示狀態
 
-**最短可成交請開兩個後端（成交會 Feign 呼叫 Risk）：**
+**推薦：只跑主入口，其餘由 Loop 自動補齊。**
 
-| 角色 | IntelliJ Run | 埠 |
-|------|--------------|----|
-| ★ 主入口 | `OrderServiceApplication` | 8081 |
-| ★ 風控 | `RiskServiceApplication` | 8082 |
+| 步驟 | 做什麼 | 說明 |
+|------|--------|------|
+| 1 | IntelliJ 跑 `OrderServiceApplication` :8081 | 主入口 |
+| 2 | 等 Console 出現 `【LOOP】…背景進行中` | `DemoStackBootstrap` → `ensure-demo-links.ps1` |
+| 3 | 等 1～3 分鐘 | 依序補：Risk → Account → Gateway → Job → Vite → Docs（已 UP 則 KEEP） |
+| 4 | 開 http://localhost:5173/login | `trader1` / `password` |
 
-```powershell
-.\scripts\start-demo.ps1 -StartMinimal
-cd frontend; npm install; npm run dev
-```
+手動一鍵（等同 Loop）：雙擊 `開啟Demo.cmd` 或 `.\scripts\doctor-demo.ps1 -Fix`  
+
+優先順序詳見：[docs/portals/demo-flow.html §2](docs/portals/demo-flow.html#s2) · Entry Point：[boot-entrypoint.html](docs/portals/boot-entrypoint.html)
 
 - 前端：http://localhost:5173/login · 藍圖：http://localhost:5173/blueprint  
-- 帳號：`trader1` / `password`（ADMIN：`admin` / `password`）  
 - Swagger：http://localhost:8081/swagger-ui.html  
+- 學習文件：http://127.0.0.1:5500/docs/index.html（LOOP 會起 docs）
 
 ## 驗證／部署
 

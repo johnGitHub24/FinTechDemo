@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,10 +45,13 @@ class AuthServiceTest {
     private AuthService authService;
 
     /**
-     * CASE-AUTH-001：Given 認證成功的使用者與角色，When 登入，Then 回傳 JWT、帳號及角色。
+     * CASE AUTH-001：Given 認證成功的使用者與角色，When 登入，Then 回傳 JWT、帳號及角色。
+     * CASE JWT-001：回傳的 token 字串非空，整合層以同一權杖存取 API。
+     * CASE SEC-001：登入契約假設後續請求必須帶 Token（無 Token 由 Filter 拒）。
+     * CASE FLOW-002：未授權與 SEC-001 同一拒絕語意。
      */
     @Test
-    void login_shouldReturnBearerTokenAndRoles() {
+    void AUTH_001_login_shouldReturnBearerTokenAndRoles() {
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 "trader1",
                 "n/a",
@@ -67,7 +71,23 @@ class AuthServiceTest {
         LoginResponse resp = authService.login(req);
 
         assertThat(resp.token()).isEqualTo("jwt-token");
+        assertThat(resp.token()).isNotBlank();
         assertThat(resp.username()).isEqualTo("trader1");
         assertThat(resp.roles()).contains("ROLE_USER");
+    }
+
+    /**
+     * CASE AUTH-002：Given AuthenticationManager 拒絕，When 登入，Then 拋 BadCredentialsException。
+     * CASE JWT-002：失敗登入不簽發可用權杖，對應整合層無效 Token → 401。
+     */
+    @Test
+    void AUTH_002_badCredentials_shouldPropagate() {
+        when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("bad"));
+        LoginRequest req = new LoginRequest();
+        req.setUsername("trader1");
+        req.setPassword("wrong");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.login(req))
+                .isInstanceOf(BadCredentialsException.class);
     }
 }

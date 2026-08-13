@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class RiskServiceApplicationTest {
 
     /**
-     * CASE-RISK-BOOT-001：Given 預設測試組態，When 載入 Risk Service context，Then 不拋出例外。
+     * CASE RISK-BOOT-001：Given 預設測試組態，When 載入 Risk Service context，Then 不拋出例外。
      */
     @Test
     void contextLoads() {

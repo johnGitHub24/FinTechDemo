@@ -36,3 +36,12 @@ management:
       exposure:
         # 【技巧】health／info／prometheus：Demo 監控 scrape 用
         include: health,info,prometheus
+startup:
+  info:
+    enabled: true
+    project-name: FinTechDemo Gateway
+    frontend: none
+    h2: false
+    api-docs: false
+    probe: true
+    related-urls: Order|http://localhost:8081/actuator/health,Risk|http://localhost:8082/actuator/health,Job|http://localhost:8083/actuator/health,Account|http://localhost:8084/actuator/health,Vue|http://localhost:5173/login

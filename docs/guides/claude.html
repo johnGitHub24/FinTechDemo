@@ -54,7 +54,37 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
     <article class="md-body">
 <h1>FinTechDemo — 專案規則（薄）</h1>
-<p>繼承：EngineeringOS eos-minimal @ <strong>0.1.9</strong><br>公版：<code>d:\ClaudeCode\EngineeringOS\eos-minimal\</code> · <code>HOW_TO_APPLY.md</code><br>權威：<a href="./spec.html">FinTechDemo-SPEC.md</a>（瀏覽請開 <a href="./spec.html"><code>docs/guides/spec.html</code></a>）</p>
+<p>繼承：EngineeringOS eos-minimal @ <strong>0.1.10</strong><br>公版：<code>EngineeringOS/eos-minimal/</code> · <code>HOW_TO_APPLY.md</code><br>權威：<a href="./spec.html">FinTechDemo-SPEC.md</a>（瀏覽請開 <a href="./spec.html"><code>docs/guides/spec.html</code></a>）</p>
+<h2>目錄分工</h2>
+<table>
+<thead>
+<tr>
+<th>目錄</th>
+<th>用途</th>
+<th>其他專案？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>scripts/</code></td>
+<td><strong>Pure</strong> — JDK 21 → check／bootRun</td>
+<td>可對齊</td>
+</tr>
+<tr>
+<td><code>demo/</code></td>
+<td>LOOP／pipeline／doctor</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>docs/tools/</code></td>
+<td>文件伺服／HTML</td>
+<td>否</td>
+</tr>
+<tr>
+<td>隱藏檔 <code>.*</code></td>
+<td>本機 only</td>
+<td><strong>不上 git</strong>（僅 <code>.gitignore</code>）</td>
+</tr>
+</tbody></table>
 <h2>與公版差異</h2>
 <ul>
 <li>Ports：Gateway <code>8080</code> · order <code>8081</code> · risk <code>8082</code> · job <code>8083</code> · account <code>8084</code> · Vue <code>5173</code></li>
@@ -62,7 +92,8 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li>Frontend：Vue 3（無 Node BFF）</li>
 <li>DB：H2（local／test）；Docker Demo 用各服務 H2 + Kafka/Redis</li>
 <li><strong>Compose／Kafka／kind 前必須先開 Docker Desktop</strong>（權威：SPEC §3.1；UI 頁頂提醒）</li>
-<li>驗證：<code>.\scripts\verify-pipeline.ps1</code>（或 <code>.\scripts\check.ps1</code>）</li>
+<li>Pure：<code>.\scripts\check.ps1</code> → <code>.\gradlew.bat :order-service:bootRun</code></li>
+<li>Demo：<code>.\開啟Demo.cmd</code>／<code>.\demo\ensure-demo-links.ps1</code></li>
 <li>optional-frontend：yes</li>
 </ul>
 <h2>本專案專屬</h2>
@@ -70,7 +101,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li><strong>統一學習入口</strong>：<a href="../index.html">docs/index.html</a>（設定／K8s／教學／架構；API 連 swagger）</li>
 <li><strong>學習導引地圖（雙軌）</strong>：<a href="../portals/learning-map.html">docs/portals/learning-map.html</a>（勿用中文檔名 URL）</li>
 <li><strong>MD 閱讀器</strong>：<a href="../md-reader.html">docs/md-reader.html</a></li>
-<li><strong>靜態伺服</strong>：<code>.\scripts\serve-docs.ps1</code> → <code>http://127.0.0.1:5500/docs/index.html</code></li>
+<li><strong>靜態伺服</strong>：<code>.\docs\tools\serve-docs.ps1</code> → <code>http://127.0.0.1:5500/docs/index.html</code></li>
 <li>分散式敘事：<a href="../architecture/architecture.html">architecture</a>、<a href="../architecture/distributed.html">分散式系統落地</a></li>
 <li>Pipeline：check → compose config → k8s →（可選）compose up</li>
 <li>K8s 跑通規則／故障排除：<a href="../deploy/k8s-tips.html">K8s跑通與驗證技巧</a></li>

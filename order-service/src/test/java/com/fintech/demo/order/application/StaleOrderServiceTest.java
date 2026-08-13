@@ -38,7 +38,7 @@ class StaleOrderServiceTest {
     }
 
     /**
-     * CASE-STALE-ORDER-001：Given 新舊兩筆待處理訂單，When 執行逾時取消，Then 僅取消舊訂單。
+     * CASE STALE-001：Given 新舊兩筆待處理訂單，When 執行逾時取消，Then 僅取消舊訂單。
      */
     @Test
     void cancelStalePending_shouldCancelOldPendingOnly() {

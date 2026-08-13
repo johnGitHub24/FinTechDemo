@@ -119,7 +119,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li>入口說明：<code>deploy/README.md</code>。</li>
 </ul>
 <p><strong>L2 通過技巧：</strong></p>
-<pre><code class="language-powershell">cd D:\ClaudeCode\FinTechDemo
+<pre><code class="language-powershell">cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 .\scripts\check-k8s.ps1
 # 輸出 YAML 中應看到：account-service、order-service、risk-service、gateway
 </code></pre>
@@ -198,7 +198,7 @@ docker desktop restart   # 或 UI → Troubleshoot → Restart
 docker info              # 必須看到 Server Version
 
 # ② 用 TradingKubernetes 重建／修復 kind（叢集名 trading-local）
-cd D:\ClaudeCode\TradingKubernetes
+cd D:\SouceDemo\RemoteSpringBoot\TradingKubernetes
 .\scripts\start-local.ps1 -RecreateCluster -SkipMvp -SkipBuild
 # 腳本會：下載／使用 tools\kind.exe、create/recreate、export kubeconfig、use-context
 
@@ -213,7 +213,7 @@ kubectl cluster-info
 </code></pre>
 <p>或改用其他可用 context（有的話）：<code>kubectl config get-contexts</code>。</p>
 <h3>4.3 映像進叢集再 apply（FinTechDemo）</h3>
-<pre><code class="language-powershell">cd D:\ClaudeCode\FinTechDemo
+<pre><code class="language-powershell">cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 
 # 建各服務映像（根 Dockerfile + MODULE）
 docker build --build-arg MODULE=gateway -t fintech-demo/gateway:local .
@@ -226,7 +226,7 @@ kind load docker-image fintech-demo/gateway:local --name trading-local
 kind load docker-image fintech-demo/order-service:local --name trading-local
 kind load docker-image fintech-demo/risk-service:local --name trading-local
 kind load docker-image fintech-demo/account-service:local --name trading-local
-# 若 kind 不在 PATH：&amp; D:\ClaudeCode\TradingKubernetes\tools\kind.exe load ...
+# 若 kind 不在 PATH：&amp; D:\SouceDemo\RemoteSpringBoot\TradingKubernetes\tools\kind.exe load ...
 
 # 套用 overlay
 kubectl apply -k deploy/k8s/overlays/dev

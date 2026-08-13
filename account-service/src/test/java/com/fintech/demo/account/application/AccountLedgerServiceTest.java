@@ -47,7 +47,7 @@ class AccountLedgerServiceTest {
     }
 
     /**
-     * CASE-LEDGER-001：Given 現金足夠且沒有既有持倉，When 買進入帳，Then 扣現金並建立持倉。
+     * CASE LEDGER-001：Given 現金足夠且沒有既有持倉，When 買進入帳，Then 扣現金並建立持倉。
      */
     @Test
     void buy_shouldDeductCashAndCreatePosition() {
@@ -67,7 +67,7 @@ class AccountLedgerServiceTest {
     }
 
     /**
-     * CASE-LEDGER-002：Given 足額既有持倉，When 賣出入帳，Then 減少持倉並增加現金。
+     * CASE LEDGER-002：Given 足額既有持倉，When 賣出入帳，Then 減少持倉並增加現金。
      */
     @Test
     void sell_shouldReducePositionAndAddCash() {
@@ -85,7 +85,7 @@ class AccountLedgerServiceTest {
     }
 
     /**
-     * CASE-LEDGER-003：Given 現金不足，When 買進入帳，Then 拋出商業例外。
+     * CASE LEDGER-003：Given 現金不足，When 買進入帳，Then 拋出商業例外。
      */
     @Test
     void buy_insufficientCash_shouldFail() {
@@ -96,14 +96,25 @@ class AccountLedgerServiceTest {
     }
 
     /**
-     * CASE-LEDGER-004：Given Repository 回傳持倉實體，When 查詢持倉，Then 映射為 DTO。
+     * CASE LEDGER-004：Given Repository 回傳持倉實體，When 查詢持倉，Then 映射為 DTO。
      */
     @Test
-    void listPositions_shouldMapEntities() {
+    void LEDGER_004_listPositions_shouldMapEntities() {
         when(positionRepository.findByUserId(1L)).thenReturn(List.of(position(1L, "AAPL", 100, "150")));
         List<PositionDto> list = service.listPositions(1L);
         assertThat(list).hasSize(1);
         assertThat(list.getFirst().symbol()).isEqualTo("AAPL");
+    }
+
+    /**
+     * CASE ACCOUNT-001：Given 種子帳戶，When getAccount，Then 回傳現金 85000。
+     */
+    @Test
+    void ACCOUNT_001_getAccount_shouldMapSeedCash() {
+        when(accountRepository.findByUserId(1L)).thenReturn(Optional.of(account(1L, "85000.00")));
+        AccountDto dto = service.getAccount(1L);
+        assertThat(dto.userId()).isEqualTo(1L);
+        assertThat(dto.cashBalance()).isEqualByComparingTo("85000.00");
     }
 
     private static AccountEntity account(Long userId, String cash) {

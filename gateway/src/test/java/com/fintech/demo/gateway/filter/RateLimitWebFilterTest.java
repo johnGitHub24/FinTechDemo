@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 /**
  * 【職責】驗證 Gateway Demo 限流：通過與超限 429。
  * 【技巧】直接呼叫 filter，不啟動完整 Spring context。
- * 【概念】CASE 對齊 APIGatewayMQ GW-004／GW-005 敘事。
+ * 【概念】CASE GW-004／GW-005 與 Gateway HTTP 整合成對。
  */
 class RateLimitWebFilterTest {
 
@@ -28,8 +28,11 @@ class RateLimitWebFilterTest {
         chain = mock(FilterChain.class);
     }
 
+    /**
+     * CASE GW-004：未超限請求放行。
+     */
     @Test
-    void underLimit_passesThrough() throws Exception {
+    void GW_004_underLimit_passesThrough() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/orders");
         req.setRemoteAddr("10.0.0.1");
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -41,8 +44,11 @@ class RateLimitWebFilterTest {
         assertEquals(200, res.getStatus());
     }
 
+    /**
+     * CASE GW-005：超過每秒上限 → 429。
+     */
     @Test
-    void overLimit_returns429() throws Exception {
+    void GW_005_overLimit_returns429() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/orders");
         req.setRemoteAddr("10.0.0.2");
         MockHttpServletResponse res = new MockHttpServletResponse();

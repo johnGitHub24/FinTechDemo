@@ -34,3 +34,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation testFixtures(project(':common'))
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

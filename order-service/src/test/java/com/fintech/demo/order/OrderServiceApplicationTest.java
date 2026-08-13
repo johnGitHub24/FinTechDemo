@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class OrderServiceApplicationTest {
 
     /**
-     * CASE-ORDER-BOOT-001：Given 預設測試組態，When 載入 Order Service context，Then 不拋出例外。
+     * CASE ORDER-BOOT-001：Given 預設測試組態，When 載入 Order Service context，Then 不拋出例外。
      */
     @Test
     void contextLoads() {

@@ -14,10 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JwtTokenProviderTest {
 
     /**
-     * CASE-JWT-001：Given 有效使用者、識別與角色，When 簽發再驗證 JWT，Then 可讀回正確 Claim。
+     * CASE JWT-001：Given 有效使用者、識別與角色，When 簽發再驗證 JWT，Then 可讀回正確 Claim。
      */
     @Test
-    void generateAndValidate_roundTrip() {
+    void JWT_001_generateAndValidate_roundTrip() {
         JwtTokenProvider provider = new JwtTokenProvider(
                 "fintech-demo-dev-secret-key-32bytes!!", 3600_000);
         String token = provider.generateToken("trader1", 1L, List.of("ROLE_USER"));
@@ -27,12 +27,25 @@ class JwtTokenProviderTest {
     }
 
     /**
-     * CASE-JWT-002：Given 格式無效的字串，When 驗證 JWT，Then 回傳 false。
+     * CASE JWT-002：Given 格式無效的字串，When 驗證 JWT，Then 回傳 false。
+     * 與整合層 Bearer not.a.jwt → 401 成對。
      */
     @Test
-    void invalidToken_shouldFailValidation() {
+    void JWT_002_invalidToken_shouldFailValidation() {
         JwtTokenProvider provider = new JwtTokenProvider(
                 "fintech-demo-dev-secret-key-32bytes!!", 3600_000);
         assertThat(provider.validateToken("not.a.jwt")).isFalse();
+    }
+
+    /**
+     * CASE SEC-001：空白 Token 不可通過驗證（對應 HTTP 401）。
+     * CASE FLOW-002：未帶 JWT 的拒絕與整合層同一契約。
+     */
+    @Test
+    void SEC_001_FLOW_002_blankToken_isInvalid() {
+        JwtTokenProvider provider = new JwtTokenProvider(
+                "fintech-demo-dev-secret-key-32bytes!!", 3600_000);
+        assertThat(provider.validateToken("")).isFalse();
+        assertThat(provider.validateToken(null)).isFalse();
     }
 }

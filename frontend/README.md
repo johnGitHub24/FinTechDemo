@@ -5,7 +5,7 @@
 先起後端：
 
 ```powershell
-cd D:\ClaudeCode\FinTechDemo
+cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 .\gradlew.bat :order-service:bootRun
 ```
 

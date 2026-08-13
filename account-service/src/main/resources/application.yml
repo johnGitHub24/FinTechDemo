@@ -78,3 +78,12 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+
+startup:
+  info:
+    enabled: true
+    project-name: FinTechDemo Account
+    frontend: none
+    h2: true
+    api-docs: true
+    probe: true

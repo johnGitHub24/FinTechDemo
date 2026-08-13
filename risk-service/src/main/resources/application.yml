@@ -23,3 +23,12 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+startup:
+  info:
+    enabled: true
+    project-name: FinTechDemo Risk
+    frontend: none
+    h2: false
+    api-docs: true
+    probe: true
+    extra-paths: /api/v1/risk/check

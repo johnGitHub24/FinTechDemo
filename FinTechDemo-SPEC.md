@@ -1,8 +1,8 @@
 # FinTechDemo — 規格書（權威）
 
-> **路徑**：`d:\ClaudeCode\FinTechDemo`  
-> **工程導入**：`d:\ClaudeCode\EngineeringOS\eos-minimal\`（**HOW_TO_APPLY** — 開發一律走 EOS，勿手搓無規範專案）  
-> **公版版本**：eos-minimal @ **0.1.9**（見 `EngineeringOS/VERSION`）  
+> **路徑**：`D:\SouceDemo\RemoteSpringBoot\FinTechDemo`  
+> **工程導入**：`D:\SouceDemo\RemoteSpringBoot\EngineeringOS\eos-minimal\`（**HOW_TO_APPLY** — 開發一律走 EOS，勿手搓無規範專案）  
+> **公版版本**：eos-minimal @ **0.1.10**（見 `EngineeringOS/eos-minimal/`）  
 > **視覺敘事**：[codeGraphic](docs/portals/codeGraphic.html) · [技術次序與架構為什麼](docs/guides/why.html) · [產品劇情與RBAC](docs/guides/story-rbac.html)
 
 ---
@@ -465,7 +465,7 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | 文件 | 用途 |
 |------|------|
 | **本 SPEC** | 權威：目的、劇情、RBAC、EOS、API、Phase、**§3.1 Docker Desktop 前置** |
-| [CLAUDE.md](docs/guides/claude.html) | 薄規則（繼承 eos-minimal @ 0.1.9） |
+| [CLAUDE.md](docs/guides/claude.html) | 薄規則（繼承 eos-minimal @ 0.1.10） |
 | [engineering-config](docs/architecture/engineering-config.html) | EOS 變數／埠 |
 | [產品劇情與RBAC](docs/guides/story-rbac.html) | 前後台劇本與權限矩陣 |
 | [驗證設計](docs/architecture/verify-design.html) | JWT／RBAC（EOS Security 必備文） |
@@ -474,7 +474,7 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | [architecture](docs/architecture/architecture.html) | 部署／模組職責 |
 | [資料庫設計](docs/architecture/db.html) | ER |
 | [testing](docs/architecture/testing.html) | 測試案例 |
-| [測試與CI](docs/測試與CI.md) | check／pipeline／壓測／觀測 |
+| [測試與CI](docs/testing.md) | check／pipeline／壓測／觀測 |
 | [驗收清單](docs/驗收清單.md) | loop-engineering 總驗收勾選 |
 | [系統運作藍圖](docs/architecture/系統運作藍圖.md) | 技術棧／Mermaid 圖文（含 Eureka 升級口徑） |
 | [codeGraphic](docs/portals/codeGraphic.html) | Mermaid／HTML 總覽 |

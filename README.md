@@ -44,10 +44,13 @@ cd ..\EngineeringOS\eos-minimal\hooks
 
 ## 文件入口
 
-| 入口 | 路徑 |
+單一入口：本 README。衝突以主規格為準。
+
+| 文件 | 說明 |
 |------|------|
-| 規格 | [FinTechDemo-SPEC.md](FinTechDemo-SPEC.md) |
-| 學習書櫃 | [docs/index.html](docs/index.html)（`.\docs\tools\serve-docs.ps1`） |
-| Pure scripts | [scripts/README.md](scripts/README.md) |
-| Demo | [demo/README.md](demo/README.md) |
-| 公版操作 | `EngineeringOS/eos-minimal/knowledge/apply-workspace.md` |
+| [FinTechDemo-SPEC.md](FinTechDemo-SPEC.md) | **主規格（權威）** |
+| [docs/index.html](docs/index.html) | 學習書櫃（本專案唯一 HTML 入口） |
+| [scripts/README.md](scripts/README.md) | Pure check／bootRun |
+| [demo/README.md](demo/README.md) | Demo（可選） |
+| [CLAUDE.md](CLAUDE.md) | AI 薄規則 |
+

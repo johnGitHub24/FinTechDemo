@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 【職責】覆蓋 RiskService 現金與名義金額風控規則（與 Fixture Case 成對）。
- * 【技巧】RISK-001／002 由 DemoTestFixtures 載入；另測超額名目。
+ * 【技巧】RISK-001 與 RISK-002 由 DemoTestFixtures 載入；另測 RISK-003 超額名目。
  * 【概念】風控規則改動時，這裡是最快的迴歸網。
  */
 class RiskServiceTest {

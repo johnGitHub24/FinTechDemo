@@ -7,6 +7,22 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Run Anywhere: console + child processes always UTF-8 (not MS950), even without JAVA_HOME
+try {
+    cmd /c "chcp 65001 >NUL"
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    [Console]::OutputEncoding = $utf8
+    [Console]::InputEncoding = $utf8
+    $OutputEncoding = $utf8
+} catch {
+    # non-interactive hosts may lack a console
+}
+$env:PYTHONUTF8 = '1'
+$env:PYTHONIOENCODING = 'utf-8'
+if ($env:JAVA_TOOL_OPTIONS -notmatch 'file\.encoding=UTF-8') {
+    $env:JAVA_TOOL_OPTIONS = ("$($env:JAVA_TOOL_OPTIONS) -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8").Trim()
+}
+
 function Get-JavaMajorVersion([string] $JavaExe) {
     if (-not (Test-Path $JavaExe)) { return 0 }
     $prevEap = $ErrorActionPreference
@@ -47,4 +63,4 @@ $bin = Join-Path $env:JAVA_HOME 'bin'
 if ($env:Path -notlike "$bin;*") {
     $env:Path = "$bin;" + $env:Path
 }
-Write-Host "JAVA_HOME=$($env:JAVA_HOME) (Java $ver)" -ForegroundColor DarkGray
+Write-Host "JAVA_HOME=$($env:JAVA_HOME) (Java $ver) UTF-8" -ForegroundColor DarkGray

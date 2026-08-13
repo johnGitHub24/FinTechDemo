@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class GatewayApplicationTest {
 
     /**
-     * CASE-GATEWAY-BOOT-001：Given 預設測試組態，When 載入 Gateway context，Then 不拋出例外。
+     * CASE GATEWAY-BOOT-001：Given 預設測試組態，When 載入 Gateway context，Then 不拋出例外。
      */
     @Test
     void contextLoads() {

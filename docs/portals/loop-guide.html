@@ -143,7 +143,7 @@ flowchart LR
       <ol class="steps">
         <li>確認引擎：<code>docker info</code>（必須看到 Server Version）。</li>
         <li>建並起核心服務：
-<pre>cd D:\ClaudeCode\FinTechDemo
+<pre>cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 docker compose up -d --build
 docker compose ps</pre>
         </li>
@@ -176,7 +176,7 @@ sequenceDiagram
 docker info
 
 # 1) 重建／修復 kind（叢集名 trading-local）
-$Kind = "D:\ClaudeCode\TradingKubernetes\tools\kind.exe"
+$Kind = "D:\SouceDemo\RemoteSpringBoot\TradingKubernetes\tools\kind.exe"
 & $Kind delete cluster --name trading-local
 & $Kind create cluster --name trading-local
 & $Kind export kubeconfig --name trading-local
@@ -185,7 +185,7 @@ kubectl get --raw=/readyz
 kubectl get nodes   # STATUS 必須 Ready
 
 # 2) 映像（若 compose 已 build 過可跳過 docker build）
-cd D:\ClaudeCode\FinTechDemo
+cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 # docker build --build-arg MODULE=gateway -t fintech-demo/gateway:local .
 # … order-service / risk-service / account-service …
 
@@ -396,7 +396,7 @@ kubectl config current-context
 kubectl get nodes
 kubectl get --raw=/readyz
 kubectl -n fintech-demo get pods
-docker compose -f D:\ClaudeCode\FinTechDemo\docker-compose.yml ps</pre>
+docker compose -f D:\SouceDemo\RemoteSpringBoot\FinTechDemo\docker-compose.yml ps</pre>
       <div class="gate">本頁＝通用解法；完整指令見「驗證指令」分頁。細節另見 <code>K8s跑通與驗證技巧.md</code>、<code>上線部署階段層次.html</code>。</div>
     </section>
   </main>

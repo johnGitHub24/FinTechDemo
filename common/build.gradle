@@ -2,3 +2,7 @@ plugins {
     id 'java-library'
     id 'java-test-fixtures'
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

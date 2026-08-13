@@ -1,6 +1,6 @@
 ﻿# Portable IntelliJ Run helper (remote clone OK without EngineeringOS)
-# Daily path: committed .idea/runConfigurations/* bootRun (Gradle)
-# Optional: if EngineeringOS sibling exists, regenerate portable .idea configs
+# Daily path: IntelliJ Open project root -> SDK 21 -> Gradle bootRun (.idea is local, not git)
+# Optional: if EngineeringOS sibling exists, regenerate local .idea configs
 
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path $PSScriptRoot -Parent
@@ -18,9 +18,9 @@ if ($hook) {
     exit $LASTEXITCODE
 }
 
-Write-Host 'Run Anywhere: use committed .idea configs (EngineeringOS not required).' -ForegroundColor Green
+Write-Host 'Run Anywhere: Open project root, SDK=21, Gradle bootRun (.idea is local only).' -ForegroundColor Green
 Write-Host '1. Open project ROOT  2. Project SDK = 21  3. Gradle Sync' -ForegroundColor Cyan
-Write-Host '4. Run -> * bootRun (Gradle)  (see .idea/runConfigurations/README.md)' -ForegroundColor Cyan
+Write-Host '4. Gradle tool window -> bootRun' -ForegroundColor Cyan
 Write-Host 'Do NOT use green arrow on *Application.java (0xC0000005)' -ForegroundColor Yellow
 $props = Join-Path $PSScriptRoot 'intellij-run.properties'
 if (Test-Path $props) {

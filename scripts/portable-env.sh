@@ -5,6 +5,16 @@ set -euo pipefail
 
 MIN_JAVA_VERSION="${MIN_JAVA_VERSION:-21}"
 
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-C.UTF-8}"
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+if [[ "${JAVA_TOOL_OPTIONS:-}" != *"file.encoding=UTF-8"* ]]; then
+  export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
+  JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS# }"
+  export JAVA_TOOL_OPTIONS
+fi
+
 java_major_version() {
   local out
   out="$("$1" -version 2>&1 | head -n 1)"
@@ -37,4 +47,4 @@ if [[ "$ver" -lt "$MIN_JAVA_VERSION" ]]; then
 fi
 
 export PATH="$JAVA_HOME/bin:${PATH#"$JAVA_HOME/bin:"}"
-echo "JAVA_HOME=$JAVA_HOME (Java $ver)" >&2
+echo "JAVA_HOME=$JAVA_HOME (Java $ver) UTF-8" >&2

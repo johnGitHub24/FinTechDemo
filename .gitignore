@@ -1,7 +1,9 @@
-﻿# All hidden files/dirs — local only (exception: this file)
+# All hidden files/dirs — local only (exception: this file)
 .*
 !.gitignore
 
+!.github/
+!.github/**
 build/
 out/
 bin/
@@ -18,5 +20,9 @@ frontend/dist/
 *.pyc
 Thumbs.db
 scripts/package-lock.json
+docs/javadoc/
+docs/tools/node_modules/
+docs/_md/
 docs/tools/package-lock.json
 logs/
+

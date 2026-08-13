@@ -22,16 +22,15 @@
         </li>
         <li>
           <strong>一鍵起 Demo（最短可成交）</strong>
-          <p class="muted small"><strong>在哪執行：</strong>資料夾 <code>D:\ClaudeCode\FinTechDemo</code>（專案根目錄，裡面有 <code>開啟Demo.cmd</code> 這個檔）。</p>
-          <p class="muted small"><strong>方法 A（最簡單）</strong>：用檔案總管打開上面資料夾 → 雙擊 <code>開啟Demo.cmd</code>。</p>
-          <p class="muted small"><strong>方法 B（PowerShell）</strong>：先 <code>cd</code> 進該資料夾，再執行指令（不要只打 <code>Demo.cmd</code>）：</p>
+          <p class="muted small"><strong>在哪執行：</strong>本專案根目錄（裡面有 <code>開啟Demo.cmd</code> 的那一層）。</p>
+          <p class="muted small"><strong>方法 A（最簡單）</strong>：用檔案總管打開專案根 → 雙擊 <code>開啟Demo.cmd</code>。</p>
+          <p class="muted small"><strong>方法 B（PowerShell）</strong>：先 <code>cd</code> 進專案根，再執行：</p>
           <div class="observe-cmd-row">
-            <code class="observe-cmd">cd D:\ClaudeCode\FinTechDemo
-.\開啟Demo.cmd</code>
+            <code class="observe-cmd">.\開啟Demo.cmd</code>
             <button
               type="button"
               class="secondary sm"
-              @click="copyText('cd D:\\ClaudeCode\\FinTechDemo\r\n.\\開啟Demo.cmd')"
+              @click="copyText('.\\開啟Demo.cmd')"
             >複製</button>
           </div>
           <p class="muted small">成功後會開 Order＋Risk＋前端 → 瀏覽器 <code>http://localhost:5173/login</code>（trader1／password）。</p>

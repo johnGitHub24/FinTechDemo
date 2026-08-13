@@ -372,15 +372,17 @@ if (-not $SkipDocker) {
 if (-not $SkipLocust) {
     if (Test-HttpOk "http://localhost:8089/") {
         Write-Host "  OK locust :8089" -ForegroundColor Green
-    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    } elseif ((Get-Command py -ErrorAction SilentlyContinue) -or (@(Get-Command python -All -ErrorAction SilentlyContinue) | Where-Object { $_.Source -and $_.Source -notmatch '\\WindowsApps\\' })) {
         Write-Host "  START locust Web UI ..." -ForegroundColor Cyan
+        $pyLaunch = "py -3"
+        if (-not (Get-Command py -ErrorAction SilentlyContinue)) { $pyLaunch = "python" }
         $load = Join-Path $Root "loadtest"
         Push-Location $load
-        python -m pip install -r requirements.txt -q
+        cmd /c "$pyLaunch -m pip install -r requirements.txt -q"
         Pop-Location
         $outLog = Join-Path $logs "locust.out.log"
         $errLog = Join-Path $logs "locust.err.log"
-        $inner = "python -m locust -f locustfile.py --host http://localhost:8081 --web-host 0.0.0.0 --web-port 8089"
+        $inner = "$pyLaunch -m locust -f locustfile.py --host http://localhost:8081 --web-host 0.0.0.0 --web-port 8089"
         Start-DetachedViaCmd -WorkDir $load -InnerCmd $inner -OutLog $outLog -ErrLog $errLog
         if (Wait-HttpOk "http://localhost:8089/" 90) {
             Write-Host "  OK locust :8089" -ForegroundColor Green

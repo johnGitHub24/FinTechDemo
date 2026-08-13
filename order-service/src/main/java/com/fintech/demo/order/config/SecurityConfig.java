@@ -1,9 +1,11 @@
 package com.fintech.demo.order.config;
 
 import com.fintech.demo.order.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,7 +15,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -35,7 +36,8 @@ public class SecurityConfig {
             "/h2-console/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            "/error"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -46,7 +48,8 @@ public class SecurityConfig {
 
     /**
      * 【職責】建立無狀態 JWT 的 HTTP 授權規則與 filter chain。
-     * 【技巧】停用 CSRF／Session，設定公開路徑、ADMIN 審計路徑與 JWT filter 的插入位置。
+     * 【技巧】停用 CSRF／Session；Audit 限 ADMIN。401／403 用 setStatus 寫 JSON，避免 {@code sendError}
+     *         觸發 Tomcat ERROR 轉發／error 再被當成未登入而把 403 變成 401。
      * 【概念】真正的存取控制應在伺服器端執行，前端守衛只能改善使用體驗。
      */
     @Bean
@@ -58,13 +61,24 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC).permitAll()
-                        .requestMatchers("/api/audit-logs/**").hasRole("ADMIN")
+                        .requestMatchers("/api/audit-logs", "/api/audit-logs/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                        .accessDeniedHandler((req, res, e) -> res.sendError(HttpStatus.FORBIDDEN.value())))
+                        .authenticationEntryPoint((req, res, e) -> writeJson(res, HttpStatus.UNAUTHORIZED, "unauthorized"))
+                        .accessDeniedHandler((req, res, e) -> writeJson(res, HttpStatus.FORBIDDEN, "forbidden")))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    /**
+     * 【職責】把安全例外寫成固定 JSON 狀態，不走 {@code sendError}。
+     * 【技巧】直接 setStatus＋寫 body，讓已登入但缺角色的請求維持 403。
+     * 【概念】Tomcat 對 sendError 會 ERROR dispatch；若 /error 仍需認證，使用者會看到 401。
+     */
+    private static void writeJson(HttpServletResponse res, HttpStatus status, String error) throws java.io.IOException {
+        res.setStatus(status.value());
+        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        res.getWriter().write("{\"error\":\"" + error + "\"}");
     }
 
     /**

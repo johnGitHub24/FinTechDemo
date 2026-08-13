@@ -28,10 +28,30 @@ Write-Host "Serving $Root on http://127.0.0.1:$Port/" -ForegroundColor Cyan
 Write-Host "MUST open: http://127.0.0.1:$Port/docs/index.html" -ForegroundColor Green
 Write-Host "Ctrl+C to stop." -ForegroundColor Yellow
 
-$py = Get-Command python -ErrorAction SilentlyContinue
-if ($py) {
-    $server = Join-Path $PSScriptRoot "serve_docs_http.py"
-    & python $server --port $Port --bind 127.0.0.1 --root $Root
+function Get-DocsPython {
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        try {
+            $exe = (& py -3 -c "import sys; print(sys.executable)" 2>$null | Select-Object -Last 1)
+            if ($exe) {
+                $exe = $exe.Trim()
+                if ($exe -and (Test-Path -LiteralPath $exe) -and $exe -notmatch '\\WindowsApps\\') { return $exe }
+            }
+        } catch {}
+    }
+    foreach ($name in @("python", "python3")) {
+        $cmds = @(Get-Command $name -All -ErrorAction SilentlyContinue)
+        foreach ($c in $cmds) {
+            if (-not $c.Source -or $c.Source -match '\\WindowsApps\\') { continue }
+            return $c.Source
+        }
+    }
+    return $null
+}
+
+$pythonExe = Get-DocsPython
+$server = Join-Path $PSScriptRoot "serve_docs_http.py"
+if ($pythonExe) {
+    & $pythonExe $server --port $Port --bind 127.0.0.1 --root $Root
     exit $LASTEXITCODE
 }
 

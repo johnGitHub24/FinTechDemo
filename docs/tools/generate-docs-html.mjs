@@ -4,7 +4,7 @@
  * 【概念】catalog 為書櫃／閱讀器／產生器唯一清單；權威 MD 在 _md/，瀏覽路徑 .md 為導向 HTML 的 stub。
  *
  * Usage (repo root):
- *   .\scripts\generate-docs-html.ps1
+ *   .\docs\tools\generate-docs-html.ps1
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -13,7 +13,7 @@ import { marked } from "marked";
 import yaml from "js-yaml";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, "..");
+const root = path.resolve(__dirname, "../..");
 const docs = path.join(root, "docs");
 const catalogPath = path.join(docs, "catalog.yaml");
 

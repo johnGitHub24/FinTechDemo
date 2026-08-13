@@ -21,12 +21,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 【職責】Order 就緒後自動跑 Loop Engineering：{@code scripts/ensure-demo-links.ps1 -FromOrder}。
+ * 【職責】Order 就緒後自動跑 Loop Engineering：{@code demo/ensure-demo-links.ps1 -FromOrder}。
  * 【技巧】背景執行；失敗會重試，直到橫幅服務全 UP（或耗盡重試）。
  * 【概念】Windows 上 bat／npm 必須用 cmd /c（腳本內已根修）；FromOrder 跳過 javadoc／test 長工。
  * 【邊界】省 RAM：{@code ensure-skip-docker}／{@code ensure-skip-locust}；測試關 {@code ensure-stack=false}。
- */
-@Component
+ */@Component
 @Order(100)
 @ConditionalOnProperty(name = "fintech.startup.ensure-stack", havingValue = "true", matchIfMissing = true)
 public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyEvent> {
@@ -56,7 +55,7 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
         }
         Path script = resolveEnsureScript();
         if (script == null) {
-            log.warn("ensure-demo-links.ps1 not found — skip auto stack. Run .\\scripts\\ensure-demo-links.ps1 manually.");
+            log.warn("ensure-demo-links.ps1 not found — skip auto stack. Run .\\demo\\ensure-demo-links.ps1 manually.");
             return;
         }
         Thread t = new Thread(() -> runEnsure(script), "demo-stack-ensure");
@@ -76,6 +75,9 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
             int code = -1;
             for (int attempt = 1; attempt <= MAX_SCRIPT_ATTEMPTS; attempt++) {
                 List<String> cmd = buildEnsureCommand(script);
+                if (cmd.isEmpty()) {
+                    break;
+                }
                 ProcessBuilder pb = new ProcessBuilder(cmd);
                 pb.directory(root.toFile());
                 // 追加寫入，保留上一輪診斷
@@ -109,7 +111,7 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
             if (code == 0 && isTradeReady()) {
                 log.info("LOOP ensure-demo-links OK — banner stack ready. See logs/ensure-from-order.*.log");
             } else {
-                log.warn("LOOP ensure-demo-links exit={} tradeReady={} — see logs/ensure-from-order.*.log then .\\scripts\\doctor-demo.ps1 -Fix",
+                log.warn("LOOP ensure-demo-links exit={} tradeReady={} — see logs/ensure-from-order.*.log then .\\demo\\doctor-demo.ps1 -Fix",
                         code, isTradeReady());
             }
         } catch (Exception ex) {
@@ -119,11 +121,18 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
     }
 
     private List<String> buildEnsureCommand(Path script) {
+        String shell = resolvePowerShellExecutable();
+        if (shell == null) {
+            log.warn("PowerShell not found (need powershell.exe or pwsh) — skip ensure-demo-links");
+            return List.of();
+        }
         List<String> cmd = new ArrayList<>();
-        cmd.add("powershell.exe");
+        cmd.add(shell);
         cmd.add("-NoProfile");
-        cmd.add("-ExecutionPolicy");
-        cmd.add("Bypass");
+        if (shell.toLowerCase().contains("powershell")) {
+            cmd.add("-ExecutionPolicy");
+            cmd.add("Bypass");
+        }
         cmd.add("-File");
         cmd.add(script.toAbsolutePath().toString());
         cmd.add("-FromOrder");
@@ -134,6 +143,35 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
             cmd.add("-SkipLocust");
         }
         return cmd;
+    }
+
+    /**
+     * 【技巧】Windows 用 powershell.exe；Linux/macOS 用 pwsh（若已安裝）。
+     */
+    private static String resolvePowerShellExecutable() {
+        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+        if (windows) {
+            return "powershell.exe";
+        }
+        if (isOnPath("pwsh")) {
+            return "pwsh";
+        }
+        return null;
+    }
+
+    private static boolean isOnPath(String name) {
+        String path = System.getenv("PATH");
+        if (path == null || path.isBlank()) {
+            return false;
+        }
+        String sep = File.pathSeparator;
+        for (String dir : path.split(sep)) {
+            File exe = new File(dir, name);
+            if (exe.isFile() && exe.canExecute()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -157,7 +195,7 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
         if (order && risk && vite) {
             out.println("TRADE-READY OK → http://127.0.0.1:5173/login  (trader1 / password)");
         } else {
-            out.println("TRADE-READY FAIL — run: .\\scripts\\ensure-demo-links.ps1 -FromOrder");
+            out.println("TRADE-READY FAIL — run: .\\demo\\ensure-demo-links.ps1 -FromOrder");
         }
     }
 
@@ -196,7 +234,7 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
     static Path resolveEnsureScript() {
         Path dir = Path.of(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
         for (int i = 0; i < 6 && dir != null; i++) {
-            Path candidate = dir.resolve("scripts").resolve("ensure-demo-links.ps1");
+            Path candidate = dir.resolve("demo").resolve("ensure-demo-links.ps1");
             if (Files.isRegularFile(candidate)) {
                 return candidate;
             }
@@ -206,7 +244,7 @@ public class DemoStackBootstrap implements ApplicationListener<ApplicationReadyE
             }
             dir = parent;
         }
-        File alt = new File("scripts/ensure-demo-links.ps1");
+        File alt = new File("demo/ensure-demo-links.ps1");
         if (alt.isFile()) {
             return alt.toPath().toAbsolutePath();
         }

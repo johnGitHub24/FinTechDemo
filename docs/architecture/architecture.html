@@ -146,14 +146,14 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <td><code>gateway</code></td>
 <td>8080</td>
 <td>唯一 API 入口</td>
-<td>Path 路由到 order／account</td>
+<td>Path 路由到 order／account；<strong>RateLimitWebFilter</strong>（固定窗口，超限 429）</td>
 <td>Middleware</td>
 </tr>
 <tr>
 <td><code>order-service</code></td>
 <td>8081</td>
 <td>訂單生命週期、登入、審計</td>
-<td>JWT、JPA、Kafka <strong>Producer</strong>、AOP、Feign</td>
+<td>JWT、JPA、Kafka <strong>Producer</strong>、AOP、Feign、<strong>WebConfig CORS</strong></td>
 <td>交易編排</td>
 </tr>
 <tr>
@@ -261,6 +261,31 @@ POST /api/orders/{id}/execute
 <td>方便只起一個服務學習；可說明「正式走 account」</td>
 </tr>
 </tbody></table>
+<h3>邊緣機制（Demo 可講）</h3>
+<table>
+<thead>
+<tr>
+<th>機制</th>
+<th>類別／位置</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>入口限流</td>
+<td><code>gateway/.../filter/RateLimitWebFilter</code></td>
+<td>每秒固定視窗；超限 <strong>429</strong>；Demo 用進程內計數（多副本見 APIGatewayMQ Redis）</td>
+</tr>
+<tr>
+<td>CORS</td>
+<td><code>order-service/.../config/WebConfig</code></td>
+<td>允許 Vue <code>:5173</code> 呼叫 <code>/api/**</code>（Security 鏈已 <code>.cors</code>）</td>
+</tr>
+<tr>
+<td>Redis Cache</td>
+<td><code>account-service</code> <code>AccountQueryService</code></td>
+<td>cache-aside；key <code>account:{id}</code>／<code>positions:{id}</code>；TTL 60s；入帳 evict；<code>fintech.redis.enabled</code> 可關</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>6. 流量模式</h2>
 <table>
@@ -302,10 +327,10 @@ POST /api/orders/{id}/execute
 <li><strong>MD 閱讀器</strong>：<a href="../md-reader.html">md-reader.html</a></li>
 <li>埠與變數：<a href="./engineering-config.html"><code>engineering-config</code></a></li>
 <li>API 互動：<a href="../portals/swagger.html"><code>swagger</code></a></li>
-<li>驗證：<code>.\scripts\check.ps1</code>、<code>.\scripts\check-k8s.ps1</code>、<code>.\scripts\smoke-distributed.ps1</code></li>
+<li>驗證：<code>.\scripts\check.ps1</code>、<code>.\demo\verify-pipeline.ps1</code>（可加 <code>-Smoke</code>）</li>
 <li>K8s 跑通／故障排除：<a href="../deploy/k8s-tips.html"><code>K8s跑通與驗證技巧</code></a></li>
 <li>上線部署階段層次：<a href="../deploy/stages-doc.html"><code>上線部署階段層次</code></a></li>
-<li>啟動：<code>.\scripts\start-demo.ps1</code></li>
+<li>啟動：<code>開啟Demo.cmd</code> 或 <code>.\demo\ensure-demo-links.ps1</code></li>
 </ul>
 
     </article>

@@ -5,10 +5,10 @@
 ## 驗證入口
 
 ```powershell
-.\scripts\check.ps1                          # unit + integration
-.\scripts\verify-pipeline.ps1                # check + compose config + k8s
-.\scripts\verify-pipeline.ps1 -Up -Smoke     # 可選：容器 + API 煙霧
-cd frontend; npm run build                   # 前端建置
+.\scripts\check.ps1                          # Pure
+.\demo\verify-pipeline.ps1                   # check + compose + k8s
+.\demo\verify-pipeline.ps1 -Up -Smoke        # 可選：容器 + health
+cd frontend; npm run build
 ```
 
 ## Case ID（Fixture：`docs/test-data/`）
@@ -34,7 +34,8 @@ cd frontend; npm run build                   # 前端建置
 ## 壓測／觀測
 
 ```powershell
-.\scripts\run-loadtest.ps1 -WebUi            # http://localhost:8089
+cd loadtest
+python -m locust -f locustfile.py --host http://localhost:8081 --web-port 8089
 docker compose --profile monitoring up -d    # Grafana :3000 · Prometheus :9090
 ```
 
@@ -54,5 +55,5 @@ Demo 快捷「學習文件」已含 **Javadoc／單元測試／整合測試** �
 
 1. Risk(:8082) + Order(:8081) + frontend `:5173`  
 2. `/login` → `/trade` 成交 → `/blueprint`  
-3. `.\scripts\check.ps1` → `.\scripts\verify-pipeline.ps1`  
+3. `.\scripts\check.ps1` → `.\demo\verify-pipeline.ps1`  
 4. （加分）Eureka 升級口徑見 SPEC §2.3／TradingMicroService  

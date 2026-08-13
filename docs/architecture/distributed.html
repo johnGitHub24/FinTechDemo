@@ -185,15 +185,14 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li>其餘 <code>/api/**</code> → order:8081</li>
 <li><strong>限流</strong>：<code>RateLimitWebFilter</code>（<code>fintech.gateway.rate-limit.*</code>）；超限 429</li>
 </ul>
-<p>前端 Vite：standalone 預設 <code>:8081</code>；分散式設 <code>VITE_API_TARGET=http://localhost:8080</code>。<br>
-Order 另有 <code>WebConfig</code> CORS（允許 <code>:5173</code> 直連，不必只靠 proxy）。</p>
+<p>前端 Vite：standalone 預設 <code>:8081</code>；分散式設 <code>VITE_API_TARGET=http://localhost:8080</code>。<br>Order 另有 <code>WebConfig</code> CORS（允許 <code>:5173</code> 直連，不必只靠 proxy）。</p>
 <h2>驗證</h2>
 <pre><code class="language-powershell">.\scripts\check.ps1
 .\scripts\check-k8s.ps1          # 應含 account-service（只 kustomize，不連 API）
-.\scripts\smoke-distributed.ps1  # compose +（服務就緒時）API 煙霧
+.\scripts\verify-pipeline.ps1 -Up -Smoke  # compose + health 煙霧
 </code></pre>
 <p>K8s／kind／Docker 跑通規則與故障排除（含 <code>connection refused</code> 解法）：<br><a href="../deploy/k8s-tips.html"><code>K8s跑通與驗證技巧</code></a></p>
-<p>逐層打通到可部署／上線（S0→S6）：<br><a href="../deploy/stages-doc.html"><code>上線部署階段層次（MD）</code></a> · <a href="../portals/stages.html"><code>上線部署階段層次（互動）</code></a></p>
+<p>逐層打通到可部署／上線（S0→S6）：<br><a href="../deploy/stages-doc.html"><code>上線部署階段層次（MD）</code></a> · <a href="../deploy/stages-doc.html"><code>上線部署階段層次（互動）</code></a></p>
 <p>完整架構圖：<a href="./architecture.html"><code>architecture</code></a></p>
 
     </article>

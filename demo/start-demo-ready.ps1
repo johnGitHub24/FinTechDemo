@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
   Demo 一鍵就緒：優先保證 Order+Risk+Vite（可成交），再依序補齊其餘服務。
@@ -25,8 +25,8 @@
   預設改為「只清半殘」：health 已 UP 的埠保留，避免每次重開都砍掉 IDE 已起的 Order。
 
 .EXAMPLE
-  .\scripts\start-demo-ready.ps1
-  .\scripts\start-demo-ready.ps1 -Full -ServeDocs -FreeKind -OpenBrowser
+  .\demo\start-demo-ready.ps1
+  .\demo\start-demo-ready.ps1 -Full -ServeDocs -FreeKind -OpenBrowser
 #>
 param(
     [switch] $Full,
@@ -304,7 +304,7 @@ function Ensure-Docs {
     }
     $py = Get-Command python -ErrorAction SilentlyContinue
     if (-not $py) {
-        Write-Host '  SKIP docs — 找不到 python（.\scripts\serve-docs.ps1 需 Python）' -ForegroundColor Yellow
+        Write-Host '  SKIP docs — 找不到 python（.\docs\tools\serve-docs.ps1 需 Python）' -ForegroundColor Yellow
         return $false
     }
     Write-Host '  START docs :5500 ...' -ForegroundColor Cyan
@@ -405,5 +405,5 @@ if ($failMust -eq 0 -and $okRisk -and $okOrder -and $okVite) {
 
 Write-Host '必開服務尚未齊。建議：' -ForegroundColor Red
 Write-Host '  雙擊 開啟Demo.cmd（已含 -Full -ServeDocs -FreeKind）' -ForegroundColor Yellow
-Write-Host '  或：.\scripts\start-demo-ready.ps1 -Full -ServeDocs -FreeKind -OpenBrowser' -ForegroundColor Yellow
+Write-Host '  或：.\demo\start-demo-ready.ps1 -Full -ServeDocs -FreeKind -OpenBrowser' -ForegroundColor Yellow
 exit 1

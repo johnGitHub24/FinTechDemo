@@ -63,7 +63,7 @@ Order 另有 `WebConfig` CORS（允許 `:5173` 直連，不必只靠 proxy）。
 ```powershell
 .\scripts\check.ps1
 .\scripts\check-k8s.ps1          # 應含 account-service（只 kustomize，不連 API）
-.\scripts\smoke-distributed.ps1  # compose +（服務就緒時）API 煙霧
+.\scripts\verify-pipeline.ps1 -Up -Smoke  # compose + health 煙霧
 ```
 
 K8s／kind／Docker 跑通規則與故障排除（含 `connection refused` 解法）：  

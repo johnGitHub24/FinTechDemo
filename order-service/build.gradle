@@ -2,8 +2,16 @@ plugins {
     id 'org.springframework.boot'
 }
 
+springBoot {
+    mainClass = 'com.fintech.demo.order.OrderServiceApplication'
+}
+
 bootJar {
     archiveFileName = 'app.jar'
+}
+
+tasks.named('bootRun') {
+    jvmArgs += ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8']
 }
 
 dependencies {

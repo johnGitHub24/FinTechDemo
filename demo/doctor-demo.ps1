@@ -18,9 +18,9 @@
   修復後開啟登入／藍圖 K8s 指令頁。
 
 .EXAMPLE
-  .\scripts\doctor-demo.ps1
-  .\scripts\doctor-demo.ps1 -Fix -OpenBrowser
-  .\scripts\doctor-demo.ps1 -FrontendOnly -OpenBrowser
+  .\demo\doctor-demo.ps1
+  .\demo\doctor-demo.ps1 -Fix -OpenBrowser
+  .\demo\doctor-demo.ps1 -FrontendOnly -OpenBrowser
 #>
 param(
     [switch] $Fix,
@@ -61,7 +61,7 @@ $checks = @(
     @{ Name = 'Gateway';       Port = 8080; Url = 'http://localhost:8080/actuator/health'; Hint = ':gateway:bootRun' },
     @{ Name = 'Job';           Port = 8083; Url = 'http://localhost:8083/actuator/health'; Hint = ':job-service:bootRun' },
     @{ Name = 'Account';       Port = 8084; Url = 'http://localhost:8084/actuator/health'; Hint = ':account-service:bootRun' },
-    @{ Name = 'Docs static';   Port = 5500; Url = 'http://127.0.0.1:5500/docs/index.html'; Hint = '.\scripts\serve-docs.ps1' }
+    @{ Name = 'Docs static';   Port = 5500; Url = 'http://127.0.0.1:5500/docs/index.html'; Hint = '.\docs\tools\serve-docs.ps1' }
 )
 
 $down = @()
@@ -126,9 +126,9 @@ if ($down.Count -gt 0) {
 if (-not $Fix -and -not $FrontendOnly) {
     Write-Host ""
     Write-Host "一鍵修復：" -ForegroundColor Cyan
-    Write-Host "  .\scripts\doctor-demo.ps1 -Fix -OpenBrowser"
-    Write-Host "  .\scripts\doctor-demo.ps1 -FrontendOnly -OpenBrowser   # 只救網頁"
-    Write-Host "  .\scripts\ensure-demo-links.ps1"
+    Write-Host "  .\demo\doctor-demo.ps1 -Fix -OpenBrowser"
+    Write-Host "  .\demo\doctor-demo.ps1 -FrontendOnly -OpenBrowser   # 只救網頁"
+    Write-Host "  .\demo\ensure-demo-links.ps1"
     Write-Host "  或雙擊：開啟Demo.cmd"
     exit 1
 }
@@ -146,11 +146,11 @@ $code = $LASTEXITCODE
 if ($OpenBrowser -or $Fix -or $FrontendOnly) {
     Start-Sleep -Seconds 1
     if (Test-HttpOk 'http://localhost:5173/login') {
-        Write-Host "開啟瀏覽器…" -ForegroundColor Green
+        Write-Host 'Opening browser...' -ForegroundColor Green
         Start-Process 'http://localhost:5173/login'
         Start-Process 'http://localhost:5173/blueprint#k8s-verify'
     } else {
-        Write-Host "前端仍未就緒，請看 logs\frontend.*.log" -ForegroundColor Red
+        Write-Host 'Frontend not ready — see logs\frontend.*.log' -ForegroundColor Red
     }
 }
 

@@ -135,7 +135,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 # 再打 API 煙霧
 .\scripts\verify-pipeline.ps1 -Up -Smoke
 </code></pre>
-<p>對應內部步驟：<code>check</code> → <code>docker compose config</code> → <code>check-k8s.ps1</code> →（可選）<code>compose up</code> →（可選）<code>smoke-distributed.ps1</code>。</p>
+<p>對應內部步驟：<code>check</code> → <code>docker compose config</code> → <code>check-k8s.ps1</code> →（可選）<code>compose up</code> →（可選）<code>-Smoke</code> health。</p>
 <hr>
 <h2>4. 本機真叢集跑通（L4）— 技巧方案</h2>
 <h3>4.1 前置檢查清單</h3>
@@ -308,11 +308,11 @@ kubectl -n fintech-demo rollout status deploy/gateway
 </tr>
 <tr>
 <td><code>scripts/verify-pipeline.ps1</code></td>
-<td>L0～L3 一條龍</td>
+<td>L0～L3 一條龍（<code>-Smoke</code>＝health）</td>
 </tr>
 <tr>
-<td><code>scripts/smoke-distributed.ps1</code></td>
-<td>API 煙霧</td>
+<td><code>demo/ensure-demo-links.ps1</code></td>
+<td>Demo LOOP</td>
 </tr>
 <tr>
 <td><code>deploy/k8s/**</code></td>

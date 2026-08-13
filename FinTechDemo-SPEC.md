@@ -301,7 +301,7 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 ### 3.1 本機啟動前置（Demo 精簡）
 
 > **Demo 最短路徑（必開）**：Order `:8081` ＋ Risk `:8082` ＋ Vite `:5173` → 可登入、下單、成交。  
-> **一鍵**：雙擊 `開啟Demo.cmd`（＝`scripts\start-demo-ready.ps1 -FreeKind`）。  
+> **一鍵**：雙擊 `開啟Demo.cmd`（＝`demo\ensure-demo-links.ps1`）。  
 > **全開**（Gateway／Account／Job）需足夠 RAM；本機曾因同時多個 Gradle／kind 記憶體不足而全 DOWN——腳本改**依序**啟動，必要時先停 kind。
 
 | 場景 | 要開什麼 |
@@ -310,7 +310,7 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | Compose／Kafka／監控 | 另需 Docker Desktop Ready |
 | kind／kubectl | Docker＋活叢集（與本機 bootRun 搶 RAM，Demo 時可先停 kind） |
 
-**常見錯誤**：服務狀態全 DOWN／`insufficient memory` → 關多餘 Docker／kind，再跑 `start-demo-ready.ps1`。勿改業務 Java。  
+**常見錯誤**：服務狀態全 DOWN／`insufficient memory` → 關多餘 Docker／kind，再跑 `.\demo\doctor-demo.ps1 -Fix`。勿改業務 Java。  
 **UI**：登入頁「一鍵確保 UP」；Demo 快捷登入前後皆可用（需登入頁會記住 next）。  
 **Demo 劇本**：登入 → Trade 下單 → 成交 → Portal 歷史。
 

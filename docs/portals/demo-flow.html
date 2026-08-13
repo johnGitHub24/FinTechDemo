@@ -145,7 +145,7 @@ flowchart TB
       <li><strong>Job</strong>：逾時取消（不進 S 公式）。</li>
       <li><strong>Vite</strong>：前端登入／藍圖。</li>
       <li><strong>Docs</strong>：<code>serve-docs</code> :5500 學習 HTML。</li>
-      <li><strong>Grafana／Prometheus</strong>：Docker <code>--profile monitoring</code>；引擎未 Ready 則 fallback <code>start-monitoring-local.ps1</code>。</li>
+      <li><strong>Grafana／Prometheus</strong>：Docker <code>--profile monitoring</code>。</li>
       <li><strong>Locust</strong>：本機 Python Web UI :8089。</li>
     </ol>
     <p>
@@ -156,7 +156,7 @@ flowchart TB
 
     <h3>2.3 你怎麼確認齊了？</h3>
     <ul>
-      <li>全快捷驗證：<code>.\scripts\verify-demo-shortcuts.ps1</code>（全綠才算可講）</li>
+      <li>診斷修復：<code>.\scripts\doctor-demo.ps1 -Fix</code>（全綠才算可講）</li>
       <li>Console 橫幅：<code>【LOOP】…背景進行中</code> → 看 <code>logs/ensure-from-order.*.log</code></li>
       <li>約 1～3 分鐘後：Risk／Vite／Gateway／Grafana／Locust… 應變 <code>[UP]</code></li>
       <li>登入：<a href="http://localhost:5173/login" target="_blank">http://localhost:5173/login</a>（trader1／password）</li>

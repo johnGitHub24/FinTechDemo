@@ -9,8 +9,8 @@
   服務未起時：印出啟動指令（exit 2），方便學習「先 infra、再 MS」。
 
 .EXAMPLE
-  .\scripts\smoke-distributed.ps1
-  .\scripts\smoke-distributed.ps1 -SkipCompose
+  .\demo\smoke-distributed.ps1
+  .\demo\smoke-distributed.ps1 -SkipCompose
 #>
 param(
     [switch]$SkipCompose,
@@ -88,7 +88,7 @@ if (-not ($orderOk -and $riskOk -and $accountOk)) {
     Write-Host "  .\gradlew.bat :account-service:bootRun --args='--spring.profiles.active=demo'"
     Write-Host "  .\gradlew.bat :order-service:bootRun --args='--spring.profiles.active=demo'"
     Write-Host "  .\gradlew.bat :gateway:bootRun"
-    Write-Host "Then re-run: .\scripts\smoke-distributed.ps1 -SkipCompose"
+    Write-Host "Then re-run: .\demo\smoke-distributed.ps1 -SkipCompose"
     Write-Host "Docs: docs/architecture.md · docs/分散式系統落地.md"
     exit 2
 }

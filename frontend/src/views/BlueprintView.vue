@@ -48,8 +48,8 @@
         <li>
           <strong>要做壓測 Locust</strong>
           <div class="observe-cmd-row">
-            <code class="observe-cmd">.\scripts\run-loadtest.ps1 -WebUi</code>
-            <button type="button" class="secondary sm" @click="copyText('.\\scripts\\run-loadtest.ps1 -WebUi')">複製</button>
+            <code class="observe-cmd">cd loadtest; python -m locust -f locustfile.py --host http://localhost:8081 --web-port 8089</code>
+            <button type="button" class="secondary sm" @click="copyText('cd loadtest; python -m locust -f locustfile.py --host http://localhost:8081 --web-port 8089')">複製</button>
           </div>
           <p class="muted small">瀏覽器開 <code>http://localhost:8089</code></p>
         </li>
@@ -342,8 +342,8 @@
       </div>
       <p class="muted small">Grafana <code>:3000</code>（帳密 <code>admin</code>／<code>admin</code>）· Prometheus <code>:9090</code></p>
       <div class="observe-cmd-row">
-        <code class="observe-cmd">.\scripts\run-loadtest.ps1 -WebUi</code>
-        <button type="button" class="secondary sm" @click="copyText('.\\scripts\\run-loadtest.ps1 -WebUi')">複製</button>
+        <code class="observe-cmd">cd loadtest; python -m locust -f locustfile.py --host http://localhost:8081 --web-port 8089</code>
+        <button type="button" class="secondary sm" @click="copyText('cd loadtest; python -m locust -f locustfile.py --host http://localhost:8081 --web-port 8089')">複製</button>
       </div>
       <p class="muted small">Locust UI <code>:8089</code>（虛擬帳用系統的 <code>trader1</code>／<code>password</code>）</p>
 
@@ -372,7 +372,7 @@
         <li>開 <a :href="links.locust" target="_blank" rel="noopener">http://localhost:8089</a></li>
         <li>Users <code>5</code> · Spawn rate <code>1</code> · Host <code>http://localhost:8081</code>（經 Gateway 改 <code>:8080</code>）</li>
         <li>Start swarming → 看 RPS／Failures（門檻：錯誤率 &lt; 1%）</li>
-        <li>無畫面報告：<code>.\scripts\run-loadtest.ps1</code> → <code>loadtest/reports/*.html</code></li>
+        <li>無畫面報告：見 <code>loadtest/README.md</code>（headless locust）→ <code>loadtest/reports/</code></li>
       </ol>
 
       <p class="observe-links">

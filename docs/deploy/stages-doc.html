@@ -55,7 +55,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <article class="md-body">
 <h1>FinTechDemo — 逐層打通：上線部署階段層次</h1>
 <blockquote>
-<p><strong>怎麼用</strong>：每一階段有「通過閘門」；<strong>前一層未綠燈，不要跳下一層</strong>。<br><strong>細節解法</strong>（Docker／kind refused 等）：<a href="./k8s-tips.html"><code>K8s跑通與驗證技巧</code></a><br><strong>視覺版</strong>：<a href="../portals/stages.html"><code>上線部署階段層次（互動）</code></a></p>
+<p><strong>怎麼用</strong>：每一階段有「通過閘門」；<strong>前一層未綠燈，不要跳下一層</strong>。<br><strong>細節解法</strong>（Docker／kind refused 等）：<a href="./k8s-tips.html"><code>K8s跑通與驗證技巧</code></a><br><strong>視覺版</strong>：<a href="./stages-doc.html"><code>上線部署階段層次.html</code></a></p>
 </blockquote>
 <hr>
 <h2>總覽（一圖）</h2>
@@ -380,15 +380,15 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </thead>
 <tbody><tr>
 <td><code>scripts/verify-pipeline.ps1</code></td>
-<td>S0＋S3／S4 一條龍</td>
+<td>S0＋S3／S4 一條龍（<code>-Smoke</code>＝health）</td>
 </tr>
 <tr>
 <td><code>scripts/check-k8s.ps1</code></td>
 <td>S4</td>
 </tr>
 <tr>
-<td><code>scripts/smoke-distributed.ps1</code></td>
-<td>S3 煙霧</td>
+<td><code>demo/ensure-demo-links.ps1</code></td>
+<td>Demo LOOP</td>
 </tr>
 <tr>
 <td><a href="./deploy-readme.html">deploy/README</a></td>

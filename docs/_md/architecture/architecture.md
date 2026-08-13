@@ -142,7 +142,7 @@ POST /api/orders/{id}/execute
 - **MD 閱讀器**：[md-reader.html](../md-reader.html)
 - 埠與變數：[`engineering-config`](engineering-config.html)
 - API 互動：[`swagger`](../portals/swagger.html)
-- 驗證：`.\scripts\check.ps1`、`.\scripts\check-k8s.ps1`、`.\scripts\smoke-distributed.ps1`
+- 驗證：`.\scripts\check.ps1`、`.\demo\verify-pipeline.ps1`（可加 `-Smoke`）
 - K8s 跑通／故障排除：[`K8s跑通與驗證技巧`](../deploy/k8s-tips.html)
 - 上線部署階段層次：[`上線部署階段層次`](../portals/stages.html)
-- 啟動：`.\scripts\start-demo.ps1`
+- 啟動：`開啟Demo.cmd` 或 `.\demo\ensure-demo-links.ps1`

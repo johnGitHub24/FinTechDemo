@@ -209,7 +209,7 @@ function Ensure-Frontend([int]$Attempts = 2) {
         $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         "$( $stamp ) START frontend" | Set-Content -Encoding utf8 $outLog
         $started = $false
-        # 優先 npm run dev（與 start-demo-ready 一致）；失敗再直接 node + vite.js
+        # 優先 npm run dev；失敗再直接 node + vite.js
         if ($npmCmd) {
             $inner = "`"$($npmCmd.Source)`" run dev -- --host 0.0.0.0 --port 5173 --strictPort"
             $started = Start-DetachedViaCmd -WorkDir $feDir -InnerCmd $inner -OutLog $outLog -ErrLog $errLog
@@ -240,7 +240,7 @@ function Ensure-Docs {
     }
     Write-Host "  START serve-docs ..." -ForegroundColor Cyan
     Start-Process -FilePath "powershell.exe" `
-        -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $PSScriptRoot "serve-docs.ps1")) `
+        -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $Root "docs\tools\serve-docs.ps1")) `
         -WorkingDirectory $Root -WindowStyle Minimized | Out-Null
     if (Wait-HttpOk "http://127.0.0.1:5500/docs/index.html" 45) {
         Write-Host "  OK docs :5500" -ForegroundColor Green
@@ -340,20 +340,11 @@ function Ensure-Monitoring {
 
     $needLocal = -not ((Test-HttpOk "http://localhost:9090/-/healthy") -and (Test-HttpOk "http://localhost:3000/login"))
     if ($needLocal) {
-        if ($dockerOk) {
-            Write-Host "  Docker monitoring 未就緒 → fallback start-monitoring-local.ps1" -ForegroundColor Yellow
-        } else {
-            Write-Host "  Docker 引擎未 Ready → fallback start-monitoring-local.ps1" -ForegroundColor Yellow
-        }
-        $localMon = Join-Path $PSScriptRoot "start-monitoring-local.ps1"
-        if (Test-Path $localMon) {
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $localMon
-            Wait-HttpOk "http://localhost:9090/-/healthy" 90 | Out-Null
-            Wait-HttpOk "http://localhost:3000/login" 90 | Out-Null
-        } elseif (-not $dockerOk) {
-            Write-Host "  FAIL missing start-monitoring-local.ps1" -ForegroundColor Red
+        if (-not $dockerOk) {
+            Write-Host "  SKIP monitoring (Docker not Ready). Use: docker compose --profile monitoring up -d" -ForegroundColor Yellow
             return $false
         }
+        Write-Host "  WARN monitoring not UP after compose; check docker logs" -ForegroundColor Yellow
     }
 
     $ok = $true
@@ -514,11 +505,11 @@ foreach ($u in $niceProbe) {
 Write-TradeReadyBanner | Out-Null
 
 if ($tradeFail -gt 0) {
-    Write-Host "LOOP FAIL: trade-ready 未齊 ($tradeFail)。下一步: .\scripts\doctor-demo.ps1 -Fix" -ForegroundColor Red
+    Write-Host "LOOP FAIL: trade-ready 未齊 ($tradeFail)。下一步: .\demo\doctor-demo.ps1 -Fix" -ForegroundColor Red
     exit 1
 }
 if ($FromOrder -and $bannerFail -gt 0) {
-    Write-Host "LOOP FAIL (FromOrder): 橫幅服務仍 DOWN=$bannerFail（Gateway/Job/Account/Docs/監控/Locust）。下一步: .\scripts\doctor-demo.ps1 -Fix" -ForegroundColor Red
+    Write-Host "LOOP FAIL (FromOrder): 橫幅服務仍 DOWN=$bannerFail（Gateway/Job/Account/Docs/監控/Locust）。下一步: .\demo\doctor-demo.ps1 -Fix" -ForegroundColor Red
     exit 1
 }
 if ($bannerFail -gt 0 -or $niceFail -gt 0) {

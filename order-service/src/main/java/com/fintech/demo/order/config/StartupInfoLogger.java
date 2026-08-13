@@ -59,7 +59,7 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
             out.println("  log: logs/ensure-from-order.*.log");
             out.println("  skip-docker=" + skipDocker + "  skip-locust=" + skipLocust);
         } else {
-            out.println("LOOP off — run: .\\scripts\\ensure-demo-links.ps1 -FromOrder");
+            out.println("LOOP off — run: .\\demo\\ensure-demo-links.ps1 -FromOrder");
         }
         out.println("-----------------------------------------------");
         out.println("trade-ready  Order " + bracket(order)
@@ -79,8 +79,8 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         out.println("-----------------------------------------------");
         out.println("login: trader1 / password");
         out.println("UI:    http://localhost:5173/blueprint");
-        out.println("check: .\\scripts\\verify-demo-shortcuts.ps1");
-        out.println("fix:   .\\scripts\\ensure-demo-links.ps1");
+        out.println("check: .\\demo\\doctor-demo.ps1");
+        out.println("fix:   .\\demo\\ensure-demo-links.ps1");
         out.println("================================================");
         out.println();
 

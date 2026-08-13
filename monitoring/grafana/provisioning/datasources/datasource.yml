@@ -4,7 +4,7 @@ datasources:
     type: prometheus
     uid: prometheus
     access: proxy
-    # Docker Compose 服務名（同 network）；本機免 Docker 請用 start-monitoring-local.ps1
+    # Docker Compose 服務名（同 network）
     url: http://prometheus:9090
     isDefault: true
     editable: false

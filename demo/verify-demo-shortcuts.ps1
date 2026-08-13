@@ -1,5 +1,5 @@
-﻿# FinTechDemo verify-demo-shortcuts.ps1
-# Probe only (no start). On FAIL run: .\scripts\ensure-demo-links.ps1
+# FinTechDemo verify-demo-shortcuts.ps1
+# Probe only (no start). On FAIL run: .\demo\ensure-demo-links.ps1
 param()
 $ErrorActionPreference = "Continue"
 $Root = Split-Path $PSScriptRoot -Parent
@@ -50,7 +50,7 @@ foreach ($item in $probe) {
     }
 }
 if ($fail -gt 0) {
-    Write-Host "DOWN: $fail — run .\scripts\ensure-demo-links.ps1" -ForegroundColor Yellow
+    Write-Host "DOWN: $fail — run .\demo\ensure-demo-links.ps1" -ForegroundColor Yellow
     exit 1
 }
 Write-Host "ALL OK: Demo shortcut targets reachable" -ForegroundColor Green

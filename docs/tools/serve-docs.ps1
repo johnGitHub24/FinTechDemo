@@ -3,16 +3,15 @@
   本機靜態文件伺服（專案根；無 .html 副檔名會回退到 .html/.md）。
 
 .EXAMPLE
-  .\scripts\serve-docs.ps1
+  .\docs\tools\serve-docs.ps1
   # http://127.0.0.1:5500/docs/index.html
-  # http://127.0.0.1:5500/docs/md-reader  → md-reader.html
 #>
 param(
     [int]$Port = 5500
 )
 
 $ErrorActionPreference = "Stop"
-$Root = Split-Path $PSScriptRoot -Parent
+$Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location $Root
 
 $conns = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
@@ -27,7 +26,6 @@ foreach ($c in $conns) {
 
 Write-Host "Serving $Root on http://127.0.0.1:$Port/" -ForegroundColor Cyan
 Write-Host "MUST open: http://127.0.0.1:$Port/docs/index.html" -ForegroundColor Green
-Write-Host "  Extensionless OK: /docs/md-reader -> md-reader.html" -ForegroundColor DarkCyan
 Write-Host "Ctrl+C to stop." -ForegroundColor Yellow
 
 $py = Get-Command python -ErrorAction SilentlyContinue
@@ -37,5 +35,5 @@ if ($py) {
     exit $LASTEXITCODE
 }
 
-Write-Host "python not found — using npx serve (no extensionless fallback)" -ForegroundColor Yellow
+Write-Host "python not found - using npx serve (no extensionless fallback)" -ForegroundColor Yellow
 npx --yes serve -l $Port .

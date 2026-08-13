@@ -3,9 +3,9 @@
   Locust 壓測：baseline（order :8081）或 fullflow（gateway :8080），產出 reports。
 
 .EXAMPLE
-  .\scripts\run-loadtest.ps1
-  .\scripts\run-loadtest.ps1 -Scenario fullflow -HostUrl http://localhost:8080
-  .\scripts\run-loadtest.ps1 -WebUi   # 開 Locust UI :8089（前端「壓測 UI」可點）
+  .\demo\run-loadtest.ps1
+  .\demo\run-loadtest.ps1 -Scenario fullflow -HostUrl http://localhost:8080
+  .\demo\run-loadtest.ps1 -WebUi   # 開 Locust UI :8089（前端「壓測 UI」可點）
 #>
 param(
     [ValidateSet("baseline", "fullflow")]

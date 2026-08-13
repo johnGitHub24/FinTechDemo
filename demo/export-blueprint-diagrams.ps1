@@ -1,5 +1,5 @@
 # Export FinTechDemo blueprint Mermaid diagrams to PNG/SVG
-# Usage: .\scripts\export-blueprint-diagrams.ps1
+# Usage: .\demo\export-blueprint-diagrams.ps1
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root

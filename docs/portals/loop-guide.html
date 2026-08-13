@@ -133,7 +133,7 @@ flowchart LR
           </tr>
         </tbody>
       </table>
-      <div class="gate">FinTechDemo 對應腳本：<code>verify-pipeline.ps1</code>（L0～L3）、<code>smoke-distributed.ps1</code>、<code>check-k8s.ps1</code>。階段敘事見 S0→S6 HTML。</div>
+      <div class="gate">FinTechDemo 對應腳本：<code>verify-pipeline.ps1</code>（L0～L3，可加 <code>-Smoke</code>）、<code>check-k8s.ps1</code>、<code>ensure-demo-links.ps1</code>。階段敘事見 S0→S6 HTML。</div>
     </section>
 
     <!-- Compose -->
@@ -148,7 +148,7 @@ docker compose up -d --build
 docker compose ps</pre>
         </li>
         <li>等到全部 <code>(healthy)</code>（含 gateway）。</li>
-        <li>煙霧：<code>.\scripts\smoke-distributed.ps1 -SkipCompose</code> → 看到 <code>SMOKE_DISTRIBUTED_OK</code>。</li>
+        <li>煙霧：<code>.\scripts\verify-pipeline.ps1 -Smoke</code> → health UP（order／risk／account）。</li>
       </ol>
       <div class="gate">通過＝「功能可部署成功」的最低線。日常 Demo 到這裡通常就夠。</div>
     </section>
@@ -263,10 +263,10 @@ kubectl -n fintech-demo port-forward svc/gateway 18080:8080
 Invoke-WebRequest http://127.0.0.1:18080/actuator/health -UseBasicParsing</pre>
 
       <h3>4) Compose 對照（分散式 Demo）</h3>
-<pre>cd D:\ClaudeCode\FinTechDemo
+<pre>cd D:\SouceDemo\RemoteSpringBoot\FinTechDemo
 docker compose ps
-.\scripts\smoke-distributed.ps1 -SkipCompose
-# 通過：SMOKE_DISTRIBUTED_OK</pre>
+.\scripts\verify-pipeline.ps1 -Smoke
+# 通過：各服務 health UP</pre>
 
       <h3>5) kind ≠ Docker Desktop「Enable Kubernetes」</h3>
       <div class="why">
@@ -361,7 +361,7 @@ kubectl -n fintech-demo get pods</pre>
           <tr>
             <td>Compose healthy 但 smoke 失敗</td>
             <td>各服務 <code>/actuator/health</code>、log</td>
-            <td>先修單一服務；再跑 <code>smoke-distributed.ps1</code></td>
+            <td>先修單一服務；再跑 <code>verify-pipeline.ps1 -Smoke</code></td>
           </tr>
         </tbody>
       </table>
@@ -382,7 +382,7 @@ kubectl -n fintech-demo logs deploy/&lt;name&gt; --tail=100</pre>
           <tr><td>☐</td><td><code>docker info</code></td><td>Server Version 存在</td></tr>
           <tr><td>☐</td><td><code>check-k8s.ps1</code></td><td>overlay OK</td></tr>
           <tr><td>☐</td><td>compose <code>ps</code></td><td>gateway／order／risk／account／redis／kafka 皆 healthy</td></tr>
-          <tr><td>☐</td><td><code>smoke-distributed.ps1 -SkipCompose</code></td><td><code>SMOKE_DISTRIBUTED_OK</code></td></tr>
+          <tr><td>☐</td><td><code>verify-pipeline.ps1 -Smoke</code></td><td>order／risk／account health UP</td></tr>
           <tr><td>☐</td><td><code>kubectl config current-context</code></td><td><code>kind-trading-local</code></td></tr>
           <tr><td>☐</td><td><code>kubectl get nodes</code></td><td><code>trading-local-control-plane</code> Ready</td></tr>
           <tr><td>☐</td><td><code>kubectl get --raw=/readyz</code></td><td><code>ok</code></td></tr>

@@ -170,9 +170,9 @@ flowchart TB
 
 | 文件／腳本 | 用途 |
 |------------|------|
-| `scripts/verify-pipeline.ps1` | S0＋S3／S4 一條龍 |
+| `scripts/verify-pipeline.ps1` | S0＋S3／S4 一條龍（`-Smoke`＝health） |
 | `scripts/check-k8s.ps1` | S4 |
-| `scripts/smoke-distributed.ps1` | S3 煙霧 |
+| `demo/ensure-demo-links.ps1` | Demo LOOP |
 | [deploy/README](deploy-readme.html) | K8s 短操作 |
 | [K8s跑通與驗證技巧](k8s-tips.html) | S5 故障排除 |
 | [分散式系統落地](../architecture/distributed.html) | 分散式敘事 |

@@ -64,7 +64,7 @@ cd D:\ClaudeCode\FinTechDemo
 .\scripts\verify-pipeline.ps1 -Up -Smoke
 ```
 
-對應內部步驟：`check` → `docker compose config` → `check-k8s.ps1` →（可選）`compose up` →（可選）`smoke-distributed.ps1`。
+對應內部步驟：`check` → `docker compose config` → `check-k8s.ps1` →（可選）`compose up` →（可選）`-Smoke` health。
 
 ---
 
@@ -193,8 +193,8 @@ kubectl -n fintech-demo rollout status deploy/gateway
 | 檔案 | 角色 |
 |------|------|
 | `scripts/check-k8s.ps1` | L2：kustomize 驗證 |
-| `scripts/verify-pipeline.ps1` | L0～L3 一條龍 |
-| `scripts/smoke-distributed.ps1` | API 煙霧 |
+| `scripts/verify-pipeline.ps1` | L0～L3 一條龍（`-Smoke`＝health） |
+| `demo/ensure-demo-links.ps1` | Demo LOOP |
 | `deploy/k8s/**` | Manifest |
 | `deploy/README.md` | 短操作 |
 | `docs/分散式系統落地`（[HTML](../architecture/distributed.html)） | 分散式敘事＋驗證入口 |

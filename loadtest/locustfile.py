@@ -2,7 +2,7 @@
 FinTechDemo Locust — baseline / fullflow 壓測（精簡 Demo）。
 
 【職責】模擬 trader 登入後下單並列表；可經 Gateway 或直連 order。
-【技巧】FINTECH_SCENARIO=baseline|fullflow；報告由 run-loadtest.ps1 產出。
+【技巧】FINTECH_SCENARIO=baseline|fullflow；見 loadtest/README.md。
 【概念】簡報時搭配 Grafana 看 RPS／錯誤；門檻錯誤率 < 1%。
 
 用法：

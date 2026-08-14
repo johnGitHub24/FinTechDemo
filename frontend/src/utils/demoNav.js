@@ -5,6 +5,7 @@
  * 【概念】loop-engineering：導向失敗要有可執行下一步，不是 silent fail。
  */
 import { nextTick } from 'vue';
+import { scrollToId, scrollToSelector } from './jqueryDom';
 
 /**
  * 【目的】探測 URL 是否可連（同源用 fetch；跨源只要不是 network error 也算可試開）。
@@ -83,7 +84,7 @@ export async function goSpa(router, path, hash) {
   await nextTick();
   await new Promise((r) => setTimeout(r, 50));
   if (hash) {
-    document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToId(hash);
   }
 }
 
@@ -91,7 +92,6 @@ export async function goSpa(router, path, hash) {
  * 【目的】展開並捲到 Demo 快捷面板。
  */
 export function openDemoPanel(panelRef) {
-  const el = document.getElementById('demo-shortcuts');
   if (panelRef?.value?.expand) panelRef.value.expand();
-  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  scrollToSelector('#demo-shortcuts');
 }

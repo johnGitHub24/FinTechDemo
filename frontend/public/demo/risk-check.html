@@ -10,6 +10,7 @@
     button:hover { background: #1d4ed8; }
     .ok { color: #047857; } .bad { color: #b91c1c; }
   </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
   <h1>Risk Check（Demo）</h1>
@@ -18,32 +19,34 @@
   <p id="status"></p>
   <pre id="out">（尚未送出）</pre>
   <script>
-    const payload = {
-      userId: 1, symbol: 'AAPL', side: 'BUY', quantity: 1, price: 100, cashBalance: 1000
-    };
-    document.getElementById('run').onclick = async () => {
-      const status = document.getElementById('status');
-      const out = document.getElementById('out');
-      status.textContent = '請求中…';
-      try {
-        const res = await fetch('/proxy/risk-check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const text = await res.text();
-        let body = text;
-        try { body = JSON.stringify(JSON.parse(text), null, 2); } catch (_) {}
-        out.textContent = body;
-        status.innerHTML = res.ok
-          ? '<span class="ok">HTTP ' + res.status + ' — 連線成功</span>'
-          : '<span class="bad">HTTP ' + res.status + '</span>';
-      } catch (e) {
-        status.innerHTML = '<span class="bad">連線失敗：請先啟動 RiskServiceApplication (:8082)</span>';
-        out.textContent = String(e);
-      }
-    };
-    document.getElementById('run').click();
+    $(function () {
+      const payload = {
+        userId: 1, symbol: 'AAPL', side: 'BUY', quantity: 1, price: 100, cashBalance: 1000
+      };
+      $('#run').on('click', async function () {
+        const $status = $('#status');
+        const $out = $('#out');
+        $status.text('請求中…');
+        try {
+          const res = await fetch('/proxy/risk-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const text = await res.text();
+          let body = text;
+          try { body = JSON.stringify(JSON.parse(text), null, 2); } catch (_) {}
+          $out.text(body);
+          $status.html(res.ok
+            ? '<span class="ok">HTTP ' + res.status + ' — 連線成功</span>'
+            : '<span class="bad">HTTP ' + res.status + '</span>');
+        } catch (e) {
+          $status.html('<span class="bad">連線失敗：請先啟動 RiskServiceApplication (:8082)</span>');
+          $out.text(String(e));
+        }
+      });
+      $('#run').trigger('click');
+    });
   </script>
 </body>
 </html>

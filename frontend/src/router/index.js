@@ -10,6 +10,7 @@ import TradeView from '../views/TradeView.vue';
 import PortalView from '../views/PortalView.vue';
 import AuditView from '../views/AuditView.vue';
 import BlueprintView from '../views/BlueprintView.vue';
+import { scrollToId } from '../utils/jqueryDom';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -50,7 +51,7 @@ router.afterEach((to) => {
   if (!to.hash) return;
   const id = to.hash.replace(/^#/, '');
   requestAnimationFrame(() => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToId(id);
   });
 });
 

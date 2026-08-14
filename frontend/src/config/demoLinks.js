@@ -70,11 +70,19 @@ export const navDemoButtons = [
   },
   {
     id: 'k8s',
-    label: 'K8s 指令',
+    label: 'K8s／IntelliJ',
     kind: 'spa',
     to: '/blueprint',
-    hash: 'k8s-verify',
-    hint: '藍圖頁一鍵複製 kubectl'
+    hash: 'k8s-intellij',
+    hint: 'Services vs kind 部署教學'
+  },
+  {
+    id: 'redis',
+    label: 'Redis 指令',
+    kind: 'spa',
+    to: '/blueprint',
+    hash: 'docker-redis',
+    hint: 'Docker Desktop／redis-cli 教學'
   },
   {
     id: 'demo',
@@ -92,7 +100,9 @@ export const loginDemoGroups = [
       { label: 'Portal', spaPath: '/portal', needLogin: true },
       { label: 'Audit', spaPath: '/portal/audit', needLogin: true, needAdmin: true },
       { label: '藍圖', spaPath: '/blueprint' },
-      { label: '藍圖·K8s', spaPath: '/blueprint#k8s-verify' }
+      { label: '藍圖·Redis', spaPath: '/blueprint#docker-redis' },
+      { label: '藍圖·K8s', spaPath: '/blueprint#k8s-intellij' },
+      { label: '藍圖·K8s 驗證', spaPath: '/blueprint#k8s-verify' }
     ]
   },
   {

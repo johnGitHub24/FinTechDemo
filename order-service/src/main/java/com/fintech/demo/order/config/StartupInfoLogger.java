@@ -77,6 +77,11 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         line(out, prometheus, "Prom", "http://localhost:9090");
         line(out, locust, "Locust", "http://localhost:8089");
         out.println("-----------------------------------------------");
+        if (env.getProperty("spring.h2.tcp.enabled", Boolean.class, true)) {
+            String h2Port = env.getProperty("spring.h2.tcp.port", "9093");
+            out.println("DataGrip H2: jdbc:h2:tcp://localhost:" + h2Port + "/mem:fintechdemo  (sa / 空白)");
+            out.println("  ※ 埠被占用時 H2 TCP 會跳過；先停舊 bootRun 或改 spring.h2.tcp.port");
+        }
         out.println("login: trader1 / password");
         out.println("UI:    http://localhost:5173/blueprint");
         out.println("check: .\\demo\\doctor-demo.ps1");

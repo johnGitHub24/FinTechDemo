@@ -50,7 +50,9 @@ cd ..\EngineeringOS\eos-minimal\hooks
 |------|------|
 | [FinTechDemo-SPEC.md](FinTechDemo-SPEC.md) | **主規格（權威）** |
 | [docs/index.html](docs/index.html) | 學習書櫃（本專案唯一 HTML 入口） |
+| [docs/文件完整度.md](docs/文件完整度.md) | **文件地圖／單一真相／勿重複維護** |
 | [scripts/README.md](scripts/README.md) | Pure check／bootRun |
-| [demo/README.md](demo/README.md) | Demo（可選） |
+| [demo/README.md](demo/README.md) | Demo（可選）· `platform-run.properties` |
 | [CLAUDE.md](CLAUDE.md) | AI 薄規則 |
+| 藍圖 SPA | http://localhost:5173/blueprint · K8s：`#k8s-intellij` |
 

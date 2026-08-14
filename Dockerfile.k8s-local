@@ -1,0 +1,10 @@
+# FinTechDemo — K8s 本機 Demo 用（runtime-only）
+# 【職責】先在本機 gradlew :module:bootJar，再 COPY jar 進映像（避開 Docker 內 Gradle／apk TLS 問題）
+# 【用法】docker build -f Dockerfile.k8s-local --build-arg MODULE=order-service -t fintech-demo/order-service:local .
+ARG MODULE=order-service
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+ARG MODULE
+COPY ${MODULE}/build/libs/app.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

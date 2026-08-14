@@ -831,23 +831,43 @@ tbody tr:hover { background: var(--surface2); }
   font-size: 0.95rem;
 }
 .observe-cmd-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 0.35rem 0.55rem;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0.35rem 0;
+  margin: 0.5rem 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
 }
 .observe-cmd {
-  flex: 1;
-  min-width: 12rem;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
   display: block;
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 6px;
   background: #0f172a;
   color: #e2e8f0;
   font-size: 0.8rem;
+  font-family: Consolas, "Courier New", monospace;
   white-space: pre-wrap;
   word-break: break-all;
+  box-sizing: border-box;
+}
+.observe-cmd-row .secondary.sm {
+  grid-column: 1;
+  grid-row: 2;
+  flex-shrink: 0;
+}
+.observe-cmd-row .muted.small {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  min-width: 0;
 }
 .observe-queries {
   list-style: none;

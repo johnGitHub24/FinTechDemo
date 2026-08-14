@@ -78,5 +78,5 @@ Write-Host ""
 Write-Host "PIPELINE_OK" -ForegroundColor Green
 Write-Host "Demo LOOP:  .\demo\ensure-demo-links.ps1   or  開啟Demo.cmd"
 Write-Host "Docker:     .\demo\verify-pipeline.ps1 -Up"
-Write-Host "K8s:        .\demo\check-k8s.ps1"
+Write-Host "K8s 全棧:   .\demo\start-k8s-demo.ps1"
 exit 0

@@ -293,7 +293,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 <tr>
 <td>5.2</td>
-<td>重建／修復 kind：<code>TradingKubernetes\scripts\start-local.ps1 -RecreateCluster -SkipMvp -SkipBuild</code></td>
+<td><code>.\demo\start-k8s-demo.ps1 -RecreateCluster</code></td>
 </tr>
 <tr>
 <td>5.3</td>
@@ -301,7 +301,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 <tr>
 <td>5.4</td>
-<td><code>docker build</code> 四服務 → <code>kind load</code> → <code>kubectl apply -k deploy/k8s/overlays/dev</code></td>
+<td><code>.\demo\start-k8s-demo.ps1</code>（build/load/apply 一鍵）</td>
 </tr>
 <tr>
 <td>5.5</td>

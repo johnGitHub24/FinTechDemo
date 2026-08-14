@@ -31,6 +31,7 @@ param(
 $ErrorActionPreference = 'Continue'
 $Root = Split-Path $PSScriptRoot -Parent
 Set-Location $Root
+. (Join-Path $PSScriptRoot 'platform-env.ps1') -ProjectRoot $Root
 
 function Test-PortListen([int] $Port) {
     return [bool](Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1)
@@ -51,17 +52,13 @@ Write-Host "【Root cause】本機網頁不是永遠開著的服務。" -Foregro
 Write-Host "  Vite(npm run dev)、gradle bootRun 是「手動行程」。" -ForegroundColor Yellow
 Write-Host "  關掉終端機／重開機／Agent 工作結束 → 埠消失 → ERR_CONNECTION_REFUSED。" -ForegroundColor Yellow
 Write-Host "  這通常不是 Proxy／防火牆；也不是「K8s 壞了」。" -ForegroundColor Yellow
-Write-Host "  kind Pod Running 只代表叢集內容器，不會自動提供 http://localhost:5173" -ForegroundColor Yellow
+Write-Host "  kind Pod Running 只代表叢集內容器，不會自動提供 http://localhost:$PlatformVitePort" -ForegroundColor Yellow
 Write-Host ""
 
-$checks = @(
-    @{ Name = 'Vite frontend'; Port = 5173; Url = 'http://localhost:5173/login'; Hint = 'npm run dev 或 ensure-demo-links' },
-    @{ Name = 'Order';         Port = 8081; Url = 'http://localhost:8081/actuator/health'; Hint = ':order-service:bootRun' },
-    @{ Name = 'Risk';          Port = 8082; Url = 'http://localhost:8082/actuator/health'; Hint = ':risk-service:bootRun' },
-    @{ Name = 'Gateway';       Port = 8080; Url = 'http://localhost:8080/actuator/health'; Hint = ':gateway:bootRun' },
-    @{ Name = 'Job';           Port = 8083; Url = 'http://localhost:8083/actuator/health'; Hint = ':job-service:bootRun' },
-    @{ Name = 'Account';       Port = 8084; Url = 'http://localhost:8084/actuator/health'; Hint = ':account-service:bootRun' },
-    @{ Name = 'Docs static';   Port = 5500; Url = 'http://127.0.0.1:5500/docs/index.html'; Hint = '.\docs\tools\serve-docs.ps1' }
+$checks = @(Get-PlatformServiceChecks) + @(
+    @{ Name = 'Job'; Port = $PlatformJobPort; Url = "http://localhost:$PlatformJobPort/actuator/health"; Hint = ':job-service:bootRun' },
+    @{ Name = 'Account'; Port = $PlatformAccountPort; Url = "http://localhost:$PlatformAccountPort/actuator/health"; Hint = ':account-service:bootRun' },
+    @{ Name = 'Docs static'; Port = 5500; Url = 'http://127.0.0.1:5500/docs/index.html'; Hint = '.\docs\tools\serve-docs.ps1' }
 )
 
 $down = @()
@@ -80,7 +77,7 @@ foreach ($c in $checks) {
 
 # Docker / kind（附帶說明，避免混淆）
 Write-Host ""
-Write-Host "--- Docker / kind（與 localhost:5173 是另一條路）---" -ForegroundColor Cyan
+Write-Host "--- Docker / kind（與 localhost:$PlatformVitePort 是另一條路）---" -ForegroundColor Cyan
 $dockerOk = $false
 try {
     $info = docker info 2>&1 | Out-String
@@ -107,18 +104,18 @@ Write-Host ""
 if ($down.Count -eq 0 -and -not $Fix -and -not $FrontendOnly) {
     Write-Host "診斷結果：本機 Demo 埠皆可達。" -ForegroundColor Green
     if ($OpenBrowser) {
-        Start-Process 'http://localhost:5173/login'
-        Start-Process 'http://localhost:5173/blueprint#k8s-verify'
+        Start-Process "http://localhost:$PlatformVitePort/login"
+        Start-Process "http://localhost:$PlatformVitePort/blueprint#k8s-verify"
     }
     exit 0
 }
 
 if ($down.Count -gt 0) {
     Write-Host "診斷結果：有 $($down.Count) 個本機目標 DOWN → 瀏覽器會「拒絕連線」。" -ForegroundColor Red
-    $viteDown = $down | Where-Object { $_.Port -eq 5173 }
+    $viteDown = $down | Where-Object { $_.Port -eq $PlatformVitePort }
     if ($viteDown) {
         Write-Host ""
-        Write-Host "你現在若開 http://localhost:5173 → ERR_CONNECTION_REFUSED 的直接原因：" -ForegroundColor Magenta
+        Write-Host "你現在若開 http://localhost:$PlatformVitePort → ERR_CONNECTION_REFUSED 的直接原因：" -ForegroundColor Magenta
         Write-Host "  Vite 開發伺服器沒在跑（行程消失），不是網站壞掉。" -ForegroundColor Magenta
     }
 }
@@ -145,10 +142,10 @@ $code = $LASTEXITCODE
 
 if ($OpenBrowser -or $Fix -or $FrontendOnly) {
     Start-Sleep -Seconds 1
-    if (Test-HttpOk 'http://localhost:5173/login') {
+    if (Test-HttpOk "http://localhost:$PlatformVitePort/login") {
         Write-Host 'Opening browser...' -ForegroundColor Green
-        Start-Process 'http://localhost:5173/login'
-        Start-Process 'http://localhost:5173/blueprint#k8s-verify'
+        Start-Process "http://localhost:$PlatformVitePort/login"
+        Start-Process "http://localhost:$PlatformVitePort/blueprint#k8s-verify"
     } else {
         Write-Host 'Frontend not ready — see logs\frontend.*.log' -ForegroundColor Red
     }

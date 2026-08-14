@@ -49,6 +49,7 @@ export const PORTS = [
   { port: 8082, service: 'Risk', role: '名目金額風控（成交必開）' },
   { port: 8083, service: 'Job', role: '逾時取消排程（可選）' },
   { port: 8084, service: 'Account', role: '餘額／持倉／Redis Cache／Kafka（可選）' },
+  { port: 6379, service: 'Redis', role: 'Account 快取（可選；docker compose up -d redis）' },
   { port: 5173, service: 'Vue Dev', role: '前端 SPA' },
   { port: 3000, service: 'Grafana', role: '把監控數字畫成圖表；登入 admin／admin' },
   { port: 9090, service: 'Prometheus', role: '定時收集各服務數字；可查詢／看曲線' },
@@ -79,7 +80,7 @@ export const EDGE_MECHANISMS = [
     where: 'account-service/.../AccountQueryService.java',
     what: '讀側 cache-aside；入帳後 evict，避免髒讀',
     config: 'key account:{userId}／positions:{userId}；TTL 60s；fintech.redis.enabled',
-    demo: 'demo profile + Redis :6379；無 Redis 時自動降級打 DB'
+    demo: '見藍圖 #docker-redis：compose 起 :6379；demo profile 才寫 account:{userId}；無 Redis 降級打 DB'
   }
 ];
 
@@ -156,4 +157,49 @@ export const DIAGRAM_ORDER_STATE = `flowchart LR
   style ACCEPTED fill:#d1fae5,stroke:#047857,color:#1a2b3c
   style REJECTED fill:#fee2e2,stroke:#b91c1c,color:#1a2b3c
   style CANCELLED fill:#e5e7eb,stroke:#4b5563,color:#1a2b3c
+`;
+
+/**
+ * Docker Desktop 映像 → kind load → K8s Pod（#k8s-intellij 教學圖）。
+ * 【概念】Desktop 有 Images ≠ Pod Running；需 arch 一致 + kind load + kubectl apply。
+ */
+export const DIAGRAM_DOCKER_K8S = `flowchart TB
+  subgraph L1["Layer 1 · Docker Desktop → Images"]
+    direction TB
+    IMG1["fintech-demo/gateway:local<br/>Deployment gateway · API :8080"]
+    IMG2["fintech-demo/order-service:local<br/>Deployment order-service · :8081"]
+    IMG3["fintech-demo/risk-service:local<br/>Deployment risk-service · :8082"]
+    IMG4["fintech-demo/account-service:local<br/>Deployment account-service · :8084"]
+  end
+
+  LOAD["kind load docker-image<br/>把映像搬進叢集節點"]
+  NODE["Layer 2 · kind 節點<br/>trading-local-control-plane<br/>Desktop Containers 可見 1 個"]
+
+  APPLY["kubectl apply -k deploy/k8s/overlays/dev"]
+  subgraph L3["Layer 3 · K8s · namespace fintech-demo"]
+    direction TB
+    POD1["Pod gateway + Service :8080"]
+    POD2["Pod order-service + Service :8081"]
+    POD3["Pod risk-service + Service :8082"]
+    POD4["Pod account-service + Service :8084"]
+  end
+
+  PF["port-forward 18080:8080<br/>本機打叢集內 Gateway"]
+  VITE["Vite :5173 另開<br/>K8s 不會自動給前端"]
+
+  IMG1 --> LOAD
+  IMG2 --> LOAD
+  IMG3 --> LOAD
+  IMG4 --> LOAD
+  LOAD --> NODE
+  NODE --> APPLY
+  APPLY --> POD1
+  APPLY --> POD2
+  APPLY --> POD3
+  APPLY --> POD4
+  POD1 --> PF
+  PF -.-> VITE
+
+  NOTE["Desktop 有映像 ≠ Pod Running<br/>還要：kind load 成功 · CPU arch 一致 · apply"]
+  L1 -.-> NOTE
 `;

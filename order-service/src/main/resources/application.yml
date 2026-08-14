@@ -35,6 +35,11 @@ spring:
       # 【概念】開發可開 /h2-console 看表；正式環境應關閉
       enabled: true
       path: /h2-console
+    tcp:
+      # 【概念】同 JVM 開 TCP，IntelliJ／DataGrip 才能看到 mem 裡的表（測時關）
+      # 【技巧】預設 9093（避開 Kafka 慣用 9092）；DataGrip URL 見 Startup 橫幅
+      enabled: true
+      port: 9093
   kafka:
     # 【技巧】${ENV:default}：有環境變數用環境變數，否則本機連 compose 對外 19092
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}

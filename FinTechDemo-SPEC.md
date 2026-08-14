@@ -477,5 +477,9 @@ Vue(:5173) → Gateway(:8080) → order(:8081) / risk(:8082) / account(:8084) / 
 | [測試與CI](docs/testing.md) | check／pipeline／壓測／觀測 |
 | [驗收清單](docs/驗收清單.md) | loop-engineering 總驗收勾選 |
 | [系統運作藍圖](docs/architecture/系統運作藍圖.md) | 技術棧／Mermaid 圖文（含 Eureka 升級口徑） |
+| [**文件完整度**](docs/文件完整度.md) | 單一真相、K8s／Docker 文件鏈、勿重複維護 |
+| [K8s跑通與驗證技巧](docs/deploy/k8s-tips.html) | L0～L4、故障排除（HTML 權威） |
+| 藍圖 SPA `#k8s-intellij` | Docker↔K8s 三層 Mermaid、Desktop／IntelliJ 對照 |
+| [demo/platform-run.properties](demo/platform-run.properties) | Run Anywhere 平台常數（埠、K8s、DOCKER_BUILD_PLATFORM） |
 | [codeGraphic](docs/portals/codeGraphic.html) | Mermaid／HTML 總覽 |
 | `EngineeringOS/eos-minimal/HOW_TO_APPLY.md` | **開發套用入口** |

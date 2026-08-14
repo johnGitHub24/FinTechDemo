@@ -56,6 +56,8 @@
       <p class="muted small">登入後看燈號：http://localhost:5173/login · 帳密 trader1／password</p>
     </section>
 
+    <DockerRedisGuide />
+
     <aside class="blueprint-howto" aria-label="藍圖導覽">
       <div class="howto-frame">
         <header class="howto-frame-title">
@@ -68,6 +70,8 @@
             <div class="howto-body">
               <a href="#docker-start">Docker／本機開啟</a>
               <p>Docker Desktop → 開啟Demo.cmd</p>
+              <p><a href="#docker-redis">Docker／Redis 指令</a></p>
+              <p><a href="#k8s-intellij">IntelliJ vs K8s</a></p>
             </div>
           </li>
           <li class="howto-step">
@@ -108,7 +112,7 @@
           <li class="howto-step">
             <span class="howto-n" aria-hidden="true">5</span>
             <div class="howto-body">
-              <a href="#ports">埠對照</a> · <a href="#k8s-verify">K8s</a>
+              <a href="#ports">埠對照</a> · <a href="#k8s-intellij">K8s</a> · <a href="#k8s-verify">驗證</a>
               <p>本機埠與叢集驗證</p>
             </div>
           </li>
@@ -134,6 +138,8 @@
       <span class="toc-label">目錄</span>
       <a href="#docker-start">Docker 開啟</a>
       <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#docker-redis">Docker／Redis</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#stack">技術棧</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#layers">分層架構</a>
@@ -149,6 +155,8 @@
       <a href="#ports">埠對照</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#observe">觀測／壓測</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#k8s-intellij">K8s／IntelliJ</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#k8s-verify">K8s 驗證</a>
     </nav>
@@ -384,6 +392,10 @@
       <p v-if="copyMsg" class="observe-copy-msg" role="status">{{ copyMsg }}</p>
     </section>
 
+    <section id="k8s-intellij-wrap">
+      <K8sIntelliJGuide />
+    </section>
+
     <section id="k8s-verify" class="card">
       <h2>8. K8s 驗證（精簡）</h2>
       <p class="story-meta">一鍵複製四條指令即可：Docker → readyz → nodes → fintech-demo。</p>
@@ -404,6 +416,8 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import K8sVerifyPanel from '../components/K8sVerifyPanel.vue';
 import DockerDesktopReminder from '../components/DockerDesktopReminder.vue';
+import DockerRedisGuide from '../components/DockerRedisGuide.vue';
+import K8sIntelliJGuide from '../components/K8sIntelliJGuide.vue';
 import { demoLinks } from '../config/demoLinks';
 import {
   DIAGRAM_FLOW,

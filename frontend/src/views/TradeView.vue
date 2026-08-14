@@ -66,6 +66,8 @@
           </tbody>
         </table>
       </div>
+
+      <DockerRedisGuide heading="系統運作 · Docker／Redis 指令" />
     </div>
     <BackendStoryPanel />
   </div>
@@ -74,12 +76,13 @@
 <script setup>
 /**
  * 【職責】交易前台，讓登入使用者建立、執行、取消並查看訂單。
- * 【頁面角色】核心下單操作頁；右側嵌 BackendStoryPanel 展演後端過程。
+ * 【頁面角色】核心下單操作頁；右側嵌 BackendStoryPanel；下方 Docker／Redis 指令教學。
  * 【與後端關係】透過市場與訂單 API 讀寫；demoTrace 由 client 寫入故事 store。
  */
 import { onMounted, reactive, ref } from 'vue';
 import { cancelOrder, createOrder, executeOrder, fetchOrders, fetchSymbols } from '../api/client';
 import BackendStoryPanel from '../components/BackendStoryPanel.vue';
+import DockerRedisGuide from '../components/DockerRedisGuide.vue';
 
 const symbols = ref([]);
 const orders = ref([]);

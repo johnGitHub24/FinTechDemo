@@ -99,6 +99,7 @@
       <a href="portals/stages.html">S0→S6</a>
       <a href="portals/handbook.html">完整學習手冊</a>
       <a href="architecture/architecture.html">Architecture</a>
+      <a href="文件完整度.md">文件完整度</a>
       <a href="guides/claude.html">CLAUDE</a>
     </p>
   </header>
@@ -125,7 +126,7 @@
               <li>瀏覽器開 <code>http://127.0.0.1:5500/docs/index.html</code>（務必含 <code>index.html</code>）</li>
             </ol>
           </div>
-          <p style="font-size:0.9rem;color:#334155;">學習路徑（點連結）：</p>
+          <p style="font-size:0.9rem;color:#334155;">推版前：<a href="文件完整度.md">文件完整度</a> · 學習路徑：</p>
           <ul>
             <li>不知道從哪讀起 → <a href="portals/learning-map.html">學習導引地圖</a></li>
             <li>舒適讀 MD → <a href="md-reader.html">MD 閱讀器</a></li>
@@ -135,7 +136,8 @@
               <a href="portals/handbook.html">handbook</a> ·
               <a href="portals/boot-entrypoint.html">boot-entrypoint</a>
             </li>
-            <li>架構 → <a href="architecture/architecture.html">architecture</a> · 為什麼 → <a href="guides/why.html">why</a></li>
+            <li>架構 → <a href="architecture/architecture.html">architecture</a> · <a href="文件完整度.md">文件完整度</a> · 為什麼 → <a href="guides/why.html">why</a></li>
+            <li>互動藍圖（Vite）→ <a href="http://localhost:5173/blueprint#k8s-intellij" target="_blank" rel="noopener">Docker↔K8s 三層</a> · <a href="http://localhost:5173/blueprint#docker-redis" target="_blank" rel="noopener">Redis</a></li>
             <li>對照左側「應用設定」與「Compose／K8s」</li>
             <li>打 API → <a href="portals/swagger.html">Swagger</a></li>
           </ul>
@@ -189,7 +191,13 @@
       { id: "k-risk-s", group: "Compose／K8s", title: "k8s · risk Service", kind: "viewer", path: "/deploy/k8s/base/risk-service.yaml", badge: "yaml" },
       { id: "k-acc-d", group: "Compose／K8s", title: "k8s · account Deployment", kind: "viewer", path: "/deploy/k8s/base/account-deployment.yaml", badge: "yaml" },
       { id: "k-acc-s", group: "Compose／K8s", title: "k8s · account Service", kind: "viewer", path: "/deploy/k8s/base/account-service.yaml", badge: "yaml" },
-      { id: "k-readme", group: "Compose／K8s", title: "deploy README（HTML）", kind: "link", path: "/docs/deploy/deploy-readme.html", badge: "link" },
+      { id: "k-readme", group: "Compose／K8s", title: "deploy README", kind: "link", path: "/deploy/README.md", badge: "link" },
+      { id: "k-platform", group: "Compose／K8s", title: "demo/platform-run.properties", kind: "viewer", path: "/demo/platform-run.properties", badge: "yaml", note: "Run Anywhere 埠／K8s／DOCKER_BUILD_PLATFORM" },
+      { id: "k-walk", group: "Compose／K8s", title: "demo/k8s-walkthrough.ps1", kind: "viewer", path: "/demo/k8s-walkthrough.ps1", badge: "link", note: "三層檢查腳本" },
+      { id: "k-start", group: "Compose／K8s", title: "demo/start-k8s-demo.ps1", kind: "viewer", path: "/demo/start-k8s-demo.ps1", badge: "link", note: "一鍵 K8s Demo" },
+      { id: "k-blueprint", group: "Compose／K8s", title: "藍圖 SPA · Docker↔K8s", kind: "link", path: "http://localhost:5173/blueprint#k8s-intellij", badge: "link", note: "需 npm run dev" },
+      { id: "k-docmap", group: "Compose／K8s", title: "文件完整度", kind: "link", path: "/docs/文件完整度.md", badge: "link" },
+      { id: "k-readme-html", group: "Compose／K8s", title: "deploy README（HTML）", kind: "link", path: "/docs/deploy/deploy-readme.html", badge: "link" },
 
       { id: "h-roadmap", group: "教學 HTML", title: "學習導引地圖（雙軌）", kind: "link", path: "/docs/portals/learning-map.html", badge: "link" },
       { id: "h-md-reader", group: "教學 HTML", title: "MD 閱讀器", kind: "link", path: "/docs/md-reader.html", badge: "link" },
@@ -205,6 +213,8 @@
       { id: "m-arch", group: "架構／設計", title: "architecture（HTML）", kind: "link", path: "/docs/architecture/architecture.html", badge: "link" },
       { id: "m-dist", group: "架構／設計", title: "分散式系統落地", kind: "link", path: "/docs/architecture/distributed.html", badge: "link" },
       { id: "m-k8s", group: "架構／設計", title: "K8s跑通與驗證技巧", kind: "link", path: "/docs/deploy/k8s-tips.html", badge: "link" },
+      { id: "m-docmap", group: "架構／設計", title: "文件完整度", kind: "link", path: "/docs/文件完整度.md", badge: "link" },
+      { id: "m-blueprint-k8s", group: "架構／設計", title: "藍圖 SPA · K8s/Docker", kind: "link", path: "http://localhost:5173/blueprint#k8s-intellij", badge: "link", note: "需 npm run dev" },
       { id: "m-stage", group: "架構／設計", title: "上線部署階段層次（MD）", kind: "link", path: "/docs/deploy/stages-doc.html", badge: "link" },
       { id: "m-why", group: "架構／設計", title: "技術次序與架構為什麼", kind: "link", path: "/docs/guides/why.html", badge: "link" },
       { id: "m-test", group: "架構／設計", title: "testing", kind: "link", path: "/docs/architecture/testing.html", badge: "link" },

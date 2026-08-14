@@ -2,32 +2,38 @@
 
 本機基礎設施：根目錄 `docker-compose.yml`（Redpanda :19092、Redis :6379）。
 
-## 跑通規則／故障排除（必讀）
+## 文件（依完整度地圖）
 
-完整驗證分層、kind 連線 refused、Compose vs K8s、映像 load／apply 技巧：
+| 主題 | 連結 |
+|------|------|
+| **文件完整度／單一真相** | [docs/文件完整度.md](../docs/文件完整度.md) |
+| **Docker ↔ K8s 三層（Mermaid）** | http://localhost:5173/blueprint#k8s-intellij |
+| K8s 故障排除 L0～L4 | [docs/deploy/k8s-tips.html](../docs/deploy/k8s-tips.html) |
+| 統一學習入口 | [docs/index.html](../docs/index.html) |
+| S0→S6 | [docs/deploy/stages-doc.html](../docs/deploy/stages-doc.html) |
 
-→ **[`docs/K8s跑通與驗證技巧.md`](../docs/K8s跑通與驗證技巧.md)**
-
-統一學習入口（設定／K8s／教學／API 連結）：
-
-→ **[`docs/index.html`](../docs/index.html)**
-
-逐層打通到上線（S0→S6）：
-
-→ **[`docs/上線部署階段層次.md`](../docs/上線部署階段層次.md)** · [HTML](../docs/上線部署階段層次.html)
-
-通用解法（為什麼這樣執行、故障→修復）：
-
-→ **[`docs/部署跑通-LoopEngineering教學指導.html`](../docs/部署跑通-LoopEngineering教學指導.html)**
-
-## K8s overlay（模組化示意）
-
-Deployment＋Service：**gateway、order-service、risk-service、account-service**（三業務 MS + 入口）。
-
-映像為 placeholder（`fintech-demo/*:local`）；本機 build 後再 apply。
+## K8s 本機 Demo（L4，一鍵）
 
 ```powershell
-.\scripts\check-k8s.ps1
+# FinTechDemo 根目錄
+.\demo\start-k8s-demo.ps1
+# 或先檢查三層：.\demo\k8s-walkthrough.ps1
+
+$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
+kubectl -n fintech-demo get pods
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
+```
+
+平台設定（CPU 架構 auto）：`demo/platform-run.properties` · EOS：`EngineeringOS/eos-minimal/knowledge/k8s-local-docker-build.md`
+
+## K8s overlay（manifest）
+
+Deployment＋Service：**gateway、order-service、risk-service、account-service**。
+
+映像 tag：`fintech-demo/*:local`（由 `start-k8s-demo.ps1` build／load）。
+
+```powershell
+.\demo\check-k8s.ps1
 kubectl kustomize deploy/k8s/overlays/dev
 kubectl apply -k deploy/k8s/overlays/dev
 ```
@@ -35,8 +41,7 @@ kubectl apply -k deploy/k8s/overlays/dev
 ```text
 deploy/k8s/
   base/
-    gateway-* / order-* / risk-* / account-*
   overlays/dev/
 ```
 
-架構說明：`docs/architecture.md`。
+架構：`docs/architecture/architecture.html`。

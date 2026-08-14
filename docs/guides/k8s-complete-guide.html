@@ -67,6 +67,9 @@ main { max-width:960px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <a href="#s8">8 檔案對照</a>
     <a href="#s9">9 驗證清單</a>
     <a href="#s10">10 故障</a>
+    <a href="#s11">11 前端頁面</a>
+    <a href="#s12">12 前端映像</a>
+    <a href="#s13">13 ENABLE_K8S</a>
   </nav>
   <main>
     <div class="gate"><strong>本頁目的：</strong>把 K8s 相關教學集中成<strong>一份</strong>，照章節 0→9 讀完即知「怎麼運作、怎麼驗證、為何 Panel 看不到 fintech-demo」。</div>
@@ -294,7 +297,9 @@ flowchart LR
 <tr><td>四 Deployment</td><td><code>deploy/k8s/base/*-deployment.yaml</code></td></tr>
 <tr><td>dev overlay</td><td><code>deploy/k8s/overlays/dev/kustomization.yaml</code></td></tr>
 <tr><td>只驗 YAML</td><td><code>demo/check-k8s.ps1</code></td></tr>
-<tr><td>前端 proxy</td><td><code>frontend/vite.config.js</code></td></tr>
+<tr><td>前端 Dockerfile</td><td><code>frontend/Dockerfile</code></td></tr>
+<tr><td>前端 nginx 反代</td><td><code>frontend/nginx.conf</code></td></tr>
+<tr><td>ENABLE_K8S 旗標</td><td><code>demo/platform-run.properties</code></td></tr>
 <tr><td>互動教學</td><td><code>frontend/…/K8sIntelliJGuide.vue</code></td></tr>
 </tbody></table>
 
@@ -336,6 +341,102 @@ flowchart LR
 <tr><td>面試 10 分鐘版</td><td><a href="interview-demo-simple.md">interview-demo-simple.md</a></td></tr>
 <tr><td>藍圖全章導覽</td><td><a href="blueprint-tour.md">blueprint-tour.md</a></td></tr>
 </tbody></table>
+
+<hr>
+
+<h1 id="s11">11. 前端 HTML 頁面關係（/blueprint）</h1>
+<p>瀏覽器開 <code>http://localhost:5173/blueprint</code> 時，不是獨立 HTML 檔；是 <code>index.html</code> → <code>App.vue</code> → Vue Router 換成 <code>BlueprintView.vue</code>。</p>
+<div class="mermaid">
+flowchart TB
+  IDX["index.html · #app"]
+  APP["App.vue 殼"]
+  RV["router-view"]
+  IDX --> APP --> RV
+  subgraph SPA["Vue Router"]
+    LOGIN["/login · LoginView"]
+    BP["/blueprint · BlueprintView"]
+    TRADE["/trade · TradeView · JWT"]
+    PORTAL["/portal · PortalView · JWT"]
+    AUDIT["/portal/audit · AuditView · ADMIN"]
+  end
+  RV --> LOGIN
+  RV --> BP
+  RV --> TRADE
+  RV --> PORTAL
+  RV --> AUDIT
+  LOGIN --> TRADE
+  LOGIN --> BP
+  subgraph STATIC["public 靜態"]
+    RC["/demo/risk-check.html"]
+    AM["/demo/account-me.html"]
+  end
+</div>
+<table>
+<thead><tr><th>URL</th><th>檔案</th><th>守衛</th></tr></thead>
+<tbody>
+<tr><td><code>/login</code></td><td><code>frontend/src/views/LoginView.vue</code></td><td>公開</td></tr>
+<tr><td><code>/blueprint</code></td><td><code>BlueprintView.vue</code></td><td>公開</td></tr>
+<tr><td><code>/trade</code></td><td><code>TradeView.vue</code></td><td>JWT</td></tr>
+<tr><td><code>/portal</code></td><td><code>PortalView.vue</code></td><td>JWT</td></tr>
+<tr><td><code>/portal/audit</code></td><td><code>AuditView.vue</code></td><td>ADMIN</td></tr>
+<tr><td><code>/demo/*.html</code></td><td><code>frontend/public/demo/</code></td><td>無 Router</td></tr>
+</tbody></table>
+<p>互動版：<a href="http://localhost:5173/blueprint#frontend-pages">/blueprint#frontend-pages</a></p>
+
+<hr>
+
+<h1 id="s12">12. 前端怎麼打包成 Docker 映像</h1>
+<p>專案<strong>已有</strong> <code>frontend/Dockerfile</code>：Stage1 <code>npm run build</code> → Stage2 nginx 提供 <code>dist</code>，<code>/api</code> 反代 <code>gateway:8080</code>（見 <code>frontend/nginx.conf</code>）。</p>
+<pre><code>cd FinTechDemo
+docker build -t fintech-demo/frontend:local ./frontend
+docker compose --profile full up -d frontend
+# 瀏覽器 http://localhost:5173 （映射容器 80）
+</code></pre>
+<table>
+<thead><tr><th>模式</th><th>怎麼跑前端</th><th>/api 打到哪</th></tr></thead>
+<tbody>
+<tr><td>Local 日常</td><td><code>npm run dev</code> 或 開啟Demo.cmd</td><td>Vite proxy → <strong>localhost:8081</strong>（Order bootRun）</td></tr>
+<tr><td>Docker Desktop 映像</td><td><code>docker compose --profile full up -d frontend</code></td><td>nginx → compose 內 <strong>gateway:8080</strong></td></tr>
+<tr><td>kind 四 Pod</td><td>目前<strong>沒有</strong> frontend Deployment</td><td>仍用 Vite；需 <strong>port-forward</strong> 8081 或 18080</td></tr>
+</tbody></table>
+<blockquote>映像裡的 nginx <strong>不會</strong>連 IntelliJ <code>OrderServiceApplication</code>。bootRun 與 compose frontend 是兩條路，勿混用同一 :5173。</blockquote>
+<div class="mermaid">
+flowchart LR
+  SRC["frontend/"]
+  VITE["npm run dev"]
+  DF["Dockerfile → nginx"]
+  GW["gateway 容器"]
+  ORD["Order bootRun :8081"]
+  SRC --> VITE --> ORD
+  SRC --> DF --> GW
+</div>
+
+<hr>
+
+<h1 id="s13">13. ENABLE_K8S：前端啟動時要不要順便起 K8s</h1>
+<div class="gate gate-warn"><strong>Vue / npm / YAML 都不能啟動 kind。</strong>瀏覽器沒有權限建叢集。開關必須寫在 <strong>Demo 腳本讀的 properties</strong>，不是前端 yaml。</div>
+<p>已加旗標：<code>demo/platform-run.properties</code></p>
+<pre><code># false＝只 local（IntelliJ Order + Vite）
+ENABLE_K8S=false
+# true＝開啟Demo.cmd 在本機服務之後再跑 start-k8s-demo.ps1
+ENABLE_K8S=true
+</code></pre>
+<table>
+<thead><tr><th>值</th><th>開啟Demo.cmd 做什麼</th></tr></thead>
+<tbody>
+<tr><td><code>false</code>（預設）</td><td>Order／Risk／Vite 本機 — <strong>不</strong>起 kind</td></tr>
+<tr><td><code>true</code></td><td>本機照跑，<strong>再加上</strong> kind <code>fintech-demo</code> 四 Pod</td></tr>
+</tbody></table>
+<p>單次覆蓋（不改檔）：</p>
+<pre><code>.\demo\ensure-demo-links.ps1 -EnableK8s
+.\demo\ensure-demo-links.ps1 -SkipK8s
+</code></pre>
+<p><strong>true 之後前端仍預設連本機 :8081</strong>（路線 A）。要連 Pod：先停 bootRun，再</p>
+<pre><code>$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
+kubectl -n fintech-demo port-forward svc/order-service 8081:8081
+</code></pre>
+<p>或 gateway <code>18080:8080</code> + <code>$env:VITE_API_TARGET='http://localhost:18080'</code> 再開 <code>npm run dev</code>。</p>
+<p>RAM：本機 JVM + kind 節點會搶記憶體；日常請保持 <code>ENABLE_K8S=false</code>。</p>
 
     </article>
   </main>

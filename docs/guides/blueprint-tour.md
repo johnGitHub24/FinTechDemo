@@ -26,6 +26,8 @@
 | 錨點 | 標題 | 講什麼 | 面試重點 |
 |------|------|--------|----------|
 | `#docker-start` | Docker／本機怎麼開 | Desktop Ready → `開啟Demo.cmd` | 最短 Demo 入口 |
+| `#frontend-pages` | **前端 HTML 頁面關係** | index.html → App.vue → Router | **/blueprint 不是獨立 HTML** |
+| `#frontend-image` | 前端 Docker 映像／ENABLE_K8S | Dockerfile、compose、properties | 打包與 K8s 開關 |
 | `#docker-redis` | Docker／Redis | redis-cli 指令、IntelliJ 連 :6379 | 基建除錯 |
 | `#stack` | 技術棧 | Vue / Boot / Cloud / JWT / H2… | 版本與選型 |
 | `#layers` | 分層架構 | 前端→Gateway→微服務→DB | **架構一張圖** |
@@ -49,6 +51,52 @@
 3. 瀏覽器 http://localhost:5173/login（trader1/password）
 
 可選：監控 compose profile、Locust 壓測（見區塊內複製鈕）。
+
+---
+
+### `#frontend-pages` — 前端 HTML／頁面關係
+
+**重點：** `http://localhost:5173/blueprint` **不是**一份獨立 `.html` 檔。
+
+流程：`index.html` → 掛載 `#app` → `App.vue`（殼）→ `router-view` 依 URL 換 View。
+
+| URL | 檔案 | 誰能開 |
+|-----|------|--------|
+| `/login` | `LoginView.vue` | 公開 |
+| `/blueprint` | `BlueprintView.vue` | 公開（本頁） |
+| `/trade` | `TradeView.vue` | 需 JWT |
+| `/portal` | `PortalView.vue` | 需 JWT |
+| `/portal/audit` | `AuditView.vue` | 需 ADMIN |
+| `/demo/risk-check.html` | `public/demo/` | 靜態 HTML，**不經** Router |
+| `/demo/account-me.html` | `public/demo/` | 同上 |
+
+登入後頂欄在 `App.vue`；`router-view` 只換中間內容。路由定義：`frontend/src/router/index.js`。
+
+靜態書櫃同表：[k8s-complete-guide.html §11](./k8s-complete-guide.html#s11)
+
+---
+
+### `#frontend-image` — 前端打包成 Docker 映像
+
+| 模式 | 怎麼跑前端 | `/api` 打到哪 |
+|------|------------|---------------|
+| Local 日常 | `npm run dev` 或 `開啟Demo.cmd` | Vite proxy → **localhost:8081**（Order bootRun） |
+| Docker 映像 | `docker compose --profile full up -d frontend` | nginx → **gateway:8080** |
+| kind 四 Pod | 目前**無** frontend Deployment | Vite + **port-forward** |
+
+```powershell
+docker build -t fintech-demo/frontend:local ./frontend
+docker compose --profile full up -d frontend
+```
+
+**ENABLE_K8S**（`demo/platform-run.properties`，非 Vue yaml）：
+
+| 值 | 效果 |
+|----|------|
+| `false`（預設） | 只本機 Order／Risk／Vite |
+| `true` | `開啟Demo.cmd` 再跑 `start-k8s-demo.ps1` |
+
+詳述：[k8s-complete-guide.html §12～§13](./k8s-complete-guide.html#s12)
 
 ---
 
@@ -185,6 +233,7 @@ kubectl -n fintech-demo get pods
 | 產品規格 | `FinTechDemo-SPEC.md` |
 | 文件總地圖 | `docs/文件完整度.md` |
 | 靜態書櫃 | `docs/index.html`（:5500） |
+| **前端頁面關係** | 藍圖 `#frontend-pages` · [k8s-complete-guide.html §11](./k8s-complete-guide.html#s11) |
 | **現場講解用** | **本藍圖 SPA** |
 | 貼 GitHub/Redmine | `docs/architecture/系統運作藍圖.md`（摘要，指向 SPA） |
 
@@ -230,5 +279,7 @@ cd FinTechDemo
 | URL | 內容 |
 |-----|------|
 | http://127.0.0.1:5173/blueprint | 本導覽互動版 |
+| http://127.0.0.1:5173/blueprint#frontend-pages | 前端頁面關係（Mermaid） |
+| http://127.0.0.1:5500/docs/guides/k8s-complete-guide.html#s11 | 前端頁面（靜態 HTML） |
 | http://127.0.0.1:5500/docs/guides/blueprint-tour.md | 本檔 |
 | http://127.0.0.1:5500/docs/guides/interview-demo-simple.md | 面試簡版 |

@@ -228,3 +228,73 @@ export const DIAGRAM_TWO_K8S_BUILDINGS = `flowchart TB
   DD -.->|"Panel 看不到 fintech-demo"| X["❌ 不是 bug"]
   KIND -.->|"apply 建在 B 棟"| OK["✓ 4 Pod Running"]
 `;
+
+/**
+ * Vue SPA 頁面關係（#frontend-pages）。
+ * 【概念】一個 index.html → App.vue 殼；router-view 換頁；/demo/*.html 是 public 靜態頁，不經 Vue Router。
+ */
+export const DIAGRAM_FRONTEND_PAGES = `flowchart TB
+  IDX["index.html<br/>掛載 #app"]
+  APP["App.vue 殼<br/>登入後：頂欄 + Demo 快捷"]
+  RV["router-view"]
+
+  IDX --> APP --> RV
+
+  subgraph SPA["Vue Router（frontend/src/views）"]
+    LOGIN["/login<br/>LoginView.vue<br/>公開"]
+    BP["/blueprint<br/>BlueprintView.vue<br/>公開 · 本頁"]
+    TRADE["/trade<br/>TradeView.vue<br/>需 JWT"]
+    PORTAL["/portal<br/>PortalView.vue<br/>需 JWT"]
+    AUDIT["/portal/audit<br/>AuditView.vue<br/>需 ADMIN"]
+  end
+
+  RV --> LOGIN
+  RV --> BP
+  RV --> TRADE
+  RV --> PORTAL
+  RV --> AUDIT
+
+  LOGIN -->|"登入成功"| TRADE
+  LOGIN -->|"可不登入"| BP
+  TRADE -->|"頂欄"| PORTAL
+  TRADE -->|"頂欄"| BP
+  PORTAL -->|"ADMIN"| AUDIT
+
+  subgraph STATIC["public 靜態 HTML（不經 Router）"]
+    RC["/demo/risk-check.html"]
+    AM["/demo/account-me.html"]
+  end
+
+  APP -.->|"另開分頁"| STATIC
+`;
+
+/**
+ * 前端三種打包／部署（本機 Vite vs Docker 映像 vs kind）。
+ */
+export const DIAGRAM_FRONTEND_DEPLOY = `flowchart TB
+  SRC["frontend/ 原始碼<br/>Vue + Vite"]
+
+  subgraph LOCAL["路線 A · 本機（日常）"]
+    NPM["npm run dev :5173"]
+    PROXY["vite.config.js<br/>proxy /api → localhost:8081"]
+    BOOT["IntelliJ OrderServiceApplication<br/>或 :order-service:bootRun"]
+    NPM --> PROXY --> BOOT
+  end
+
+  subgraph DOCKER["Docker Desktop 映像"]
+    DF["frontend/Dockerfile<br/>node build → nginx:80"]
+    IMG["fintech-demo/frontend:local"]
+    NGINX["nginx.conf<br/>/api → gateway:8080"]
+    COMPOSE["docker compose --profile full<br/>up -d frontend<br/>主機 5173:80"]
+    SRC --> DF --> IMG --> NGINX --> COMPOSE
+  end
+
+  subgraph K8S["路線 B · kind（目前無 frontend Pod）"]
+    PODS["gateway / order / risk / account"]
+    PF["port-forward 18080 或 8081"]
+    VITE2["仍用 npm run dev 接 PF"]
+    PODS --> PF --> VITE2
+  end
+
+  SRC --> NPM
+`;

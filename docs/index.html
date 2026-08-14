@@ -138,6 +138,7 @@
             </li>
             <li>架構 → <a href="architecture/architecture.html">architecture</a> · <a href="文件完整度.md">文件完整度</a> · 為什麼 → <a href="guides/why.html">why</a></li>
             <li><strong>K8s 總入口</strong> → <a href="guides/k8s-complete-guide.html">K8s 完整教學（單頁）</a></li>
+            <li><strong>前端頁面關係</strong> → <a href="http://localhost:5173/blueprint#frontend-pages" target="_blank" rel="noopener">藍圖 #frontend-pages</a> · <a href="guides/k8s-complete-guide.html#s11">HTML §11</a></li>
             <li>互動藍圖（Vite）→ <a href="http://localhost:5173/blueprint#k8s-intellij" target="_blank" rel="noopener">Docker↔K8s 三層</a> · <a href="http://localhost:5173/blueprint#docker-redis" target="_blank" rel="noopener">Redis</a></li>
             <li>對照左側「應用設定」與「Compose／K8s」</li>
             <li>打 API → <a href="portals/swagger.html">Swagger</a></li>
@@ -180,6 +181,8 @@
       { id: "cfg-job", group: "應用設定", title: "job-service · application.yml", kind: "viewer", path: "/job-service/src/main/resources/application.yml", badge: "yaml" },
       { id: "cfg-eng", group: "應用設定", title: "engineering-config（HTML）", kind: "link", path: "/docs/architecture/engineering-config.html", badge: "link" },
 
+      { id: "k-fe-pages", group: "Compose／K8s", title: "藍圖 SPA · 前端頁面關係", kind: "link", path: "http://localhost:5173/blueprint#frontend-pages", badge: "link", note: "index.html→App.vue→Router；需 npm run dev" },
+      { id: "k-fe-html", group: "Compose／K8s", title: "前端頁面關係（HTML §11）", kind: "link", path: "/docs/guides/k8s-complete-guide.html#s11", badge: "link" },
       { id: "k-master", group: "Compose／K8s", title: "★ K8s 完整教學（單頁集中）", kind: "link", path: "/docs/guides/k8s-complete-guide.html", badge: "link", note: "三條路線 · 兩套大樓 · 一鍵跑通 · 檔案對照" },
       { id: "dc", group: "Compose／K8s", title: "docker-compose.yml", kind: "viewer", path: "/docker-compose.yml", badge: "yaml" },
       { id: "k-ns", group: "Compose／K8s", title: "k8s · namespace.yaml", kind: "viewer", path: "/deploy/k8s/base/namespace.yaml", badge: "yaml" },
@@ -201,6 +204,7 @@
       { id: "k-docmap", group: "Compose／K8s", title: "文件完整度", kind: "link", path: "/docs/文件完整度.md", badge: "link" },
       { id: "k-readme-html", group: "Compose／K8s", title: "deploy README（HTML）", kind: "link", path: "/docs/deploy/deploy-readme.html", badge: "link" },
 
+      { id: "h-fe-pages", group: "教學 HTML", title: "前端頁面關係（k8s-guide §11）", kind: "link", path: "/docs/guides/k8s-complete-guide.html#s11", badge: "link" },
       { id: "h-k8s-master", group: "教學 HTML", title: "★ K8s 完整教學（單頁集中）", kind: "link", path: "/docs/guides/k8s-complete-guide.html", badge: "link", note: "K8s 總入口" },
       { id: "h-roadmap", group: "教學 HTML", title: "學習導引地圖（雙軌）", kind: "link", path: "/docs/portals/learning-map.html", badge: "link" },
       { id: "h-md-reader", group: "教學 HTML", title: "MD 閱讀器", kind: "link", path: "/docs/md-reader.html", badge: "link" },
@@ -215,6 +219,8 @@
 
       { id: "m-arch", group: "架構／設計", title: "architecture（HTML）", kind: "link", path: "/docs/architecture/architecture.html", badge: "link" },
       { id: "m-dist", group: "架構／設計", title: "分散式系統落地", kind: "link", path: "/docs/architecture/distributed.html", badge: "link" },
+      { id: "m-fe-pages", group: "架構／設計", title: "前端頁面關係", kind: "link", path: "http://localhost:5173/blueprint#frontend-pages", badge: "link", note: "需 npm run dev" },
+      { id: "m-fe-pages-html", group: "架構／設計", title: "前端頁面關係（HTML §11）", kind: "link", path: "/docs/guides/k8s-complete-guide.html#s11", badge: "link" },
       { id: "m-k8s-master", group: "架構／設計", title: "★ K8s 完整教學（單頁集中）", kind: "link", path: "/docs/guides/k8s-complete-guide.html", badge: "link", note: "K8s 總入口" },
       { id: "m-k8s", group: "架構／設計", title: "K8s跑通與驗證技巧（故障 L0～L4）", kind: "link", path: "/docs/deploy/k8s-tips.html", badge: "link" },
       { id: "m-intellij-k8s", group: "架構／設計", title: "IntelliJ 連 K8s", kind: "link", path: "/docs/guides/intellij-k8s.md", badge: "link" },

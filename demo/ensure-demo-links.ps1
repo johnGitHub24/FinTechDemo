@@ -11,7 +11,10 @@ param(
     [switch]$SkipTestReports,
     [switch]$FrontendOnly,
     # Order 自動觸發：先保 Order+Risk+Vite，再補齊橫幅全部服務（Gateway/Job/Account/Docs/監控/Locust）
-    [switch]$FromOrder
+    [switch]$FromOrder,
+    # 覆蓋 platform-run.properties 的 ENABLE_K8S
+    [switch]$EnableK8s,
+    [switch]$SkipK8s
 )
 
 $ErrorActionPreference = "Continue"
@@ -20,6 +23,9 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $Root = Split-Path $PSScriptRoot -Parent
 Set-Location $Root
+. (Join-Path $PSScriptRoot 'platform-env.ps1') -ProjectRoot $Root
+$ErrorActionPreference = "Continue"
+$WantK8s = -not $SkipK8s -and ($EnableK8s -or $PlatformEnableK8s)
 $logs = Join-Path $Root "logs"
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $gradlew = Join-Path $Root "gradlew.bat"
@@ -315,6 +321,37 @@ Ensure-BootService "account-service" ":account-service:bootRun" "http://127.0.0.
 Ensure-BootService "gateway" ":gateway:bootRun" "http://127.0.0.1:8080/actuator/health" 8080 2 | Out-Null
 Ensure-BootService "job-service" ":job-service:bootRun" "http://127.0.0.1:8083/actuator/health" 8083 2 | Out-Null
 Ensure-Docs | Out-Null
+
+function Ensure-K8sDemo {
+    if (-not $WantK8s) {
+        Write-Host "  SKIP K8s (ENABLE_K8S=false) — 本機 bootRun／Vite；改 true 見 demo/platform-run.properties" -ForegroundColor DarkGray
+        return $true
+    }
+    Write-Host ""
+    Write-Host "== ENABLE_K8S=true → kind fintech-demo ==" -ForegroundColor Magenta
+    Use-PlatformKube
+    $running = 0
+    try {
+        $rows = kubectl -n $PlatformK8sNamespace get pods --no-headers 2>$null
+        if ($rows) {
+            $running = @($rows | Where-Object { $_ -match '\sRunning\s' }).Count
+        }
+    } catch { }
+    if ($running -ge 4) {
+        Write-Host ("  OK {0} already {1} Running" -f $PlatformK8sNamespace, $running) -ForegroundColor Green
+        return $true
+    }
+    Write-Host "  START demo/start-k8s-demo.ps1 (需 Docker Desktop Ready，較久) ..." -ForegroundColor Cyan
+    & (Join-Path $PSScriptRoot 'start-k8s-demo.ps1')
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  FAIL start-k8s-demo.ps1 exit=$LASTEXITCODE" -ForegroundColor Red
+        return $false
+    }
+    Write-Host "  OK K8s Demo（前端仍連本機 :8081，除非 port-forward）" -ForegroundColor Green
+    return $true
+}
+
+Ensure-K8sDemo | Out-Null
 
 function Ensure-Monitoring {
     if ((Test-HttpOk "http://localhost:9090/-/healthy") -and (Test-HttpOk "http://localhost:3000/login")) {

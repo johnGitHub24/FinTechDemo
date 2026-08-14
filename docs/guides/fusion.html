@@ -430,6 +430,22 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 </tbody></table>
 <hr>
+<h2>FinTechDemo 前端 SPA 頁面關係</h2>
+<p><code>/blueprint</code> 不是獨立 HTML：<code>index.html</code> → <code>App.vue</code> → Vue Router → 各 View。詳表見
+<a href="./k8s-complete-guide.html#s11">k8s-complete-guide §11</a> ·
+<a href="http://localhost:5173/blueprint#frontend-pages">藍圖 #frontend-pages</a>。</p>
+<table>
+<thead><tr><th>URL</th><th>檔案</th><th>守衛</th></tr></thead>
+<tbody>
+<tr><td><code>/login</code></td><td><code>LoginView.vue</code></td><td>公開</td></tr>
+<tr><td><code>/blueprint</code></td><td><code>BlueprintView.vue</code></td><td>公開</td></tr>
+<tr><td><code>/trade</code></td><td><code>TradeView.vue</code></td><td>JWT</td></tr>
+<tr><td><code>/portal</code></td><td><code>PortalView.vue</code></td><td>JWT</td></tr>
+<tr><td><code>/portal/audit</code></td><td><code>AuditView.vue</code></td><td>ADMIN</td></tr>
+<tr><td><code>/demo/*.html</code></td><td><code>frontend/public/demo/</code></td><td>靜態，不經 Router</td></tr>
+</tbody></table>
+<p>TradingPagingList 的 Vite proxy 技巧落在 <code>frontend/vite.config.js</code>；Docker 映像見 <code>frontend/Dockerfile</code> + <code>nginx.conf</code>（藍圖 <code>#frontend-image</code>）。</p>
+<hr>
 <h2>一句話</h2>
 <p>子專案＝<strong>有次序的技巧教材</strong>；FinTechDemo＝<strong>依同一次序組裝的整合示範</strong>（見 codeGraphic 四個 Tab）。</p>
 

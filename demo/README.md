@@ -13,7 +13,9 @@ Sync: `apply-workspace.ps1 -WithDemo`
 
 改埠或 K8s 叢集名：**只改** `platform-run.properties`，Demo 腳本 dot-source `platform-env.ps1`。
 
-文件：**[docs/文件完整度.md](../docs/文件完整度.md)** · 藍圖 K8s：http://localhost:5173/blueprint#k8s-intellij
+`ENABLE_K8S=false`（預設）＝只本機 bootRun／Vite；`true` 或 `.\demo\ensure-demo-links.ps1 -EnableK8s` 才順便跑 `start-k8s-demo.ps1`。Vue／npm **不能**起 kind。
+
+文件：**[docs/文件完整度.md](../docs/文件完整度.md)** · 藍圖：http://localhost:5173/blueprint#frontend-pages · K8s：http://localhost:5173/blueprint#k8s-intellij
 
 ```powershell
 .\開啟Demo.cmd

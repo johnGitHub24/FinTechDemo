@@ -54,5 +54,6 @@ cd ..\EngineeringOS\eos-minimal\hooks
 | [scripts/README.md](scripts/README.md) | Pure check／bootRun |
 | [demo/README.md](demo/README.md) | Demo（可選）· `platform-run.properties` |
 | [CLAUDE.md](CLAUDE.md) | AI 薄規則 |
-| 藍圖 SPA | http://localhost:5173/blueprint · K8s：`#k8s-intellij` |
+| 藍圖 SPA | http://localhost:5173/blueprint · 前端頁面：`#frontend-pages` · K8s：`#k8s-intellij` |
+| 前端頁面（HTML） | [k8s-complete-guide.html §11](docs/guides/k8s-complete-guide.html#s11) |
 

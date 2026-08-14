@@ -56,6 +56,77 @@
       <p class="muted small">登入後看燈號：http://localhost:5173/login · 帳密 trader1／password</p>
     </section>
 
+    <section id="frontend-pages" class="card">
+      <h2>前端 HTML／頁面關係</h2>
+      <p class="story-meta">
+        瀏覽器開 <code>/blueprint</code> 時，其實是同一個 <code>index.html</code>；Vue Router 把路徑換成不同 View。
+        靜態 Demo 頁（Risk Check）<strong>不經過</strong> Router。
+      </p>
+      <div ref="elPages" class="mermaid-wrap" role="img" aria-label="前端頁面關係圖"></div>
+      <table>
+        <thead>
+          <tr><th>URL</th><th>檔案</th><th>誰能開</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/login</code></td><td><code>LoginView.vue</code></td><td>公開</td></tr>
+          <tr><td><code>/blueprint</code></td><td><code>BlueprintView.vue</code></td><td>公開（本頁）</td></tr>
+          <tr><td><code>/trade</code></td><td><code>TradeView.vue</code></td><td>需登入 JWT</td></tr>
+          <tr><td><code>/portal</code></td><td><code>PortalView.vue</code></td><td>需登入</td></tr>
+          <tr><td><code>/portal/audit</code></td><td><code>AuditView.vue</code></td><td>需 ADMIN</td></tr>
+          <tr><td><code>/demo/risk-check.html</code></td><td><code>public/demo/</code></td><td>靜態 HTML + jQuery</td></tr>
+          <tr><td><code>/demo/account-me.html</code></td><td><code>public/demo/</code></td><td>靜態 HTML + jQuery</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="frontend-image" class="card">
+      <h2>前端打包成 Docker 映像</h2>
+      <p class="story-meta">
+        Local 日常用 <strong>Vite + OrderServiceApplication</strong>。要上 Docker Desktop 用已有的
+        <code>frontend/Dockerfile</code>（npm build → nginx）。
+        <strong>目前 kind 清單沒有 frontend Pod</strong>；K8s 四服務要 port-forward 才接到 :5173。
+      </p>
+      <div ref="elFeDeploy" class="mermaid-wrap" role="img" aria-label="前端三種部署"></div>
+      <h3 class="observe-h3">建映像（Docker Desktop Images 會出現）</h3>
+      <div class="observe-cmd-row">
+        <code class="observe-cmd">docker build -t fintech-demo/frontend:local ./frontend</code>
+        <button type="button" class="secondary sm" @click="copyText('docker build -t fintech-demo/frontend:local ./frontend')">複製</button>
+      </div>
+      <div class="observe-cmd-row">
+        <code class="observe-cmd">docker compose --profile full up -d frontend</code>
+        <button type="button" class="secondary sm" @click="copyText('docker compose --profile full up -d frontend')">複製</button>
+        <span class="muted small">nginx :80 → 主機 5173；<code>/api</code> 反代 compose 內 <code>gateway:8080</code></span>
+      </div>
+      <p class="muted small">
+        映像內 nginx <strong>不連</strong> IntelliJ bootRun。compose frontend 依賴 gateway 容器；
+        本機 Order 綠箭頭與這個映像是兩條路。
+      </p>
+      <h3 class="observe-h3">ENABLE_K8S（不是 Vue yaml）</h3>
+      <p class="muted small">
+        瀏覽器／<code>npm run dev</code> <strong>不能</strong>啟動 kind。開關在
+        <code>demo/platform-run.properties</code>，由 <code>開啟Demo.cmd</code> 讀取。
+      </p>
+      <table>
+        <thead>
+          <tr><th>設定</th><th>效果</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>ENABLE_K8S=false</code>（預設）</td><td>只起本機 Order／Risk／Vite</td></tr>
+          <tr><td><code>ENABLE_K8S=true</code></td><td>本機 Demo <strong>再加上</strong> <code>start-k8s-demo.ps1</code>（kind 四 Pod）</td></tr>
+        </tbody>
+      </table>
+      <div class="observe-cmd-row">
+        <code class="observe-cmd">.\demo\ensure-demo-links.ps1 -EnableK8s</code>
+        <button type="button" class="secondary sm" @click="copyText('.\\demo\\ensure-demo-links.ps1 -EnableK8s')">複製</button>
+        <span class="muted small">單次覆蓋 properties</span>
+      </div>
+      <p class="muted small">
+        true 時前端<strong>預設仍打本機 :8081</strong>。要打 Pod：
+        <code>kubectl -n fintech-demo port-forward svc/order-service 8081:8081</code>
+        （先停掉本機 bootRun，避免搶埠）。
+      </p>
+    </section>
+
     <DockerRedisGuide />
 
     <aside class="blueprint-howto" aria-label="藍圖導覽">
@@ -71,6 +142,8 @@
               <a href="#docker-start">Docker／本機開啟</a>
               <p>Docker Desktop → 開啟Demo.cmd</p>
               <p><a href="#docker-redis">Docker／Redis 指令</a></p>
+              <p><a href="#frontend-pages">前端頁面關係</a></p>
+              <p><a href="#frontend-image">前端映像／ENABLE_K8S</a></p>
               <p><a href="#k8s-intellij">IntelliJ vs K8s</a></p>
             </div>
           </li>
@@ -137,6 +210,10 @@
     <nav class="blueprint-toc card" aria-label="頁內目錄">
       <span class="toc-label">目錄</span>
       <a href="#docker-start">Docker 開啟</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#frontend-pages">前端頁面</a>
+      <span class="toc-sep" aria-hidden="true">·</span>
+      <a href="#frontend-image">前端映像</a>
       <span class="toc-sep" aria-hidden="true">·</span>
       <a href="#docker-redis">Docker／Redis</a>
       <span class="toc-sep" aria-hidden="true">·</span>
@@ -453,6 +530,8 @@ import {
   DIAGRAM_FLOW,
   DIAGRAM_LAYERS,
   DIAGRAM_ORDER_STATE,
+  DIAGRAM_FRONTEND_PAGES,
+  DIAGRAM_FRONTEND_DEPLOY,
   EDGE_MECHANISMS,
   PORTS,
   groupTechStack
@@ -488,6 +567,8 @@ const promQueries = [
 const elLayers = ref(null);
 const elFlow = ref(null);
 const elStates = ref(null);
+const elPages = ref(null);
+const elFeDeploy = ref(null);
 
 async function copyText(text) {
   try {
@@ -519,5 +600,7 @@ onMounted(async () => {
   await renderDiagram(elLayers.value, DIAGRAM_LAYERS, 'bp-layers');
   await renderDiagram(elFlow.value, DIAGRAM_FLOW, 'bp-flow');
   await renderDiagram(elStates.value, DIAGRAM_ORDER_STATE, 'bp-states');
+  await renderDiagram(elPages.value, DIAGRAM_FRONTEND_PAGES, 'bp-pages');
+  await renderDiagram(elFeDeploy.value, DIAGRAM_FRONTEND_DEPLOY, 'bp-fe-deploy');
 });
 </script>

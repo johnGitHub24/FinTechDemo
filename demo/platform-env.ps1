@@ -65,6 +65,7 @@ $PlatformH2JdbcTcp = $PlatformRun['H2_JDBC_TCP']
 $PlatformKafkaBrokerPort = Get-PlatformInt 'KAFKA_BROKER_PORT'
 
 # --- K8s ---
+$PlatformEnableK8s = Get-PlatformBool 'ENABLE_K8S'
 $PlatformK8sCluster = $PlatformRun['K8S_CLUSTER']
 $PlatformK8sContext = $PlatformRun['K8S_CONTEXT']
 $PlatformK8sNamespace = $PlatformRun['K8S_NAMESPACE']

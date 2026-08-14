@@ -203,3 +203,28 @@ export const DIAGRAM_DOCKER_K8S = `flowchart TB
   NOTE["Desktop 有映像 ≠ Pod Running<br/>還要：kind load 成功 · CPU arch 一致 · apply"]
   L1 -.-> NOTE
 `;
+
+/**
+ * 兩套 K8s「大樓」：Desktop 內建 vs FinTechDemo kind（Panel 找不到 fintech-demo 的原因）。
+ */
+export const DIAGRAM_TWO_K8S_BUILDINGS = `flowchart TB
+  subgraph DD["🏢 A · Docker Desktop 內建 K8s"]
+    direction TB
+    DDC["context: docker-desktop"]
+    DDN["節點: desktop-control-plane"]
+    DDNS["namespace: default · kube-system · kube-public…"]
+  end
+
+  subgraph KIND["🏢 B · FinTechDemo kind 叢集"]
+    direction TB
+    KC["context: kind-trading-local"]
+    KN["節點: trading-local-control-plane"]
+    KNS["namespace: fintech-demo ← 4 Pod"]
+  end
+
+  PANEL["Docker Desktop<br/>Kubernetes Panel"] -->|"預設連這裡"| DD
+  KCTL["kubectl · walkthrough<br/>start-k8s-demo.ps1"] -->|"Demo 驗收入口"| KIND
+
+  DD -.->|"Panel 看不到 fintech-demo"| X["❌ 不是 bug"]
+  KIND -.->|"apply 建在 B 棟"| OK["✓ 4 Pod Running"]
+`;

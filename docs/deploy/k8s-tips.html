@@ -44,6 +44,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <h1>K8s跑通與驗證技巧</h1>
     <p class="sub">來源（IDE 編輯）：<code>_md/deploy/k8s-tips.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
     <p class="links">
+      <a href="../guides/k8s-complete-guide.html"><strong>K8s 完整教學（總入口）</strong></a>
       <a href="../index.html">統一學習入口</a>
       <a href="../portals/learning-map.html">學習導引地圖</a>
       <a href="../md-reader.html">MD 閱讀器</a>
@@ -55,7 +56,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <article class="md-body">
 <h1>FinTechDemo — K8s 跑通規則與故障排除技巧</h1>
 <blockquote>
-<p><strong>目的</strong>：開發要把問題解掉時，先分清「本專案強制驗證」與「本機真叢集跑通」兩層，避免把死掉的 <code>kind</code> context 誤當成專案失敗。<br><strong>三層教學（Mermaid）</strong>：<a href="http://localhost:5173/blueprint#k8s-intellij">藍圖 SPA #k8s-intellij</a><br><strong>一鍵 L4</strong>：<code>.\demo\start-k8s-demo.ps1</code> · 檢查三層：<code>.\demo\k8s-walkthrough.ps1</code><br><strong>文件地圖</strong>：<a href="../文件完整度.md"><code>docs/文件完整度.md</code></a><br><strong>上線階梯（S0→S6）</strong>：<a href="./stages-doc.html"><code>上線部署階段層次</code></a><br><strong>Loop 教學</strong>：<a href="../portals/loop-guide.html"><code>部署跑通-LoopEngineering</code></a></p>
+<p><strong>目的</strong>：開發要把問題解掉時，先分清「本專案強制驗證」與「本機真叢集跑通」兩層，避免把死掉的 <code>kind</code> context 誤當成專案失敗。<br><strong>K8s 總入口（先讀）</strong>：<a href="../guides/k8s-complete-guide.html"><code>k8s-complete-guide.html</code></a><br><strong>三層教學（Mermaid）</strong>：<a href="http://localhost:5173/blueprint#k8s-intellij">藍圖 SPA #k8s-intellij</a><br><strong>一鍵 L4</strong>：<code>.\demo\start-k8s-demo.ps1</code> · 檢查三層：<code>.\demo\k8s-walkthrough.ps1</code><br><strong>文件地圖</strong>：<a href="../文件完整度.md"><code>docs/文件完整度.md</code></a><br><strong>上線階梯（S0→S6）</strong>：<a href="./stages-doc.html"><code>上線部署階段層次</code></a><br><strong>Loop 教學</strong>：<a href="../portals/loop-guide.html"><code>部署跑通-LoopEngineering</code></a></p>
 </blockquote>
 <hr>
 <h2>1. 驗證分層（先記這張表）</h2>
@@ -287,6 +288,35 @@ kubectl -n fintech-demo get pods
 <td><code>verify-pipeline.ps1 -Up -Smoke</code>，不必死磕 kind</td>
 </tr>
 </tbody></table>
+<hr>
+<h2>5b. 兩套 K8s「大樓」— Panel 找不到 fintech-demo</h2>
+<blockquote>
+<p><strong>互動 Mermaid</strong>：<a href="http://localhost:5173/blueprint#k8s-intellij">藍圖 §②c</a> · <strong>全文</strong>：<a href="../guides/docker-desktop-k8s.md"><code>docs/guides/docker-desktop-k8s.md</code></a></p>
+</blockquote>
+<p><strong>walkthrough 全 OK 但 Panel 沒 namespace = 正常。</strong> A 棟（<code>docker-desktop</code>）≠ B 棟（<code>kind-trading-local</code> / <code>fintech-demo</code>）。</p>
+<table>
+<thead><tr><th>分頁</th><th>FinTechDemo</th></tr></thead>
+<tbody>
+<tr><td>Images / Containers / Builds</td><td>✓ 映像 + kind 節點</td></tr>
+<tr><td>Kubernetes Panel</td><td>✗ 常連 A 棟，看不到 <code>fintech-demo</code></td></tr>
+<tr><td>kubectl / walkthrough</td><td>✓ B 棟驗收入口</td></tr>
+</tbody></table>
+<hr>
+<h2>5c. IntelliJ 連 kind-trading-local</h2>
+<blockquote>
+<p><strong>互動版</strong>：<a href="http://localhost:5173/blueprint#k8s-intellij">藍圖 SPA #k8s-intellij §⑩</a> · <strong>MD</strong>：<a href="../guides/intellij-k8s.md"><code>docs/guides/intellij-k8s.md</code></a></p>
+</blockquote>
+<p><strong>常見誤會：</strong> IntelliJ <strong>Docker</strong> 插件沒有 K8s context；需 <strong>Kubernetes</strong> 插件 + 指 kubeconfig。</p>
+<table>
+<thead><tr><th>步驟</th><th>動作</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Settings → Plugins → <strong>Kubernetes</strong> Installed</td></tr>
+<tr><td>2</td><td>Settings → Kubernetes → Kubeconfig <strong>+</strong> → <code>demo\.tools\kubeconfig-kind-trading-local</code></td></tr>
+<tr><td>3</td><td>Services → <strong>+</strong> → <strong>Kubernetes</strong> → 展開 <code>kind-trading-local</code> → namespace <code>fintech-demo</code></td></tr>
+<tr><td>4</td><td>仍只有 <code>docker-desktop</code> → Context 改 <code>kind-trading-local</code> → Refresh</td></tr>
+<tr><td>5</td><td>自測：<code>kubectl -n fintech-demo get pods</code>（四 Running）</td></tr>
+</tbody></table>
+<p>Docker Desktop Kubernetes Panel 下拉若只有 <code>kube-system</code> 等、沒有 <code>fintech-demo</code>，代表連到 <strong>Desktop 內建空叢集</strong>，不是 FinTechDemo kind 叢集。</p>
 <hr>
 <h2>6. 相關檔案索引</h2>
 <table>

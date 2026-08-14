@@ -27,6 +27,7 @@ export const demoLinks = {
   accountHealth: 'http://localhost:8084/actuator/health',
   accountMe: 'http://localhost:5173/demo/account-me.html',
   docsIndex: 'http://127.0.0.1:5500/docs/index.html',
+  docsK8sCompleteGuide: 'http://127.0.0.1:5500/docs/guides/k8s-complete-guide.html',
   docsDemoFlow: 'http://127.0.0.1:5500/docs/portals/demo-flow.html',
   docsHandbook: 'http://127.0.0.1:5500/docs/portals/handbook.html',
   docsSwagger: 'http://127.0.0.1:5500/docs/portals/swagger.html',
@@ -70,11 +71,12 @@ export const navDemoButtons = [
   },
   {
     id: 'k8s',
-    label: 'K8s／IntelliJ',
-    kind: 'spa',
-    to: '/blueprint',
-    hash: 'k8s-intellij',
-    hint: 'Services vs kind 部署教學'
+    label: 'K8s 教學',
+    kind: 'external',
+    href: demoLinks.docsK8sCompleteGuide,
+    probe: demoLinks.docsK8sCompleteGuide,
+    hint: 'K8s 完整教學 HTML（三條路線·兩套大樓·一鍵跑通）',
+    startHint: '.\\docs\\tools\\serve-docs.ps1 或 .\\開啟Demo.cmd'
   },
   {
     id: 'redis',
@@ -157,6 +159,12 @@ export const loginDemoGroups = [
   {
     title: '學習文件',
     items: [
+      {
+        label: 'K8s 完整教學',
+        href: demoLinks.docsK8sCompleteGuide,
+        probe: demoLinks.docsK8sCompleteGuide,
+        startHint: '.\\docs\\tools\\serve-docs.ps1 或 .\\開啟Demo.cmd'
+      },
       { label: 'Docs', href: demoLinks.docsIndex, probe: demoLinks.docsIndex },
       { label: 'Demo 流程', href: demoLinks.docsDemoFlow },
       { label: '學習手冊', href: demoLinks.docsHandbook },

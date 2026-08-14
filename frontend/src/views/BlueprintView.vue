@@ -203,6 +203,16 @@
         <strong>實線</strong>＝最短可成交主路徑；<strong>虛線</strong>＝可選（Gateway／Kafka／Job）。
       </p>
       <div ref="elLayers" class="mermaid-wrap" role="img" aria-label="分層架構圖"></div>
+      <h3 class="observe-h3">↔ 檔案對照</h3>
+      <table class="file-ref-table">
+        <thead><tr><th>圖上節點</th><th>專案根路徑（IDE 開檔）</th></tr></thead>
+        <tbody>
+          <tr v-for="row in layersFileRefs" :key="row.node">
+            <td><strong>{{ row.node }}</strong></td>
+            <td><code v-for="(f, i) in row.files" :key="f">{{ f }}<br v-if="i < row.files.length - 1"></code></td>
+          </tr>
+        </tbody>
+      </table>
       <aside class="story-note">
         <strong>NOTE · 圖怎麼讀</strong>
         <ul>
@@ -253,6 +263,16 @@
         每個節點標註埠與框架。分支「最短可成交」vs「分散式敘事（經 Gateway）」都匯入同一成交流程。
       </p>
       <div ref="elFlow" class="mermaid-wrap" role="img" aria-label="完整運作過程圖"></div>
+      <h3 class="observe-h3">↔ 檔案對照</h3>
+      <table class="file-ref-table">
+        <thead><tr><th>流程步驟</th><th>程式／設定</th></tr></thead>
+        <tbody>
+          <tr v-for="row in flowFileRefs" :key="row.step">
+            <td><strong>{{ row.step }}</strong></td>
+            <td><code v-for="(f, i) in row.files" :key="f">{{ f }}<br v-if="i < row.files.length - 1"></code></td>
+          </tr>
+        </tbody>
+      </table>
       <aside class="story-note">
         <strong>NOTE · 過程怎麼講</strong>
         <ol>
@@ -274,6 +294,16 @@
       <h2>4. 訂單狀態機</h2>
       <p class="story-meta">回答「這一筆單子到哪」——與下方 S1–S3（環境開到哪）是兩件事。箭頭旁文字為轉換條件（含用到的技術）。</p>
       <div ref="elStates" class="mermaid-wrap" role="img" aria-label="訂單狀態機"></div>
+      <h3 class="observe-h3">↔ 檔案對照</h3>
+      <table class="file-ref-table">
+        <thead><tr><th>轉換</th><th>程式</th></tr></thead>
+        <tbody>
+          <tr v-for="row in stateFileRefs" :key="row.state">
+            <td><strong>{{ row.state }}</strong></td>
+            <td><code v-for="(f, i) in row.files" :key="f">{{ f }}<br v-if="i < row.files.length - 1"></code></td>
+          </tr>
+        </tbody>
+      </table>
       <aside class="story-note">
         <strong>NOTE · 四態</strong>
         <ul>
@@ -427,10 +457,18 @@ import {
   PORTS,
   groupTechStack
 } from '../blueprint/diagrams';
+import {
+  FLOW_FILE_REFS,
+  LAYERS_FILE_REFS,
+  STATE_FILE_REFS
+} from '../blueprint/fileRefs';
 
 const auth = useAuthStore();
 const loggedIn = computed(() => !!auth.isLoggedIn);
 const techGroups = groupTechStack();
+const layersFileRefs = LAYERS_FILE_REFS;
+const flowFileRefs = FLOW_FILE_REFS;
+const stateFileRefs = STATE_FILE_REFS;
 const links = demoLinks;
 const copyMsg = ref('');
 

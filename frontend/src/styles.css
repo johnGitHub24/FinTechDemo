@@ -830,6 +830,42 @@ tbody tr:hover { background: var(--surface2); }
   margin: 1rem 0 0.4rem;
   font-size: 0.95rem;
 }
+.file-ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0.5rem 0 1rem;
+}
+.file-ref-table th,
+.file-ref-table td {
+  border: 1px solid var(--border, #d5dde6);
+  padding: 0.4rem 0.55rem;
+  vertical-align: top;
+  text-align: left;
+}
+.file-ref-table th {
+  background: var(--surface2, #eef2f6);
+  color: var(--accent, #0d7377);
+}
+.file-ref-table code {
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+.file-ref-sub {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.9;
+}
+.intellij-tree {
+  background: var(--surface2, #eef2f6);
+  border: 1px solid var(--border, #d5dde6);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-x: auto;
+  margin: 0.5rem 0 1rem;
+}
 .observe-cmd-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

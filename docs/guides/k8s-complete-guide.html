@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — K8s 完整教學（單頁集中）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+:root { --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309; --ok:#047857; }
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top { border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%); padding:0.9rem 1.25rem; }
+header.top h1 { font-size:1.25rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+nav.toc { max-width:960px; margin:0 auto; padding:0.75rem 1.25rem; background:var(--surface);
+  border-bottom:1px solid var(--border); font-size:0.82rem; }
+nav.toc a { color:var(--accent); text-decoration:none; margin-right:0.6rem; white-space:nowrap; }
+main { max-width:960px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem;
+  font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.gate-warn { border-left-color:var(--warn); }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.75rem 0 0.55rem; color:#0f4c5c; scroll-margin-top:3rem; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.78rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.path-card { border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; margin:0.75rem 0; background:var(--surface); }
+.path-card strong { color:#0f4c5c; }
+.checklist { list-style:none; padding-left:0; }
+.checklist li { padding:0.25rem 0 0.25rem 1.5rem; position:relative; }
+.checklist li::before { content:"☐"; position:absolute; left:0; color:var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>FinTechDemo — K8s 完整教學（單頁集中）</h1>
+    <p class="sub">權威入口：本 HTML · 互動藍圖 <a href="http://localhost:5173/blueprint#k8s-intellij">/blueprint#k8s-intellij</a> · 故障 <a href="../deploy/k8s-tips.html">k8s-tips.html</a></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../文件完整度.md">文件完整度</a>
+      <a href="interview-demo-simple.md">面試簡版</a>
+      <a href="blueprint-tour.md">藍圖導覽</a>
+    </p>
+  </header>
+  <nav class="toc" aria-label="頁內目錄">
+    <a href="#s0">0 怎麼讀</a>
+    <a href="#s1">1 三條路線</a>
+    <a href="#s2">2 兩套大樓</a>
+    <a href="#s3">3 三層流程</a>
+    <a href="#s4">4 一鍵跑通</a>
+    <a href="#s5">5 前端/K8s</a>
+    <a href="#s6">6 Desktop</a>
+    <a href="#s7">7 IntelliJ</a>
+    <a href="#s8">8 檔案對照</a>
+    <a href="#s9">9 驗證清單</a>
+    <a href="#s10">10 故障</a>
+  </nav>
+  <main>
+    <div class="gate"><strong>本頁目的：</strong>把 K8s 相關教學集中成<strong>一份</strong>，照章節 0→9 讀完即知「怎麼運作、怎麼驗證、為何 Panel 看不到 fintech-demo」。</div>
+    <article class="md-body">
+
+<h1 id="s0">0. 怎麼開這份文件</h1>
+<table>
+<thead><tr><th>方式</th><th>指令／URL</th></tr></thead>
+<tbody>
+<tr><td><strong>前端頂欄「K8s 教學」</strong></td><td>登入後點頂欄按鈕（會探測 :5500 再開本頁）</td></tr>
+<tr><td>靜態書櫃</td><td><code>.\docs\tools\serve-docs.ps1</code> → <a href="http://127.0.0.1:5500/docs/guides/k8s-complete-guide.html">http://127.0.0.1:5500/docs/guides/k8s-complete-guide.html</a></td></tr>
+<tr><td>互動 Mermaid＋複製鈕</td><td><code>cd frontend; npm run dev</code> → <a href="http://127.0.0.1:5173/blueprint#k8s-intellij">/blueprint#k8s-intellij</a></td></tr>
+</tbody></table>
+<blockquote><strong>注意：</strong><code>http://localhost:5173/docs/...</code> 開不了本頁 — <code>:5173</code> 是 Vite 前端，教學 HTML 在 <strong>:5500</strong> 書櫃。</blockquote>
+
+<hr>
+
+<h1 id="s1">1. 三條 Demo 路線（先選一條，勿混）</h1>
+<div class="gate gate-warn"><strong>常見搞混：</strong><code>npm run dev</code> 只起前端；<code>OrderServiceApplication</code> 只起本機 JVM；<code>start-k8s-demo.ps1</code> 只起叢集 Pod。<strong>三者互不會自動帶起對方。</strong></div>
+
+<div class="path-card">
+<strong>路線 A — 日常業務 Demo（IntelliJ / 開啟Demo.cmd）</strong>
+<pre><code>IntelliJ OrderServiceApplication  →  localhost:8081
+npm run dev                       →  :5173，proxy /api → :8081
+瀏覽器 /login → 下單成交</code></pre>
+<p>不需要 K8s。Order 就緒後可能背景跑 <code>ensure-demo-links</code> 補 Risk、Vite，<strong>仍不是 K8s</strong>。</p>
+</div>
+
+<div class="path-card">
+<strong>路線 B — 純 K8s 部署證明（面試加分）</strong>
+<pre><code>.\demo\start-k8s-demo.ps1
+.\demo\k8s-walkthrough.ps1
+kubectl -n fintech-demo get pods   # 4× Running
+kubectl port-forward svc/gateway 18080:8080
+curl http://localhost:18080/actuator/health</code></pre>
+<p>四服務在 <strong>叢集內</strong>；本機 <code>:8081</code> 預設<strong>沒有</strong>服務，除非 port-forward。</p>
+</div>
+
+<div class="path-card">
+<strong>路線 C — K8s 後端 + 前端一起</strong>
+<pre><code># 視窗1：K8s 已 Running 後
+$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
+kubectl -n fintech-demo port-forward svc/order-service 8081:8081
+# 或 gateway → 18080 且前端 VITE_API_TARGET=http://localhost:18080
+
+# 視窗2
+cd frontend; npm run dev</code></pre>
+<p>前端預設 proxy 目標 <code>http://localhost:8081</code>（見 <code>frontend/vite.config.js</code>）。</p>
+</div>
+
+<table>
+<thead><tr><th>你啟動的</th><th>起了什麼</th><th>會順便起 K8s？</th></tr></thead>
+<tbody>
+<tr><td><code>npm run dev</code></td><td>Vite :5173</td><td>否</td></tr>
+<tr><td>IntelliJ <code>OrderServiceApplication</code></td><td>本機 JVM :8081</td><td>否</td></tr>
+<tr><td><code>start-k8s-demo.ps1</code></td><td>kind 內 4 Pod</td><td>否（不含前端）</td></tr>
+</tbody></table>
+
+<hr>
+
+<h1 id="s2">2. 兩套 K8s「大樓」（Panel 找不到 fintech-demo 的原因）</h1>
+<div class="mermaid">
+flowchart TB
+  subgraph DD["A · Docker Desktop 內建 K8s"]
+    DDC["context: docker-desktop"]
+    DDN["desktop-control-plane"]
+    DDNS["default · kube-system · kube-public…"]
+  end
+  subgraph KIND["B · FinTechDemo kind"]
+    KC["context: kind-trading-local"]
+    KN["trading-local-control-plane"]
+    KNS["namespace: fintech-demo · 4 Pod"]
+  end
+  PANEL["Kubernetes Panel 預設"] --> DD
+  KCTL["kubectl · walkthrough"] --> KIND
+</div>
+
+<table>
+<thead><tr><th></th><th>A 棟 · Desktop 內建</th><th>B 棟 · FinTechDemo</th></tr></thead>
+<tbody>
+<tr><td>context</td><td><code>docker-desktop</code></td><td><code>kind-trading-local</code></td></tr>
+<tr><td>節點</td><td><code>desktop-control-plane</code></td><td><code>trading-local-control-plane</code></td></tr>
+<tr><td>namespace</td><td>系統用</td><td><strong><code>fintech-demo</code></strong></td></tr>
+<tr><td>Settings 能設定？</td><td>Enable / Reset / 版本</td><td><strong>否</strong> — 用 <code>demo/start-k8s-demo.ps1</code></td></tr>
+</tbody></table>
+
+<blockquote><strong>一句話：</strong>Kubernetes Panel = A 棟接待處；fintech-demo 四 Pod = B 棟；<code>walkthrough</code> 全 OK 但 Panel 沒 namespace = <strong>正常</strong>。</blockquote>
+
+<h3>Docker Desktop 各分頁</h3>
+<table>
+<thead><tr><th>分頁</th><th>一句話</th></tr></thead>
+<tbody>
+<tr><td><strong>Builds</strong></td><td>我建過映像（<code>Dockerfile.k8s-local</code>）</td></tr>
+<tr><td><strong>Images</strong></td><td>映像建好了，等 K8s 用（4× <code>fintech-demo/*:local</code>）</td></tr>
+<tr><td><strong>Containers</strong></td><td>kind 節點在跑（<code>trading-local-control-plane</code>）</td></tr>
+<tr><td><strong>Kubernetes Panel</strong></td><td>常連 A 棟，看不到 <code>fintech-demo</code></td></tr>
+<tr><td><strong>kubectl get pods</strong></td><td>4 微服務真的在 B 棟跑</td></tr>
+</tbody></table>
+
+<hr>
+
+<h1 id="s3">3. 三層運作（L1 → L2 → L3）</h1>
+<div class="mermaid">
+flowchart TB
+  subgraph L1["Layer 1 · Images"]
+    I1["fintech-demo/gateway:local"]
+    I2["fintech-demo/order-service:local"]
+    I3["fintech-demo/risk-service:local"]
+    I4["fintech-demo/account-service:local"]
+  end
+  LOAD["kind load docker-image"]
+  NODE["Layer 2 · trading-local-control-plane"]
+  APPLY["kubectl apply -k deploy/k8s/overlays/dev"]
+  subgraph L3["Layer 3 · namespace fintech-demo"]
+    P1["Pod gateway"]
+    P2["Pod order-service"]
+    P3["Pod risk-service"]
+    P4["Pod account-service"]
+  end
+  I1 --> LOAD
+  I2 --> LOAD
+  I3 --> LOAD
+  I4 --> LOAD
+  LOAD --> NODE
+  NODE --> APPLY
+  APPLY --> P1
+  APPLY --> P2
+  APPLY --> P3
+  APPLY --> P4
+</div>
+
+<table>
+<thead><tr><th>層</th><th>做什麼</th><th>在哪看</th></tr></thead>
+<tbody>
+<tr><td>L1</td><td><code>gradlew bootJar</code> + <code>docker build -f Dockerfile.k8s-local</code></td><td>Desktop → Images</td></tr>
+<tr><td>L2</td><td><code>kind load</code> 映像進節點</td><td>Desktop → Containers</td></tr>
+<tr><td>L3</td><td><code>kubectl apply</code> → Deployment / Service / Pod</td><td><code>kubectl -n fintech-demo get pods</code></td></tr>
+</tbody></table>
+
+<p>平台常數：<code>demo/platform-run.properties</code>（<code>DOCKER_BUILD_PLATFORM=auto</code>、<code>K8S_NAMESPACE=fintech-demo</code>）</p>
+
+<hr>
+
+<h1 id="s4">4. 一鍵跑通（重開機乾淨版）</h1>
+<pre><code>cd FinTechDemo
+docker desktop start
+docker desktop status          # Running
+
+# 乾淨重建（首次或 kubeconfig 漂移）
+.\demo\start-k8s-demo.ps1 -RecreateCluster
+
+# 已有映像、只重 apply
+# .\demo\start-k8s-demo.ps1 -SkipBuild
+
+# 三層檢查
+.\demo\k8s-walkthrough.ps1
+
+# 手動驗證
+$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
+kubectl config use-context kind-trading-local
+kubectl -n fintech-demo get pods
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
+# → http://localhost:18080/actuator/health  應 UP</code></pre>
+
+<p>成功結尾：<code>======== FinTechDemo K8s DEMO OK ========</code> + 4 Pod <code>Running 1/1</code></p>
+
+<hr>
+
+<h1 id="s5">5. 前端、IntelliJ Order 與 K8s 的關係</h1>
+<div class="mermaid">
+flowchart LR
+  VITE["Vite :5173\nnpm run dev"]
+  BOOT["localhost:8081\nIntelliJ Order bootRun"]
+  PF["port-forward\n8081 或 18080"]
+  POD["K8s Pod\nfintech-demo"]
+  VITE -->|"proxy /api 預設"| BOOT
+  VITE -.->|"需 port-forward"| PF
+  PF --> POD
+</div>
+
+<table>
+<thead><tr><th>同時跑 IntelliJ Order + K8s？</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>是兩份 Order</td><td>本機 JVM 一份、叢集 Pod 一份</td></tr>
+<tr><td>前端連哪個</td><td>預設 <strong>本機 :8081</strong>（bootRun），不是 Pod</td></tr>
+<tr><td>walkthrough</td><td>只驗證 <strong>Pod</strong>，不代表前端已接 K8s</td></tr>
+</tbody></table>
+
+<p>面試建議：<strong>業務</strong>用路線 A；<strong>部署</strong>用路線 B walkthrough；不必強求 Panel。</p>
+
+<hr>
+
+<h1 id="s6">6. Docker Desktop Settings（Enable Kubernetes）</h1>
+<p>Settings → Kubernetes → Enable = 起 <strong>A 棟</strong>（<code>docker-desktop</code>，節點 <code>desktop-control-plane</code>）。</p>
+<ul>
+<li>與 B 棟 <strong>都叫 kind 技術</strong>，但是<strong>不同 cluster 名稱</strong></li>
+<li>Settings <strong>不會</strong>列出 <code>fintech-demo</code> namespace</li>
+<li>只做 FinTechDemo K8s Demo 可<strong>關閉</strong> Enable，只留 Docker 引擎 + <code>start-k8s-demo.ps1</code>（省 RAM）</li>
+<li>「Waiting for node to be ready」久 → 加 Memory、等 10～15 分鐘、或 Reset cluster</li>
+</ul>
+
+<hr>
+
+<h1 id="s7">7. IntelliJ 連 B 棟（可選）</h1>
+<ol>
+<li>Plugins → <strong>Kubernetes</strong>（不是 Docker 插件）</li>
+<li>Settings → Kubernetes → Kubeconfig <strong>+</strong>：<code>demo\.tools\kubeconfig-kind-trading-local</code></li>
+<li>Services → <strong>+ Kubernetes</strong> → <code>kind-trading-local</code> → namespace <code>fintech-demo</code></li>
+</ol>
+<p>詳細：<a href="intellij-k8s.md">intellij-k8s.md</a></p>
+
+<hr>
+
+<h1 id="s8">8. 檔案對照表</h1>
+<table>
+<thead><tr><th>用途</th><th>路徑</th></tr></thead>
+<tbody>
+<tr><td>平台常數</td><td><code>demo/platform-run.properties</code></td></tr>
+<tr><td>載入設定</td><td><code>demo/platform-env.ps1</code></td></tr>
+<tr><td>一鍵 K8s Demo</td><td><code>demo/start-k8s-demo.ps1</code></td></tr>
+<tr><td>三層 walkthrough</td><td><code>demo/k8s-walkthrough.ps1</code></td></tr>
+<tr><td>kubeconfig</td><td><code>demo/.tools/kubeconfig-kind-trading-local</code></td></tr>
+<tr><td>建映像</td><td><code>Dockerfile.k8s-local</code></td></tr>
+<tr><td>namespace</td><td><code>deploy/k8s/base/namespace.yaml</code></td></tr>
+<tr><td>四 Deployment</td><td><code>deploy/k8s/base/*-deployment.yaml</code></td></tr>
+<tr><td>dev overlay</td><td><code>deploy/k8s/overlays/dev/kustomization.yaml</code></td></tr>
+<tr><td>只驗 YAML</td><td><code>demo/check-k8s.ps1</code></td></tr>
+<tr><td>前端 proxy</td><td><code>frontend/vite.config.js</code></td></tr>
+<tr><td>互動教學</td><td><code>frontend/…/K8sIntelliJGuide.vue</code></td></tr>
+</tbody></table>
+
+<h3>映像 ↔ Deployment</h3>
+<table>
+<thead><tr><th>映像</th><th>Deployment</th><th>埠</th></tr></thead>
+<tbody>
+<tr><td><code>fintech-demo/gateway:local</code></td><td><code>gateway</code></td><td>8080</td></tr>
+<tr><td><code>fintech-demo/order-service:local</code></td><td><code>order-service</code></td><td>8081</td></tr>
+<tr><td><code>fintech-demo/risk-service:local</code></td><td><code>risk-service</code></td><td>8082</td></tr>
+<tr><td><code>fintech-demo/account-service:local</code></td><td><code>account-service</code></td><td>8084</td></tr>
+</tbody></table>
+
+<hr>
+
+<h1 id="s9">9. 推版／面試前驗證清單</h1>
+<ul class="checklist">
+<li>Docker Desktop <strong>Running</strong></li>
+<li><code>.\scripts\check.ps1</code> 綠燈</li>
+<li><code>.\demo\start-k8s-demo.ps1</code> → DEMO OK</li>
+<li><code>.\demo\k8s-walkthrough.ps1</code> Step 1～3 全 OK</li>
+<li>4 Pod <code>Running 1/1</code></li>
+<li>port-forward health <code>UP</code>（可選）</li>
+<li>藍圖 <code>/blueprint#k8s-intellij</code> 可開（簡報用）</li>
+<li>業務 Demo：<code>開啟Demo.cmd</code> + <code>npm run dev</code>（與 K8s 分開說明）</li>
+</ul>
+
+<hr>
+
+<h1 id="s10">10. 故障與延伸閱讀</h1>
+<table>
+<thead><tr><th>症狀</th><th>處理</th></tr></thead>
+<tbody>
+<tr><td><code>ImagePullBackOff</code></td><td>映像 arch 與 kind 不一致 → <code>DOCKER_BUILD_PLATFORM=auto</code> 重建</td></tr>
+<tr><td>Panel 無 <code>fintech-demo</code></td><td>見 §2 兩套大樓 — 用 kubectl</td></tr>
+<tr><td>前端登入失敗（只有 K8s）</td><td>缺 port-forward 到 8081 或改 <code>VITE_API_TARGET</code></td></tr>
+<tr><td>Enable K8s 卡住</td><td><a href="docker-desktop-k8s.md">docker-desktop-k8s.md</a></td></tr>
+<tr><td>L0～L4 故障表</td><td><a href="../deploy/k8s-tips.html">k8s-tips.html</a></td></tr>
+<tr><td>面試 10 分鐘版</td><td><a href="interview-demo-simple.md">interview-demo-simple.md</a></td></tr>
+<tr><td>藍圖全章導覽</td><td><a href="blueprint-tour.md">blueprint-tour.md</a></td></tr>
+</tbody></table>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      securityLevel: 'loose',
+      flowchart: { htmlLabels: true, curve: 'basis' }
+    });
+  </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="card login-card">
       <h1>登入</h1>
-      <p class="muted">trader1 / admin · 密碼 password</p>
+      <p class="muted">trader1＝對帳（85000＋AAPL）；admin＝全站監察（本人 100000、無持倉）。密碼 password</p>
       <label>帳號</label>
       <input v-model="username" autocomplete="username" />
       <label>密碼</label>

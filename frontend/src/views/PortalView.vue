@@ -2,12 +2,20 @@
   <div class="story-layout">
     <div>
       <h1>會員後台</h1>
+      <p v-if="isAdmin" class="warn-banner demo-scope" role="note">
+        Demo：餘額／持倉是 <strong>{{ auth.username }} 本人</strong>（種子 100000、無持倉）。
+        下方歷史是 <strong>全站訂單</strong>，AAPL 成交單屬於 trader1，不會扣 admin 的錢。
+      </p>
+      <p v-else class="page-sub">餘額、持倉、歷史都是你自己的帳（種子：85000 TWD、AAPL 100）。</p>
       <div class="card">
-        <h3>餘額</h3>
+        <h3>{{ isAdmin ? '餘額（本人帳戶）' : '餘額' }}</h3>
         <p v-if="account">{{ account.cashBalance }} {{ account.currency }}</p>
       </div>
       <div class="card">
-        <h3>持倉</h3>
+        <h3>{{ isAdmin ? '持倉（本人帳戶）' : '持倉' }}</h3>
+        <p v-if="isAdmin && !positions.length" class="muted">
+          admin 種子沒有持倉。要對到 AAPL 100，請改用 trader1 登入。
+        </p>
         <table>
           <thead><tr><th>Symbol</th><th>Qty</th><th>Avg</th></tr></thead>
           <tbody>
@@ -21,15 +29,35 @@
       </div>
       <div class="card">
         <div class="row" style="align-items:center">
-          <h3 style="margin:0;flex:2">交易歷史（分頁）</h3>
+          <h3 style="margin:0;flex:2">{{ isAdmin ? '交易歷史（全站監察）' : '交易歷史（我的訂單）' }}</h3>
           <button class="secondary" type="button" @click="prev" :disabled="page<=0">上一頁</button>
           <button class="secondary" type="button" @click="next" :disabled="page>=totalPages-1">下一頁</button>
         </div>
         <p style="color:#8b9cb3">page {{ page + 1 }} / {{ totalPages }} · total {{ total }}</p>
         <table>
-          <thead><tr><th>ID</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>Status</th></tr></thead>
+          <thead>
+            <tr>
+              <th>擁有者</th>
+              <th>ID</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr v-for="o in orders" :key="o.id">
+            <tr
+              v-for="o in orders"
+              :key="o.id"
+              :class="{ 'order-other': isAdmin && !isOwnOrder(o, auth.username) }"
+            >
+              <td>
+                <span class="owner-chip" :class="isOwnOrder(o, auth.username) ? 'mine' : 'other'">
+                  {{ orderOwnerName(o) }}
+                  <template v-if="isOwnOrder(o, auth.username)"> ·本人</template>
+                </span>
+              </td>
               <td>{{ o.id }}</td>
               <td>{{ o.symbol }}</td>
               <td>{{ o.side }}</td>
@@ -48,13 +76,17 @@
 <script setup>
 /**
  * 【職責】會員後台，彙整帳戶餘額、持倉及分頁交易歷史。
- * 【頁面角色】資產查閱頁；右側嵌 BackendStoryPanel。
- * 【與後端關係】從帳戶、持倉與訂單 API 讀取；故事面板與 Trade 共用 store。
+ * 【頁面角色】資產查閱頁；ADMIN 須把「本人帳戶」與「全站訂單」分開標示，避免 Demo 對錯帳。
+ * 【與後端關係】從帳戶、持倉與訂單 API 讀取；訂單列含 username 供擁有者對帳。
  */
 import { computed, onMounted, ref } from 'vue';
 import { fetchAccount, fetchOrders, fetchPositions } from '../api/client';
+import { useAuthStore } from '../stores/auth';
+import { isOwnOrder, orderOwnerName } from '../utils/orderOwner';
 import BackendStoryPanel from '../components/BackendStoryPanel.vue';
 
+const auth = useAuthStore();
+const isAdmin = computed(() => auth.isAdmin);
 const account = ref(null);
 const positions = ref([]);
 const orders = ref([]);

@@ -80,10 +80,7 @@ const pendingPath = ref(sessionStorage.getItem(NEXT_PATH_KEY) || '');
 const statusMsg = ref('');
 
 const loggedIn = computed(() => !!auth.isLoggedIn);
-const isAdmin = computed(() => {
-  const roles = auth.roles || [];
-  return roles.includes('ROLE_ADMIN') || roles.includes('ADMIN');
-});
+const isAdmin = computed(() => auth.isAdmin);
 
 const pendingLabel = computed(() => {
   if (!pendingPath.value || loggedIn.value) return '';

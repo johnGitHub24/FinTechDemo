@@ -324,10 +324,16 @@ public class TradingService {
         return requireUser(userId).getUsername();
     }
 
+    /**
+     * 【職責】Entity → 訂單回應，並帶下單者帳號供前台／後台對帳。
+     * 【技巧】帳號以 userId 查 users；找不到時降級 {@code user-{id}}，避免列表整頁失敗。
+     * 【概念】ADMIN 看全站單時，username 才能把「別人的成交」與「本人餘額」分開講。
+     */
     private OrderResponse toOrderResponse(OrderEntity e) {
         OrderResponse r = new OrderResponse();
         r.setId(e.getId());
         r.setUserId(e.getUserId());
+        r.setUsername(displayUsername(e.getUserId()));
         r.setClientOrderId(e.getClientOrderId());
         r.setSymbol(e.getSymbol());
         r.setSide(e.getSide());
@@ -336,6 +342,20 @@ public class TradingService {
         r.setStatus(e.getStatus());
         r.setCreatedAt(e.getCreatedAt());
         return r;
+    }
+
+    /**
+     * 【職責】把 userId 轉成 Demo 可唸的帳號。
+     * 【技巧】複用 {@link UserRepository#findById}，不另開批次查詢（本 Demo 分頁 ≤100）。
+     * 【概念】列表對帳靠帳號字串，不靠記住 userId=1 是 trader1。
+     */
+    private String displayUsername(Long userId) {
+        if (userId == null) {
+            return "";
+        }
+        return userRepository.findById(userId)
+                .map(UserEntity::getUsername)
+                .orElse("user-" + userId);
     }
 
     private OrderResponse withTrace(OrderResponse response, DemoTrace trace) {

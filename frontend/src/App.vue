@@ -63,7 +63,7 @@ const navMsg = ref('');
 const navMsgOk = ref(true);
 const navBusy = ref('');
 
-const isAdmin = computed(() => (auth.roles || []).includes('ROLE_ADMIN') || auth.roles?.includes('ADMIN'));
+const isAdmin = computed(() => auth.isAdmin);
 
 function logout() {
   auth.clearSession();

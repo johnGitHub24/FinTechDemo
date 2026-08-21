@@ -44,7 +44,8 @@ class OrderApiIntegrationTest extends OrderIntegrationTestBase {
                         .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("PENDING"))
-                .andExpect(jsonPath("$.symbol").value("AAPL"));
+                .andExpect(jsonPath("$.symbol").value("AAPL"))
+                .andExpect(jsonPath("$.username").value("trader1"));
     }
 
     /**
@@ -90,7 +91,8 @@ class OrderApiIntegrationTest extends OrderIntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.meta.page").value(0))
-                .andExpect(jsonPath("$.meta.size").value(10));
+                .andExpect(jsonPath("$.meta.size").value(10))
+                .andExpect(jsonPath("$.data[0].username").value("trader1"));
     }
 
     /**

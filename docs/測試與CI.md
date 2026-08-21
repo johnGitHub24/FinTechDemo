@@ -47,7 +47,7 @@ HTTP API Case 必須 Unit + Integration 同一 ID。
 | GW-004 | Unit+Int | Gateway 未超限放行 |
 | GW-005 | Unit+Int | Gateway 超限 429 |
 | STALE-001 | Unit+Int | 逾時 PENDING 取消 |
-| FLOW-001～007 | Unit+Int | 種子／RBAC／入口／成交／取消 |
+| FLOW-001～007 | Unit+Int | 種子／RBAC／入口／成交／取消；007＝ADMIN 全站列表含 username |
 | ORDER-BOOT-001 | Unit only | Order contextLoads |
 | ACCOUNT-BOOT-001 | Unit only | Account contextLoads |
 | RISK-BOOT-001 | Unit only | Risk contextLoads |

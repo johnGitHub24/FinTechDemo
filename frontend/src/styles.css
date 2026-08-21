@@ -1121,6 +1121,33 @@ a.demo-nav-btn.router-link-active {
   color: var(--warn);
   font-size: 0.84rem;
 }
+.warn-banner.demo-scope {
+  margin: 0 0 1rem;
+}
+tr.order-other td {
+  background: #fffbeb;
+}
+.owner-chip {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.owner-chip.mine {
+  background: var(--ok-bg);
+  border-color: #6ee7b7;
+  color: var(--ok);
+}
+.owner-chip.other {
+  background: var(--warn-bg);
+  border-color: #fcd34d;
+  color: var(--warn);
+}
 
 /* SPEC §3.1 本機前置 — 預設一行 */
 .docker-reminder {

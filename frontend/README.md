@@ -18,7 +18,8 @@ npm run dev
 ```
 
 → http://localhost:5173/login  
-帳號：`trader1` / `admin`，密碼：`password`
+帳號：`trader1` / `admin`，密碼：`password`  
+Demo：`trader1` 對帳（85000＋AAPL）；`admin` 看全站訂單，餘額／持倉仍是本人（100000、無持倉）。
 
 ## 頁面
 

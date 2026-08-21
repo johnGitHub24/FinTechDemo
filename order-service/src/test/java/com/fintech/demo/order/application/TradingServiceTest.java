@@ -113,6 +113,7 @@ class TradingServiceTest {
         OrderResponse resp = tradingService.create(1L, req);
         assertThat(resp.getStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(resp.getSymbol()).isEqualTo("AAPL");
+        assertThat(resp.getUsername()).isEqualTo("trader1");
         verify(auditLogRepository).save(any());
     }
 
@@ -226,7 +227,7 @@ class TradingServiceTest {
     }
 
     /**
-     * CASE ORDER-008：Given 分頁查詢 When list Then meta.page 與 size 正確。
+     * CASE ORDER-008：Given 分頁查詢 When list Then meta.page 與 size 正確，且列上有 username。
      * CASE FLOW-007：ADMIN／USER 列表皆走同一 list 契約。
      */
     @Test
@@ -240,6 +241,7 @@ class TradingServiceTest {
         row.setQuantity(1);
         row.setPrice(new BigDecimal("10.00"));
         row.setStatus(OrderStatus.PENDING);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(trader));
         when(orderRepository.findByUserIdAndOptionalStatus(eq(1L), isNull(), any()))
                 .thenReturn(new PageImpl<>(List.of(row), PageRequest.of(0, 10), 1));
 
@@ -247,6 +249,7 @@ class TradingServiceTest {
         assertThat(page.meta().page()).isEqualTo(0);
         assertThat(page.meta().size()).isEqualTo(10);
         assertThat(page.data()).hasSize(1);
+        assertThat(page.data().getFirst().getUsername()).isEqualTo("trader1");
     }
 
     /**

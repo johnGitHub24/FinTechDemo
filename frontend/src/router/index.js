@@ -41,10 +41,7 @@ router.beforeEach((to) => {
     return '/login';
   }
   if (to.meta.guest && loggedIn) return '/trade';
-  if (to.meta.admin) {
-    const roles = auth.roles || [];
-    if (!roles.includes('ROLE_ADMIN') && !roles.includes('ADMIN')) return '/portal';
-  }
+  if (to.meta.admin && !auth.isAdmin) return '/portal';
 });
 
 router.afterEach((to) => {

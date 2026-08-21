@@ -21,6 +21,8 @@ public class OrderResponse {
 
     private Long id;
     private Long userId;
+    /** 下單者帳號（ADMIN 全站列表用來對帳，避免誤當成登入者本人）。 */
+    private String username;
     private String clientOrderId;
     private String symbol;
     private OrderSide side;

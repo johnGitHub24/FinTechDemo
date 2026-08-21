@@ -166,8 +166,8 @@ flowchart TB
     <h3>2.4 種子帳號</h3>
     <table>
       <tr><th>帳號</th><th>密碼</th><th>角色</th><th>展示重點</th></tr>
-      <tr><td><code>trader1</code></td><td><code>password</code></td><td>USER</td><td>下單、自己的歷史／餘額／持倉</td></tr>
-      <tr><td><code>admin</code></td><td><code>password</code></td><td>ADMIN</td><td>全站訂單 + 審計頁</td></tr>
+      <tr><td><code>trader1</code></td><td><code>password</code></td><td>USER</td><td>對帳：85000 TWD＋AAPL 100；只看自己的單</td></tr>
+      <tr><td><code>admin</code></td><td><code>password</code></td><td>ADMIN</td><td>本人 100000、無持倉；歷史／前台是<strong>全站</strong>（AAPL 成交屬 trader1）+ 審計頁</td></tr>
     </table>
   </section>
 
@@ -178,7 +178,7 @@ flowchart TB
       <li>選 symbol（如 MSFT）、數量 1、下單 → 列表出現 PENDING</li>
       <li>點執行（若 UI 有）或用 Swagger <code>POST /api/orders/{id}/execute</code></li>
       <li>進 <b>/portal</b>：餘額減少、持倉／歷史更新</li>
-      <li>登出，用 <code>admin</code> 登入 → <b>/portal/audit</b> 看審計</li>
+      <li>登出，用 <code>admin</code> 登入 → <b>/portal</b>：講「餘額是本人 100000、歷史是全站」；AAPL 列擁有者是 trader1。再進 <b>/portal/audit</b></li>
       <li>（加分）未登入開瀏覽器隱私模式打 API → 401</li>
     </ol>
     <div class="mermaid">

@@ -219,13 +219,17 @@ class TradingFlowIntegrationTest {
     }
 
     /**
-     * CASE FLOW-007：Given 已授權管理者，When 查詢訂單列表，Then 可取得全體訂單。
+     * CASE FLOW-007：Given 已授權管理者，When 查詢訂單列表，Then 可取得全體訂單且含擁有者帳號。
      */
     @Test
     void FLOW_007_adminList_shouldSeeAllOrders() throws Exception {
         mockMvc.perform(get("/api/orders").header("Authorization", bearer(adminToken)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.meta.total").value(org.hamcrest.Matchers.greaterThanOrEqualTo(4)));
+                .andExpect(jsonPath("$.meta.total").value(org.hamcrest.Matchers.greaterThanOrEqualTo(4)))
+                .andExpect(jsonPath("$.data[?(@.symbol=='AAPL' && @.side=='BUY')].username")
+                        .value(org.hamcrest.Matchers.hasItem("trader1")))
+                .andExpect(jsonPath("$.data[?(@.symbol=='MSFT')].username")
+                        .value(org.hamcrest.Matchers.hasItem("admin")));
     }
 
     private static String bearer(String token) {

@@ -54,6 +54,10 @@ export function useAuthStore() {
     get roles() { return state.roles; },
     /** 布林 getter（勿回傳 ComputedRef，避免模板誤判為永遠 truthy） */
     get isLoggedIn() { return !!state.token; },
+    get isAdmin() {
+      const roles = state.roles || [];
+      return roles.includes('ROLE_ADMIN') || roles.includes('ADMIN');
+    },
     setSession,
     clearSession
   };

@@ -2,6 +2,10 @@
   <div class="story-layout">
     <div>
       <h1>交易前台</h1>
+      <p v-if="isAdmin" class="warn-banner demo-scope" role="note">
+        你是 ADMIN：訂單列表是<strong>全站</strong>（含 trader1）。
+        成交會記在<strong>下單者</strong>帳上；admin 本人餘額請到後台看（種子 100000、無持倉）。
+      </p>
       <div class="card">
         <h3>下單</h3>
         <div class="form-row">
@@ -36,7 +40,7 @@
 
       <div class="card">
         <div class="row" style="align-items:center">
-          <h3 style="margin:0;flex:2">進行中／我的訂單</h3>
+          <h3 style="margin:0;flex:2">{{ isAdmin ? '進行中（全站 PENDING）' : '進行中（我的 PENDING）' }}</h3>
           <button
             class="secondary"
             type="button"
@@ -46,12 +50,31 @@
           >{{ refreshing ? '刷新中…' : refreshDone ? '已更新' : '刷新' }}</button>
         </div>
         <p v-if="refreshHint" class="refresh-hint" :class="{ ok: refreshDone }" role="status">{{ refreshHint }}</p>
-        <table :class="{ 'table-refreshing': refreshing }">
+        <p v-if="!pendingOrders.length" class="muted">目前沒有待成交訂單</p>
+        <table v-else :class="{ 'table-refreshing': refreshing }">
           <thead>
-            <tr><th>ID</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>Status</th><th>操作</th></tr>
+            <tr>
+              <th>擁有者</th>
+              <th>ID</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>操作</th>
+            </tr>
           </thead>
           <tbody>
-            <tr v-for="o in orders" :key="o.id">
+            <tr
+              v-for="o in pendingOrders"
+              :key="o.id"
+              :class="{ 'order-other': isAdmin && !isOwnOrder(o, auth.username) }"
+            >
+              <td>
+                <span class="owner-chip" :class="isOwnOrder(o, auth.username) ? 'mine' : 'other'">
+                  {{ orderOwnerName(o) }}
+                </span>
+              </td>
               <td>{{ o.id }}</td>
               <td>{{ o.symbol }}</td>
               <td>{{ o.side }}</td>
@@ -59,9 +82,47 @@
               <td>{{ o.price }}</td>
               <td>{{ o.status }}</td>
               <td>
-                <button v-if="o.status==='PENDING'" type="button" @click="exec(o.id)">成交</button>
-                <button v-if="o.status==='PENDING'" class="danger" type="button" @click="cxl(o.id)">取消</button>
+                <button v-if="canAct(o)" type="button" @click="exec(o.id)">成交</button>
+                <button v-if="canAct(o)" class="danger" type="button" @click="cxl(o.id)">取消</button>
+                <span v-else class="muted">他人訂單</span>
               </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>{{ isAdmin ? '全站訂單（含結果）' : '我的訂單（含結果）' }}</h3>
+        <table :class="{ 'table-refreshing': refreshing }">
+          <thead>
+            <tr>
+              <th>擁有者</th>
+              <th>ID</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="o in orders"
+              :key="'all-' + o.id"
+              :class="{ 'order-other': isAdmin && !isOwnOrder(o, auth.username) }"
+            >
+              <td>
+                <span class="owner-chip" :class="isOwnOrder(o, auth.username) ? 'mine' : 'other'">
+                  {{ orderOwnerName(o) }}
+                  <template v-if="isOwnOrder(o, auth.username)"> ·本人</template>
+                </span>
+              </td>
+              <td>{{ o.id }}</td>
+              <td>{{ o.symbol }}</td>
+              <td>{{ o.side }}</td>
+              <td>{{ o.quantity }}</td>
+              <td>{{ o.price }}</td>
+              <td>{{ o.status }}</td>
             </tr>
           </tbody>
         </table>
@@ -76,16 +137,21 @@
 <script setup>
 /**
  * 【職責】交易前台，讓登入使用者建立、執行、取消並查看訂單。
- * 【頁面角色】核心下單操作頁；右側嵌 BackendStoryPanel；下方 Docker／Redis 指令教學。
- * 【與後端關係】透過市場與訂單 API 讀寫；demoTrace 由 client 寫入故事 store。
+ * 【頁面角色】核心下單操作頁；ADMIN 列表為全站，進行中只列 PENDING，避免與後台對錯帳。
+ * 【與後端關係】透過市場與訂單 API 讀寫；取消／成交僅能操作本人 PENDING。
  */
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { cancelOrder, createOrder, executeOrder, fetchOrders, fetchSymbols } from '../api/client';
+import { useAuthStore } from '../stores/auth';
+import { isOwnOrder, orderOwnerName } from '../utils/orderOwner';
 import BackendStoryPanel from '../components/BackendStoryPanel.vue';
 import DockerRedisGuide from '../components/DockerRedisGuide.vue';
 
+const auth = useAuthStore();
+const isAdmin = computed(() => auth.isAdmin);
 const symbols = ref([]);
 const orders = ref([]);
+const pendingOrders = computed(() => orders.value.filter((o) => o.status === 'PENDING'));
 const msg = ref('');
 const error = ref('');
 const refreshing = ref(false);
@@ -93,6 +159,13 @@ const refreshDone = ref(false);
 const refreshHint = ref('');
 const form = reactive({ symbol: 'AAPL', side: 'BUY', quantity: 1, price: 150 });
 let refreshDoneTimer = null;
+
+/**
+ * 【目的】ADMIN 雖可見他人訂單，成交／取消仍只能動本人的 PENDING。
+ */
+function canAct(order) {
+  return order.status === 'PENDING' && isOwnOrder(order, auth.username);
+}
 
 async function load() {
   const page = await fetchOrders({ page: 0, size: 20 });
@@ -110,7 +183,7 @@ async function onRefresh() {
   error.value = '';
   try {
     await load();
-    refreshHint.value = `已更新 · ${orders.value.length} 筆`;
+    refreshHint.value = `已更新 · 進行中 ${pendingOrders.value.length} 筆／全部 ${orders.value.length} 筆`;
     refreshDone.value = true;
     if (refreshDoneTimer) clearTimeout(refreshDoneTimer);
     refreshDoneTimer = setTimeout(() => {

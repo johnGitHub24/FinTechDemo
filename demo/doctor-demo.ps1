@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   診斷 FinTechDemo「localhost 時好時壞／拒絕連線」並可一鍵修復。

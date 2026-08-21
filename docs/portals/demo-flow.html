@@ -91,8 +91,9 @@ flowchart LR
   <section id="s2">
     <h2>2. 啟動優先順序（Loop Engineering）</h2>
     <p>
-      權威腳本：<code>scripts/ensure-demo-links.ps1</code> ·
-      診斷修復：<code>.\scripts\doctor-demo.ps1 -Fix</code> ·
+      權威腳本：<code>demo/ensure-demo-links.ps1</code> ·
+      診斷修復：<code>.\demo\doctor-demo.ps1 -Fix</code> ·
+      腳本目錄：<code>demo/README.md</code> ·
       雙擊：<code>開啟Demo.cmd</code>
     </p>
 
@@ -111,7 +112,7 @@ flowchart LR
       </tr>
       <tr>
         <td>P1</td>
-        <td><code>.\scripts\doctor-demo.ps1 -Fix</code></td>
+        <td><code>.\demo\doctor-demo.ps1 -Fix</code></td>
         <td>先診斷埠，再 ensure</td>
       </tr>
     </table>
@@ -156,7 +157,7 @@ flowchart TB
 
     <h3>2.3 你怎麼確認齊了？</h3>
     <ul>
-      <li>診斷修復：<code>.\scripts\doctor-demo.ps1 -Fix</code>（全綠才算可講）</li>
+      <li>診斷修復：<code>.\demo\doctor-demo.ps1 -Fix</code>（全綠才算可講）</li>
       <li>Console 橫幅：<code>【LOOP】…背景進行中</code> → 看 <code>logs/ensure-from-order.*.log</code></li>
       <li>約 1～3 分鐘後：Risk／Vite／Gateway／Grafana／Locust… 應變 <code>[UP]</code></li>
       <li>登入：<a href="http://localhost:5173/login" target="_blank">http://localhost:5173/login</a>（trader1／password）</li>

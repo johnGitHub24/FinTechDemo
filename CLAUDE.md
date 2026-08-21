@@ -9,7 +9,7 @@
 | 目錄 | 用途 | 其他專案？ |
 |------|------|------------|
 | `scripts/` | **Pure** — JDK 21 → check／bootRun | 可對齊 |
-| `demo/` | LOOP／pipeline／doctor | 否 |
+| `demo/` | LOOP／pipeline／doctor（腳本目錄見 `demo/README.md`） | 否 |
 | `docs/tools/` | 文件伺服／HTML | 否 |
 | 隱藏檔 `.*` | 本機 only | **不上 git**（僅 `.gitignore`） |
 

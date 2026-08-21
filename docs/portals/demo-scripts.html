@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FinTechDemo — demo/ 腳本教學指南</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg:#f5f7fa; --surface:#ffffff; --surface2:#eef2f6; --border:#d5dde6;
+      --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --ok:#047857; --warn:#b45309;
+      --code-bg:#e8eef3; --code-fg:#0f4c5c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+    .layout { display:flex; min-height:100vh; }
+    nav { width:280px; background:var(--surface); border-right:1px solid var(--border); padding:1.5rem 1rem; position:sticky; top:0; height:100vh; overflow-y:auto; flex-shrink:0; }
+    nav .brand { font-size:0.8rem; color:var(--accent); font-weight:600; }
+    nav h2 { font-size:0.7rem; text-transform:uppercase; color:var(--muted); margin:1.1rem 0 0.45rem; letter-spacing:0.06em; }
+    nav a { display:block; color:var(--muted); text-decoration:none; padding:0.35rem 0.75rem; border-radius:6px; font-size:0.85rem; }
+    nav a:hover { background:var(--surface2); color:var(--accent); }
+    main { flex:1; padding:2rem 2.5rem 4rem; max-width:980px; }
+    .hero { background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:2rem; }
+    .hero h1 { font-size:1.65rem; margin-bottom:0.5rem; }
+    .subtitle { color:var(--muted); }
+    .one-liner { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--ok); border-radius:10px; padding:1rem 1.25rem; margin:1rem 0 1.5rem; }
+    .warn-box { background:#fff8e6; border:1px solid #f0d78c; border-left:4px solid var(--warn); border-radius:10px; padding:1rem 1.25rem; margin:1rem 0; }
+    section { margin-bottom:2.5rem; scroll-margin-top:1rem; }
+    section h2 { font-size:1.25rem; border-bottom:2px solid var(--accent); padding-bottom:0.5rem; margin-bottom:1rem; }
+    section h3 { font-size:1rem; color:var(--accent); margin:1.25rem 0 0.5rem; }
+    p, li { color:#334155; margin-bottom:0.5rem; }
+    ul, ol { padding-left:1.25rem; margin-bottom:0.75rem; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:1rem 0; background:var(--surface); }
+    th, td { border:1px solid var(--border); padding:0.5rem 0.75rem; text-align:left; vertical-align:top; }
+    th { background:var(--surface2); color:var(--accent); }
+    code { background:var(--code-bg); padding:0.15rem 0.4rem; border-radius:4px; color:var(--code-fg); font-size:0.85em; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:1rem; overflow-x:auto; font-size:0.82rem; color:var(--code-fg); margin:1rem 0; white-space:pre-wrap; }
+    .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1rem; margin:1rem 0; }
+    .mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+    .mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }
+    .badge { display:inline-block; background:var(--surface2); border:1px solid var(--border); padding:0.2rem 0.65rem; border-radius:999px; font-size:0.78rem; color:var(--ok); margin-right:0.35rem; }
+    .tag { display:inline-block; font-size:0.72rem; padding:0.12rem 0.45rem; border-radius:4px; margin-right:0.25rem; }
+    .tag-must { background:#d1fae5; color:#065f46; }
+    .tag-opt { background:#e0e7ff; color:#3730a3; }
+    .tag-compat { background:#f3f4f6; color:#4b5563; }
+    .cmd-row { display:flex; gap:0.5rem; align-items:flex-start; flex-wrap:wrap; margin:0.35rem 0; }
+    .cmd-row code.cmd { flex:1; min-width:12rem; }
+    button.copy { margin:0; padding:0.25rem 0.55rem; font-size:0.78rem; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; color:var(--text); }
+    button.copy:hover { background:var(--surface2); }
+    .script-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1rem 1.15rem; margin:0.85rem 0; }
+    .script-card h4 { margin:0 0 0.4rem; font-size:0.95rem; }
+    .muted { color:var(--muted); font-size:0.88rem; }
+    @media (max-width:900px) { .layout{flex-direction:column;} nav{width:100%;height:auto;position:relative;max-height:40vh;} }
+  </style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="brand">FinTechDemo · demo/</div>
+  <h2>先看</h2>
+  <a href="#only4">只記 4 個</a>
+  <a href="#flow-pick">擇一關係圖</a>
+  <a href="#flow-local">本機啟動圖</a>
+  <a href="#flow-k8s">K8s 圖</a>
+  <a href="#flow-verify">驗證圖</a>
+  <a href="#naming">命名原則</a>
+  <h2>逐支說明</h2>
+  <a href="#cat-config">0 設定／函式庫</a>
+  <a href="#cat-local">1 本機啟動</a>
+  <a href="#cat-k8s">2 K8s</a>
+  <a href="#cat-verify">3 診斷／驗證</a>
+  <a href="#cat-tools">4 壓測／工具</a>
+  <h2>相關</h2>
+  <a href="demo-flow.html">Demo 運作流程</a>
+  <a href="../guides/k8s-complete-guide.html">K8s 完整教學</a>
+  <a href="../../demo/README.md">demo/README.md</a>
+  <a href="../index.html">文件入口</a>
+</nav>
+<main>
+  <header class="hero">
+    <h1>demo/ 腳本教學指南</h1>
+    <p class="subtitle">每支腳本做什麼、何時用、怎麼下指令。附 Mermaid 關係圖，避免「太多支分不清」。</p>
+    <p style="margin-top:0.75rem">
+      <span class="badge">權威目錄：demo/README.md</span>
+      <span class="badge">Pure 層：scripts/</span>
+    </p>
+  </header>
+
+  <div class="one-liner">
+    <b>一句話：</b>日常只要 <code>開啟Demo.cmd</code>（本機）或 <code>開啟K8sDemo.cmd</code>（叢集）擇一；壞了才 <code>doctor-demo -Fix</code>；推版前 <code>verify-pipeline</code>。
+  </div>
+
+  <div class="warn-box">
+    <b>不要：</b>兩個一鍵都開（雙棧搶 RAM）· 把 <code>npm run dev</code> 當成會起 K8s · 再寫第二套「一鍵就緒」長腳本。
+  </div>
+
+  <section id="only4">
+    <h2>只記這 4 個（夠用）</h2>
+    <table>
+      <thead><tr><th>你要做的事</th><th>指令</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>本機可成交 Demo</td>
+          <td><div class="cmd-row"><code class="cmd">.\開啟Demo.cmd</code><button type="button" class="copy" data-copy=".\開啟Demo.cmd">複製</button></div></td>
+          <td>＝ <code>ensure-demo-links -ForceRestart</code></td>
+        </tr>
+        <tr>
+          <td>K8s／kind 展演</td>
+          <td><div class="cmd-row"><code class="cmd">.\開啟K8sDemo.cmd</code><button type="button" class="copy" data-copy=".\開啟K8sDemo.cmd">複製</button></div></td>
+          <td>＝ <code>start-k8s-demo.ps1</code>（不起 Vite）</td>
+        </tr>
+        <tr>
+          <td>服務 DOWN／拒絕連線</td>
+          <td><div class="cmd-row"><code class="cmd">.\demo\doctor-demo.ps1 -Fix</code><button type="button" class="copy" data-copy=".\demo\doctor-demo.ps1 -Fix">複製</button></div></td>
+          <td>診斷後叫 ensure 拉起</td>
+        </tr>
+        <tr>
+          <td>推版前閘門</td>
+          <td><div class="cmd-row"><code class="cmd">.\demo\verify-pipeline.ps1</code><button type="button" class="copy" data-copy=".\demo\verify-pipeline.ps1">複製</button></div></td>
+          <td>check + compose + k8s YAML</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="flow-pick">
+    <h2>總覽：腳本怎麼串在一起</h2>
+    <p class="muted">雙擊入口 → 權威腳本 → 診斷／閘門／K8s。相容舊名只轉發，不另寫邏輯。</p>
+    <div class="mermaid">
+flowchart TB
+  subgraph entrances["專案根一鍵"]
+    CMD_L["開啟Demo.cmd"]
+    CMD_K["開啟K8sDemo.cmd"]
+  end
+
+  subgraph local["本機權威"]
+    ENSURE["ensure-demo-links.ps1"]
+    DOCTOR["doctor-demo.ps1"]
+  end
+
+  subgraph k8s["K8s"]
+    STARTK["start-k8s-demo.ps1"]
+    WALK["k8s-walkthrough.ps1"]
+    CHK["check-k8s.ps1"]
+  end
+
+  subgraph gate["驗證閘門"]
+    PIPE["verify-pipeline.ps1"]
+    SHORT["verify-demo-shortcuts.ps1"]
+    SMOKE["smoke-distributed.ps1"]
+    DOCLINK["check-docs-links.ps1"]
+  end
+
+  subgraph compat["相容舊名 · 薄轉發"]
+    READY["start-demo-ready.ps1"]
+    START["start-demo.ps1"]
+    GUIDE["start-guide.ps1"]
+  end
+
+  subgraph lib["設定庫"]
+    PROP["platform-run.properties"]
+    ENV["platform-env.ps1"]
+  end
+
+  CMD_L --> ENSURE
+  CMD_K --> STARTK
+  DOCTOR -->|"-Fix"| ENSURE
+  READY --> ENSURE
+  START --> ENSURE
+  GUIDE -.->|只印說明| CMD_L
+  ENV --> ENSURE
+  ENV --> STARTK
+  ENV --> DOCTOR
+  PROP --> ENV
+  STARTK --> WALK
+  CHK -.->|只驗 YAML| PIPE
+  PIPE --> CHK
+  SHORT -.->|DOWN 時建議| ENSURE
+  ENSURE -.->|可選| SMOKE
+    </div>
+  </section>
+
+  <section id="flow-local">
+    <h2>本機啟動流程</h2>
+    <div class="mermaid">
+flowchart LR
+  A["開啟Demo.cmd<br/>或 IntelliJ Order"] --> B["ensure-demo-links"]
+  B --> C["Order Risk Vite"]
+  C --> D["Gateway Account Job Docs…"]
+  D --> E["http://localhost:5173/login"]
+  F["doctor -Fix"] -->|缺服務| B
+  G["DemoStackBootstrap<br/>-FromOrder"] --> B
+    </div>
+    <p class="muted">Order 就緒後可自動跑 ensure（背景）；手動一鍵則雙擊 <code>開啟Demo.cmd</code>。</p>
+  </section>
+
+  <section id="flow-k8s">
+    <h2>K8s 流程（與本機擇一）</h2>
+    <div class="mermaid">
+flowchart TB
+  D["Docker Desktop Ready"] --> K["開啟K8sDemo.cmd<br/>start-k8s-demo.ps1"]
+  K --> L["kind + build/load + apply"]
+  L --> P["4 Pod Running"]
+  P --> W["k8s-walkthrough.ps1<br/>三層檢查"]
+  P --> PF["port-forward :18080"]
+  PF --> V["Vite VITE_API_TARGET=18080"]
+  C["check-k8s.ps1"] -.->|不連叢集| Y["kustomize OK"]
+    </div>
+    <p class="muted">K8sDemo <b>不起</b> Vite。前台步驟見藍圖 <code>#k8s-intellij</code> §⓪。</p>
+  </section>
+
+  <section id="flow-verify">
+    <h2>診斷／驗證怎麼選</h2>
+    <div class="mermaid">
+flowchart TD
+  Q{"你的目的？"} --> Q1["服務拒絕連線"]
+  Q --> Q2["推版前綠燈"]
+  Q --> Q3["快捷 URL 是否通"]
+  Q --> Q4["Kafka／分散式煙霧"]
+  Q --> Q5["文件壞連結"]
+  Q1 --> D["doctor-demo<br/>可加 -Fix"]
+  Q2 --> V["verify-pipeline"]
+  Q3 --> S["verify-demo-shortcuts"]
+  Q4 --> M["smoke-distributed"]
+  Q5 --> C["check-docs-links"]
+    </div>
+  </section>
+
+  <section id="naming">
+    <h2>命名原則（看檔名就知道類）</h2>
+    <table>
+      <thead><tr><th>前綴</th><th>類別</th><th>做什麼</th></tr></thead>
+      <tbody>
+        <tr><td><code>platform-*</code></td><td>設定／函式庫</td><td>埠、K8s、kubeconfig</td></tr>
+        <tr><td><code>ensure-*</code>／<code>開啟Demo.cmd</code></td><td>本機啟動</td><td>拉起 bootRun／Vite…</td></tr>
+        <tr><td><code>start-k8s-*</code>／<code>k8s-*</code>／<code>check-k8s</code></td><td>K8s</td><td>部署／walkthrough／YAML</td></tr>
+        <tr><td><code>doctor-*</code>／<code>verify-*</code>／<code>smoke-*</code>／<code>check-*</code></td><td>診斷／驗證</td><td>探針、閘門</td></tr>
+        <tr><td><code>run-*</code></td><td>壓測</td><td>Locust</td></tr>
+        <tr><td><code>start-demo*</code>／<code>start-guide</code></td><td>相容舊名</td><td>薄轉發，勿再擴功能</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="cat-config">
+    <h2>0. 設定／函式庫 <span class="tag tag-must">必須</span></h2>
+
+    <div class="script-card" id="platform-run">
+      <h4><code>platform-run.properties</code></h4>
+      <p><b>用途：</b>Demo 埠號、K8s 叢集名、<code>ENABLE_K8S</code>、<code>DOCKER_BUILD_PLATFORM</code> 的<strong>單一真相</strong>。</p>
+      <p class="muted">怎麼用：用編輯器改數值即可；腳本經 <code>platform-env.ps1</code> 讀取。改埠只改這裡。</p>
+    </div>
+
+    <div class="script-card" id="platform-env">
+      <h4><code>platform-env.ps1</code></h4>
+      <p><b>用途：</b>函式庫。其他腳本 <code>. platform-env.ps1</code> 載入上面 properties。</p>
+      <p class="muted">怎麼用：<strong>不要單獨當一鍵執行</strong>；被 ensure／k8s／doctor 引用。</p>
+    </div>
+  </section>
+
+  <section id="cat-local">
+    <h2>1. 本機啟動 <span class="tag tag-must">必須</span></h2>
+
+    <div class="script-card">
+      <h4><code>ensure-demo-links.ps1</code> <span class="tag tag-must">權威實作</span></h4>
+      <p><b>用途：</b>LOOP 拉起 Order／Risk／Vite／Gateway／Account／Job／Docs…；已 UP 則保留。</p>
+      <p><b>誰呼叫：</b><code>開啟Demo.cmd</code>、<code>DemoStackBootstrap -FromOrder</code>、<code>doctor -Fix</code>。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\ensure-demo-links.ps1</code><button type="button" class="copy" data-copy=".\demo\ensure-demo-links.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\ensure-demo-links.ps1 -ForceRestart</code><button type="button" class="copy" data-copy=".\demo\ensure-demo-links.ps1 -ForceRestart">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\ensure-demo-links.ps1 -SkipDocker -SkipLocust</code><button type="button" class="copy" data-copy=".\demo\ensure-demo-links.ps1 -SkipDocker -SkipLocust">複製</button></div>
+      <p class="muted">常用參數：<code>-ForceRestart</code> 重啟 Order／Account；<code>-FromOrder</code> 由 Java 背景觸發；<code>-SkipDocker</code>／<code>-SkipLocust</code> 省 RAM。</p>
+    </div>
+
+    <div class="script-card">
+      <h4><code>start-demo-ready.ps1</code> <span class="tag tag-compat">相容</span></h4>
+      <p><b>用途：</b>舊一鍵就緒 → <strong>轉發</strong> ensure。請改用 <code>開啟Demo.cmd</code>。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\start-demo-ready.ps1 -ForceClean</code><button type="button" class="copy" data-copy=".\demo\start-demo-ready.ps1 -ForceClean">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>start-demo.ps1</code> <span class="tag tag-compat">相容</span></h4>
+      <p><b>用途：</b>舊最小啟動 → 轉發 ensure，或 <code>-Minimal</code> 只印指引。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\start-demo.ps1 -Minimal</code><button type="button" class="copy" data-copy=".\demo\start-demo.ps1 -Minimal">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>start-guide.ps1</code> <span class="tag tag-compat">相容</span></h4>
+      <p><b>用途：</b>印出四個入口說明（本機／K8s／doctor／pipeline）。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\start-guide.ps1</code><button type="button" class="copy" data-copy=".\demo\start-guide.ps1">複製</button></div>
+    </div>
+  </section>
+
+  <section id="cat-k8s">
+    <h2>2. K8s <span class="tag tag-must">與本機擇一</span></h2>
+
+    <div class="script-card">
+      <h4><code>start-k8s-demo.ps1</code> <span class="tag tag-must">權威</span></h4>
+      <p><b>用途：</b>kind 叢集 → build／load 映像 → apply → 等 Pod Ready。</p>
+      <div class="cmd-row"><code class="cmd">.\開啟K8sDemo.cmd</code><button type="button" class="copy" data-copy=".\開啟K8sDemo.cmd">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\start-k8s-demo.ps1 -RecreateCluster</code><button type="button" class="copy" data-copy=".\demo\start-k8s-demo.ps1 -RecreateCluster">複製</button></div>
+      <p class="muted">需 Docker Desktop Ready。前端需另 port-forward + Vite。</p>
+    </div>
+
+    <div class="script-card">
+      <h4><code>k8s-walkthrough.ps1</code></h4>
+      <p><b>用途：</b>檢查 Desktop Images ↔ kind 節點 ↔ Pods 三層是否對齊。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\k8s-walkthrough.ps1</code><button type="button" class="copy" data-copy=".\demo\k8s-walkthrough.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\k8s-walkthrough.ps1 -Fix</code><button type="button" class="copy" data-copy=".\demo\k8s-walkthrough.ps1 -Fix">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>check-k8s.ps1</code></h4>
+      <p><b>用途：</b>只跑 <code>kubectl kustomize</code> 驗 YAML，<strong>不連</strong>叢集、不建 kind。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\check-k8s.ps1</code><button type="button" class="copy" data-copy=".\demo\check-k8s.ps1">複製</button></div>
+    </div>
+  </section>
+
+  <section id="cat-verify">
+    <h2>3. 診斷／驗證 <span class="tag tag-must">必須</span></h2>
+
+    <div class="script-card">
+      <h4><code>doctor-demo.ps1</code></h4>
+      <p><b>用途：</b>看哪些埠 DOWN、給修復建議；<code>-Fix</code> 呼叫 ensure。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\doctor-demo.ps1</code><button type="button" class="copy" data-copy=".\demo\doctor-demo.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\doctor-demo.ps1 -Fix -OpenBrowser</code><button type="button" class="copy" data-copy=".\demo\doctor-demo.ps1 -Fix -OpenBrowser">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\doctor-demo.ps1 -FrontendOnly</code><button type="button" class="copy" data-copy=".\demo\doctor-demo.ps1 -FrontendOnly">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>verify-demo-shortcuts.ps1</code></h4>
+      <p><b>用途：</b>只探測 Demo 快捷 URL（Vite／Swagger／Grafana…），<strong>不啟動</strong>服務。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\verify-demo-shortcuts.ps1</code><button type="button" class="copy" data-copy=".\demo\verify-demo-shortcuts.ps1">複製</button></div>
+      <p class="muted">有 FAIL → 先 <code>開啟Demo.cmd</code> 或 <code>doctor -Fix</code>。</p>
+    </div>
+
+    <div class="script-card">
+      <h4><code>verify-pipeline.ps1</code></h4>
+      <p><b>用途：</b>推版閘門：<code>gradlew check</code> + compose config + k8s overlay。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\verify-pipeline.ps1</code><button type="button" class="copy" data-copy=".\demo\verify-pipeline.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\verify-pipeline.ps1 -Up -Smoke</code><button type="button" class="copy" data-copy=".\demo\verify-pipeline.ps1 -Up -Smoke">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>smoke-distributed.ps1</code></h4>
+      <p><b>用途：</b>Compose 起 Kafka／Redis 後，探測並可手測 login→下單→execute。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\smoke-distributed.ps1</code><button type="button" class="copy" data-copy=".\demo\smoke-distributed.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\smoke-distributed.ps1 -SkipCompose</code><button type="button" class="copy" data-copy=".\demo\smoke-distributed.ps1 -SkipCompose">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>check-docs-links.ps1</code></h4>
+      <p><b>用途：</b>掃描 docs HTML 本地連結是否壞掉（不含 javadoc）。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\check-docs-links.ps1</code><button type="button" class="copy" data-copy=".\demo\check-docs-links.ps1">複製</button></div>
+    </div>
+  </section>
+
+  <section id="cat-tools">
+    <h2>4. 壓測／可選工具 <span class="tag tag-opt">按需</span></h2>
+
+    <div class="script-card">
+      <h4><code>run-loadtest.ps1</code></h4>
+      <p><b>用途：</b>Locust 壓測（baseline→Order :8081；fullflow→Gateway :8080）。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\run-loadtest.ps1</code><button type="button" class="copy" data-copy=".\demo\run-loadtest.ps1">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\run-loadtest.ps1 -Scenario fullflow -HostUrl http://localhost:8080</code><button type="button" class="copy" data-copy=".\demo\run-loadtest.ps1 -Scenario fullflow -HostUrl http://localhost:8080">複製</button></div>
+      <div class="cmd-row"><code class="cmd">.\demo\run-loadtest.ps1 -WebUi</code><button type="button" class="copy" data-copy=".\demo\run-loadtest.ps1 -WebUi">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>start-monitoring-local.ps1</code></h4>
+      <p><b>用途：</b>無 Docker 時本機起 Prometheus :9090／Grafana :3000。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\start-monitoring-local.ps1</code><button type="button" class="copy" data-copy=".\demo\start-monitoring-local.ps1">複製</button></div>
+    </div>
+
+    <div class="script-card">
+      <h4><code>export-blueprint-diagrams.ps1</code></h4>
+      <p><b>用途：</b>把藍圖 Mermaid 匯出成 PNG／SVG（簡報用）。</p>
+      <div class="cmd-row"><code class="cmd">.\demo\export-blueprint-diagrams.ps1</code><button type="button" class="copy" data-copy=".\demo\export-blueprint-diagrams.ps1">複製</button></div>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>為什麼不能再砍成一支？</h2>
+    <table>
+      <thead><tr><th>組合</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>ensure + doctor + verify-pipeline</td><td>啟動／修／閘門三種職責</td></tr>
+        <tr><td>start-k8s + walkthrough + check-k8s</td><td>部署／三層檢查／純 YAML 三層級</td></tr>
+        <tr><td>其餘小腳本</td><td>場景不同、體積小、按需用</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="muted" style="margin-top:2rem">
+    文字權威：<a href="../../demo/README.md"><code>demo/README.md</code></a> ·
+    本頁：<code>docs/portals/demo-scripts.html</code> ·
+    開啟：<code>.\docs\tools\serve-docs.ps1</code> →
+    <a href="http://127.0.0.1:5500/docs/portals/demo-scripts.html">http://127.0.0.1:5500/docs/portals/demo-scripts.html</a>
+  </p>
+</main>
+</div>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, curve: 'basis' }
+  });
+  document.querySelectorAll('button.copy').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.getAttribute('data-copy') || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const old = btn.textContent;
+        btn.textContent = '已複製';
+        setTimeout(() => { btn.textContent = old; }, 1200);
+      } catch (_) {
+        btn.textContent = '失敗';
+      }
+    });
+  });
+</script>
+</body>
+</html>

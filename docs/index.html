@@ -88,7 +88,7 @@
     <h1>FinTechDemo — 統一學習入口</h1>
     <p class="sub">
       一個入口看齊：應用／Compose／K8s 設定、教學 HTML、架構文件。API 請走 Swagger。
-      請開 <code>http://127.0.0.1:5500/docs/index.html</code>（用 <code>.\scripts\serve-docs.ps1</code>；支援無 <code>.html</code> 副檔名）。
+      請開 <code>http://127.0.0.1:5500/docs/index.html</code>（用 <code>.\docs\tools\serve-docs.ps1</code>；支援無 <code>.html</code> 副檔名）。
     </p>
     <p class="links">
       <!-- 相對路徑：掛在 /docs/index.html 下；serve 亦支援無 .html 的絕對路徑 -->
@@ -122,7 +122,7 @@
           <div class="gate">
             <strong>正確開啟方式</strong>（擇一）：
             <ol style="margin:0.4rem 0 0 1.1rem;">
-              <li>專案根執行 <code>.\scripts\serve-docs.ps1</code></li>
+              <li>專案根執行 <code>.\docs\tools\serve-docs.ps1</code></li>
               <li>瀏覽器開 <code>http://127.0.0.1:5500/docs/index.html</code>（務必含 <code>index.html</code>）</li>
             </ol>
           </div>
@@ -146,7 +146,7 @@
           <div class="gate warn" style="margin-top:0.75rem">
             <strong>404 常見原因</strong>：開了舊的 <code>python -m http.server</code>（不支援無副檔名），
             或開成 <code>/docs</code> 沒有 <code>index.html</code>。
-            請重跑 <code>.\scripts\serve-docs.ps1</code>，再開 <code>/docs/index.html</code>。
+            請重跑 <code>.\docs\tools\serve-docs.ps1</code>，再開 <code>/docs/index.html</code>。
           </div>
         </div>
       </div>
@@ -199,7 +199,7 @@
       { id: "k-readme", group: "Compose／K8s", title: "deploy README", kind: "link", path: "/deploy/README.md", badge: "link" },
       { id: "k-platform", group: "Compose／K8s", title: "demo/platform-run.properties", kind: "viewer", path: "/demo/platform-run.properties", badge: "yaml", note: "Run Anywhere 埠／K8s／DOCKER_BUILD_PLATFORM" },
       { id: "k-walk", group: "Compose／K8s", title: "demo/k8s-walkthrough.ps1", kind: "viewer", path: "/demo/k8s-walkthrough.ps1", badge: "link", note: "三層檢查腳本" },
-      { id: "k-start", group: "Compose／K8s", title: "demo/start-k8s-demo.ps1", kind: "viewer", path: "/demo/start-k8s-demo.ps1", badge: "link", note: "一鍵 K8s Demo" },
+      { id: "k-start", group: "Compose／K8s", title: "開啟K8sDemo.cmd", kind: "viewer", path: "/開啟K8sDemo.cmd", badge: "link", note: "kind 一鍵（＝start-k8s-demo.ps1；與開啟Demo.cmd擇一）" },
       { id: "k-blueprint", group: "Compose／K8s", title: "藍圖 SPA · Docker↔K8s", kind: "link", path: "http://localhost:5173/blueprint#k8s-intellij", badge: "link", note: "需 npm run dev" },
       { id: "k-docmap", group: "Compose／K8s", title: "文件完整度", kind: "link", path: "/docs/文件完整度.md", badge: "link" },
       { id: "k-readme-html", group: "Compose／K8s", title: "deploy README（HTML）", kind: "link", path: "/docs/deploy/deploy-readme.html", badge: "link" },
@@ -334,7 +334,7 @@
         .catch(function (err) {
           bodyEl.innerHTML =
             '<div class="gate bad"><strong>無法載入檔案</strong>（' + escapeHtml(String(err.message || err)) + "）</div>" +
-            '<div class="gate warn">請在專案根執行 <code>.\\scripts\\serve-docs.ps1</code>，' +
+            '<div class="gate warn">請在專案根執行 <code>.\\docs\\tools\\serve-docs.ps1</code>，' +
             "再開 <code>http://127.0.0.1:5500/docs/index.html</code>。</div>";
         });
     }

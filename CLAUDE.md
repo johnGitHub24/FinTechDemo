@@ -20,7 +20,7 @@
 - Frontend：Vue 3；DB：H2
 - **Compose／Kafka／kind 前先開 Docker Desktop**（SPEC §3.1）
 - Pure：`.\scripts\check.ps1` → `.\gradlew.bat :order-service:bootRun`
-- Demo：`.\開啟Demo.cmd`／`.\demo\ensure-demo-links.ps1`
+- Demo：`.\開啟Demo.cmd`（本機）／`.\開啟K8sDemo.cmd`（kind；擇一）
 - optional-frontend：yes
 
 ## 本專案專屬

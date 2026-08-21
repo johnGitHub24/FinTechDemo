@@ -88,44 +88,42 @@ main { max-width:960px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <hr>
 
 <h1 id="s1">1. 三條 Demo 路線（先選一條，勿混）</h1>
-<div class="gate gate-warn"><strong>常見搞混：</strong><code>npm run dev</code> 只起前端；<code>OrderServiceApplication</code> 只起本機 JVM；<code>start-k8s-demo.ps1</code> 只起叢集 Pod。<strong>三者互不會自動帶起對方。</strong></div>
+<div class="gate gate-warn"><strong>常見搞混：</strong><code>開啟Demo.cmd</code>＝本機；<code>開啟K8sDemo.cmd</code>＝kind Pod。<strong>擇一，勿兩個都開。</strong> Vite／npm <strong>不會</strong>起叢集。</div>
 
 <div class="path-card">
-<strong>路線 A — 日常業務 Demo（IntelliJ / 開啟Demo.cmd）</strong>
-<pre><code>IntelliJ OrderServiceApplication  →  localhost:8081
-npm run dev                       →  :5173，proxy /api → :8081
-瀏覽器 /login → 下單成交</code></pre>
-<p>不需要 K8s。Order 就緒後可能背景跑 <code>ensure-demo-links</code> 補 Risk、Vite，<strong>仍不是 K8s</strong>。</p>
+<strong>路線 A — 日常業務 Demo（本機）</strong>
+<pre><code>.\開啟Demo.cmd
+# → :8080–8084 + Vite :5173
+瀏覽器 http://localhost:5173/login → 下單成交</code></pre>
+<p>不需要 K8s。Order 就緒後可能背景補 Risk／Vite，<strong>仍不是 K8s</strong>。</p>
 </div>
 
 <div class="path-card">
 <strong>路線 B — 純 K8s 部署證明（面試加分）</strong>
-<pre><code>.\demo\start-k8s-demo.ps1
+<pre><code>.\開啟K8sDemo.cmd
 .\demo\k8s-walkthrough.ps1
 kubectl -n fintech-demo get pods   # 4× Running
-kubectl port-forward svc/gateway 18080:8080
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
 curl http://localhost:18080/actuator/health</code></pre>
-<p>四服務在 <strong>叢集內</strong>；本機 <code>:8081</code> 預設<strong>沒有</strong>服務，除非 port-forward。</p>
+<p>四服務在 <strong>叢集內</strong>；本機 <code>:8080</code> 預設<strong>沒有</strong> Gateway，除非 port-forward。腳本<strong>不起</strong> Vite。</p>
 </div>
 
 <div class="path-card">
-<strong>路線 C — K8s 後端 + 前端一起</strong>
-<pre><code># 視窗1：K8s 已 Running 後
-$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
-kubectl -n fintech-demo port-forward svc/order-service 8081:8081
-# 或 gateway → 18080 且前端 VITE_API_TARGET=http://localhost:18080
+<strong>路線 C — K8s 後端 + 前台一起</strong>
+<pre><code># 視窗1：K8s 已 Running
+kubectl -n fintech-demo port-forward svc/gateway 18080:8080
 
 # 視窗2
-cd frontend; npm run dev</code></pre>
-<p>前端預設 proxy 目標 <code>http://localhost:8081</code>（見 <code>frontend/vite.config.js</code>）。</p>
+$env:VITE_API_TARGET='http://localhost:18080'; cd frontend; npm run dev
+# 瀏覽器 :5173 — /api 打叢集，勿與本機 開啟Demo 混用</code></pre>
 </div>
 
 <table>
-<thead><tr><th>你啟動的</th><th>起了什麼</th><th>會順便起 K8s？</th></tr></thead>
+<thead><tr><th>你啟動的</th><th>起了什麼</th><th>會順便起對方？</th></tr></thead>
 <tbody>
-<tr><td><code>npm run dev</code></td><td>Vite :5173</td><td>否</td></tr>
-<tr><td>IntelliJ <code>OrderServiceApplication</code></td><td>本機 JVM :8081</td><td>否</td></tr>
-<tr><td><code>start-k8s-demo.ps1</code></td><td>kind 內 4 Pod</td><td>否（不含前端）</td></tr>
+<tr><td><code>開啟Demo.cmd</code></td><td>本機 JVM＋Vite</td><td>否（不起 kind）</td></tr>
+<tr><td><code>開啟K8sDemo.cmd</code></td><td>kind 內 4 Pod</td><td>否（不起 Vite）</td></tr>
+<tr><td><code>npm run dev</code></td><td>僅 Vite :5173</td><td>否</td></tr>
 </tbody></table>
 
 <hr>
@@ -153,7 +151,7 @@ flowchart TB
 <tr><td>context</td><td><code>docker-desktop</code></td><td><code>kind-trading-local</code></td></tr>
 <tr><td>節點</td><td><code>desktop-control-plane</code></td><td><code>trading-local-control-plane</code></td></tr>
 <tr><td>namespace</td><td>系統用</td><td><strong><code>fintech-demo</code></strong></td></tr>
-<tr><td>Settings 能設定？</td><td>Enable / Reset / 版本</td><td><strong>否</strong> — 用 <code>demo/start-k8s-demo.ps1</code></td></tr>
+<tr><td>Settings 能設定？</td><td>Enable / Reset / 版本</td><td><strong>否</strong> — 用 <code>開啟K8sDemo.cmd</code></td></tr>
 </tbody></table>
 
 <blockquote><strong>一句話：</strong>Kubernetes Panel = A 棟接待處；fintech-demo 四 Pod = B 棟；<code>walkthrough</code> 全 OK 但 Panel 沒 namespace = <strong>正常</strong>。</blockquote>
@@ -267,7 +265,7 @@ flowchart LR
 <ul>
 <li>與 B 棟 <strong>都叫 kind 技術</strong>，但是<strong>不同 cluster 名稱</strong></li>
 <li>Settings <strong>不會</strong>列出 <code>fintech-demo</code> namespace</li>
-<li>只做 FinTechDemo K8s Demo 可<strong>關閉</strong> Enable，只留 Docker 引擎 + <code>start-k8s-demo.ps1</code>（省 RAM）</li>
+<li>只做 FinTechDemo K8s Demo 可<strong>關閉</strong> Enable，只留 Docker 引擎 + <code>開啟K8sDemo.cmd</code>（省 RAM）</li>
 <li>「Waiting for node to be ready」久 → 加 Memory、等 10～15 分鐘、或 Reset cluster</li>
 </ul>
 
@@ -289,7 +287,7 @@ flowchart LR
 <tbody>
 <tr><td>平台常數</td><td><code>demo/platform-run.properties</code></td></tr>
 <tr><td>載入設定</td><td><code>demo/platform-env.ps1</code></td></tr>
-<tr><td>一鍵 K8s Demo</td><td><code>demo/start-k8s-demo.ps1</code></td></tr>
+<tr><td>一鍵 K8s Demo</td><td><code>開啟K8sDemo.cmd</code>（＝<code>demo/start-k8s-demo.ps1</code>）</td></tr>
 <tr><td>三層 walkthrough</td><td><code>demo/k8s-walkthrough.ps1</code></td></tr>
 <tr><td>kubeconfig</td><td><code>demo/.tools/kubeconfig-kind-trading-local</code></td></tr>
 <tr><td>建映像</td><td><code>Dockerfile.k8s-local</code></td></tr>
@@ -319,7 +317,7 @@ flowchart LR
 <ul class="checklist">
 <li>Docker Desktop <strong>Running</strong></li>
 <li><code>.\scripts\check.ps1</code> 綠燈</li>
-<li><code>.\demo\start-k8s-demo.ps1</code> → DEMO OK</li>
+<li><code>.\開啟K8sDemo.cmd</code> → DEMO OK</li>
 <li><code>.\demo\k8s-walkthrough.ps1</code> Step 1～3 全 OK</li>
 <li>4 Pod <code>Running 1/1</code></li>
 <li>port-forward health <code>UP</code>（可選）</li>
@@ -413,30 +411,14 @@ flowchart LR
 
 <hr>
 
-<h1 id="s13">13. ENABLE_K8S：前端啟動時要不要順便起 K8s</h1>
-<div class="gate gate-warn"><strong>Vue / npm / YAML 都不能啟動 kind。</strong>瀏覽器沒有權限建叢集。開關必須寫在 <strong>Demo 腳本讀的 properties</strong>，不是前端 yaml。</div>
-<p>已加旗標：<code>demo/platform-run.properties</code></p>
-<pre><code># false＝只 local（IntelliJ Order + Vite）
+<h1 id="s13">13. ENABLE_K8S（進階；日常請用兩個 .cmd 擇一）</h1>
+<div class="gate gate-warn"><strong>推薦：</strong>本機 <code>開啟Demo.cmd</code> · 叢集 <code>開啟K8sDemo.cmd</code>。<strong>勿雙棧。</strong> Vue／npm 不能起 kind。</div>
+<p>旗標在 <code>demo/platform-run.properties</code>（預設 <code>false</code>）。<code>true</code>＝本機 ensure <strong>再順便</strong>跑 kind（吃 RAM，且前端仍預設打本機）。詳見 <a href="../demo/README.md">demo/README.md</a> · 藍圖 <code>#k8s-intellij</code> §⓪。</p>
+<pre><code># 日常
 ENABLE_K8S=false
-# true＝開啟Demo.cmd 在本機服務之後再跑 start-k8s-demo.ps1
-ENABLE_K8S=true
+# 進階／實驗（仍建議直接開 開啟K8sDemo.cmd）
+# ENABLE_K8S=true
 </code></pre>
-<table>
-<thead><tr><th>值</th><th>開啟Demo.cmd 做什麼</th></tr></thead>
-<tbody>
-<tr><td><code>false</code>（預設）</td><td>Order／Risk／Vite 本機 — <strong>不</strong>起 kind</td></tr>
-<tr><td><code>true</code></td><td>本機照跑，<strong>再加上</strong> kind <code>fintech-demo</code> 四 Pod</td></tr>
-</tbody></table>
-<p>單次覆蓋（不改檔）：</p>
-<pre><code>.\demo\ensure-demo-links.ps1 -EnableK8s
-.\demo\ensure-demo-links.ps1 -SkipK8s
-</code></pre>
-<p><strong>true 之後前端仍預設連本機 :8081</strong>（路線 A）。要連 Pod：先停 bootRun，再</p>
-<pre><code>$env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
-kubectl -n fintech-demo port-forward svc/order-service 8081:8081
-</code></pre>
-<p>或 gateway <code>18080:8080</code> + <code>$env:VITE_API_TARGET='http://localhost:18080'</code> 再開 <code>npm run dev</code>。</p>
-<p>RAM：本機 JVM + kind 節點會搶記憶體；日常請保持 <code>ENABLE_K8S=false</code>。</p>
 
     </article>
   </main>

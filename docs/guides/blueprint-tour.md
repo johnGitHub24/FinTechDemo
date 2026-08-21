@@ -89,14 +89,10 @@ docker build -t fintech-demo/frontend:local ./frontend
 docker compose --profile full up -d frontend
 ```
 
-**ENABLE_K8S**（`demo/platform-run.properties`，非 Vue yaml）：
+**一鍵入口（擇一）**：`開啟Demo.cmd`＝本機 · `開啟K8sDemo.cmd`＝kind。  
+`ENABLE_K8S=true` 為進階雙棧，日常保持 `false`（見 `demo/README.md` · 藍圖 `#k8s-intellij` §⓪）。
 
-| 值 | 效果 |
-|----|------|
-| `false`（預設） | 只本機 Order／Risk／Vite |
-| `true` | `開啟Demo.cmd` 再跑 `start-k8s-demo.ps1` |
-
-詳述：[k8s-complete-guide.html §12～§13](./k8s-complete-guide.html#s12)
+詳述：[k8s-complete-guide.html §1／§13](./k8s-complete-guide.html#s1)
 
 ---
 
@@ -243,7 +239,7 @@ kubectl -n fintech-demo get pods
 
 | | 日常 bootRun | K8s kind |
 |--|--------------|----------|
-| 入口 | `開啟Demo.cmd` | `start-k8s-demo.ps1` |
+| 入口 | `開啟Demo.cmd` | `開啟K8sDemo.cmd` |
 | 前端 | :5173 直打 Order | port-forward Gateway + Vite |
 | 給誰看 | 產品、RBAC、成交 | 部署、映像、Pod |
 | 藍圖章節 | `#flow` `#stages` | `#k8s-intellij` |

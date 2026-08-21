@@ -26,13 +26,12 @@
 
 IntelliJ：Open **專案根** → SDK 21 → Gradle Sync → Gradle 窗 **bootRun**。
 
-## Demo（可選）
+## Demo（可選 · 擇一）
 
 ```powershell
-.\開啟Demo.cmd
-# 或
-.\demo\ensure-demo-links.ps1
-.\demo\doctor-demo.ps1 -Fix
+.\開啟Demo.cmd       # 本機 bootRun／Vite／Gateway
+.\開啟K8sDemo.cmd    # kind 全棧（Docker Ready；不起 Vite）
+# 詳見 demo/README.md · 藍圖 #k8s-intellij §⓪
 ```
 
 ## 從公版對齊（workspace 有 EngineeringOS 時）

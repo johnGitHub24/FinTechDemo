@@ -15,8 +15,9 @@
 ## K8s 本機 Demo（L4，一鍵）
 
 ```powershell
-# FinTechDemo 根目錄
-.\demo\start-k8s-demo.ps1
+# FinTechDemo 根目錄（與 開啟Demo.cmd 擇一）
+.\開啟K8sDemo.cmd
+# 等同：.\demo\start-k8s-demo.ps1
 # 或先檢查三層：.\demo\k8s-walkthrough.ps1
 
 $env:KUBECONFIG = ".\demo\.tools\kubeconfig-kind-trading-local"
@@ -30,7 +31,7 @@ kubectl -n fintech-demo port-forward svc/gateway 18080:8080
 
 Deployment＋Service：**gateway、order-service、risk-service、account-service**。
 
-映像 tag：`fintech-demo/*:local`（由 `start-k8s-demo.ps1` build／load）。
+映像 tag：`fintech-demo/*:local`（由 `開啟K8sDemo.cmd`／`start-k8s-demo.ps1` build／load）。
 
 ```powershell
 .\demo\check-k8s.ps1

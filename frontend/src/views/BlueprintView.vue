@@ -101,29 +101,21 @@
         映像內 nginx <strong>不連</strong> IntelliJ bootRun。compose frontend 依賴 gateway 容器；
         本機 Order 綠箭頭與這個映像是兩條路。
       </p>
-      <h3 class="observe-h3">ENABLE_K8S（不是 Vue yaml）</h3>
+      <h3 class="observe-h3">一鍵入口（擇一；不是 Vue yaml）</h3>
       <p class="muted small">
-        瀏覽器／<code>npm run dev</code> <strong>不能</strong>啟動 kind。開關在
-        <code>demo/platform-run.properties</code>，由 <code>開啟Demo.cmd</code> 讀取。
+        瀏覽器／<code>npm</code> <strong>不能</strong>起 kind。日常用兩個 cmd：
       </p>
       <table>
         <thead>
-          <tr><th>設定</th><th>效果</th></tr>
+          <tr><th>雙擊</th><th>效果</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>ENABLE_K8S=false</code>（預設）</td><td>只起本機 Order／Risk／Vite</td></tr>
-          <tr><td><code>ENABLE_K8S=true</code></td><td>本機 Demo <strong>再加上</strong> <code>start-k8s-demo.ps1</code>（kind 四 Pod）</td></tr>
+          <tr><td><code>開啟Demo.cmd</code></td><td>本機 Order／Risk／Vite（預設）</td></tr>
+          <tr><td><code>開啟K8sDemo.cmd</code></td><td>kind 四 Pod（不起 Vite；見藍圖 §⓪）</td></tr>
         </tbody>
       </table>
-      <div class="observe-cmd-row">
-        <code class="observe-cmd">.\demo\ensure-demo-links.ps1 -EnableK8s</code>
-        <button type="button" class="secondary sm" @click="copyText('.\\demo\\ensure-demo-links.ps1 -EnableK8s')">複製</button>
-        <span class="muted small">單次覆蓋 properties</span>
-      </div>
       <p class="muted small">
-        true 時前端<strong>預設仍打本機 :8081</strong>。要打 Pod：
-        <code>kubectl -n fintech-demo port-forward svc/order-service 8081:8081</code>
-        （先停掉本機 bootRun，避免搶埠）。
+        <code>ENABLE_K8S=true</code> 是進階（本機 ensure 再順便 kind，吃 RAM）— 日常保持 <code>false</code>，詳見 <code>demo/README.md</code>。
       </p>
     </section>
 
@@ -143,7 +135,7 @@
               <p>Docker Desktop → 開啟Demo.cmd</p>
               <p><a href="#docker-redis">Docker／Redis 指令</a>（亦見頂欄 <strong>Docker</strong>／Demo 面板分頁）</p>
               <p><a href="#frontend-pages">前端頁面關係</a></p>
-              <p><a href="#frontend-image">前端映像／ENABLE_K8S</a></p>
+              <p><a href="#frontend-image">前端映像／一鍵入口</a></p>
               <p><a href="#k8s-intellij">IntelliJ vs K8s</a></p>
             </div>
           </li>

@@ -1,29 +1,8 @@
 # IntelliJ 連上 FinTechDemo K8s（kind-trading-local）
 
-> **互動版（複製指令）**：http://localhost:5173/blueprint#k8s-intellij §⓪／⑧／⑨  
-> **一鍵（擇一）**：`開啟Demo.cmd`＝本機 · `開啟K8sDemo.cmd`＝kind（勿兩個都開）
-
-## ⓪ 兩條一鍵：操作與原因
-
-同一套 Gateway／Order／Risk／Account，**兩種跑法擇一**——不是先 1 再 2。
-
-| 雙擊 | 起什麼 | 何時用 |
-|------|--------|--------|
-| `開啟Demo.cmd` | 本機 `:8080–8084`＋Vite `:5173` | 日常成交、Portal、壓測 |
-| `開啟K8sDemo.cmd` | kind 裡 4 Pod（要 Docker Desktop Ready） | 講部署／Pod／映像 |
-
-**為什麼拆：** 雙棧搶 RAM；本機入口 `:8080`、K8s 要 `port-forward :18080`；K8s 建映像較慢，不該綁每次日常 Demo。
-
-**K8sDemo 後前台：** 腳本**不起** Vite。另開終端：
-
-```powershell
-kubectl -n fintech-demo port-forward svc/gateway 18080:8080
-$env:VITE_API_TARGET='http://localhost:18080'; cd frontend; npm run dev
-```
-
-再開 http://localhost:5173。勿與本機 `開啟Demo` 的 `:8080` 混用。
-
----
+> **擇一／前台怎麼接叢集**：藍圖 http://localhost:5173/blueprint#k8s-intellij **§⓪**（權威操作說明，勿與本檔重複維護長表）。  
+> **本檔**：IntelliJ 插件／kubeconfig／Services 專用步驟。  
+> **一鍵**：`開啟K8sDemo.cmd`（需 Docker Desktop Ready；勿與 `開啟Demo.cmd` 同時開）。
 
 ## 常見誤會：Docker 插件 ≠ Kubernetes 插件
 

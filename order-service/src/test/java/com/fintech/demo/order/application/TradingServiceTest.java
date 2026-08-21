@@ -167,6 +167,7 @@ class TradingServiceTest {
         OrderResponse resp = tradingService.execute(1L, 5L);
         assertThat(resp.getStatus()).isEqualTo(OrderStatus.ACCEPTED);
         assertThat(account.getCashBalance()).isEqualByComparingTo("4000.00");
+        verify(accountSyncService).syncTrade(any());
         assertThat(resp.getDemoTrace()).isNotNull();
         assertThat(resp.getDemoTrace().action()).isEqualTo("EXECUTE");
         assertThat(resp.getDemoTrace().hops()).anyMatch(h -> "risk-service".equals(h.service()) && h.ok());

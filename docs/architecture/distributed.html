@@ -168,15 +168,15 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </thead>
 <tbody><tr>
 <td>Kafka Demo</td>
-<td>trade-events → account 最終一致（<strong>不要</strong>再開 feign-sync，避免雙重入帳）</td>
+<td>trade-events → account 最終一致（kafka=true 時程式略過 Feign，不必關 feign-sync）</td>
 </tr>
 <tr>
-<td>Feign sync</td>
-<td><code>fintech.account.feign-sync=true</code> 且 kafka=false → order 同步打 account 內部 API</td>
+<td>Feign sync（本機預設）</td>
+<td><code>fintech.account.feign-sync=true</code> 且 kafka=false → order 同步打 account 內部 API（Gateway Portal 讀 account 才對得上）</td>
 </tr>
 <tr>
 <td>Standalone</td>
-<td>只起 order：本機 H2 帳本仍可用；portal 直打 :8081</td>
+<td>只起 order：改 <code>feign-sync=false</code>；portal 直打 :8081 讀本機帳本</td>
 </tr>
 </tbody></table>
 <h2>Gateway 路由</h2>

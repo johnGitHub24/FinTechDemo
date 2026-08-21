@@ -79,8 +79,9 @@ fintech:
   kafka:
     enabled: false
   account:
-    # 【概念】false 時可走事件／非同步對帳路徑；true 則 Feign 同步打 account
-    feign-sync: false
+    # 【概念】Gateway 把 /api/accounts、/api/positions 導向 account-service；Kafka off 時必須 Feign 同步，否則 Portal 餘額／持倉與 ACCEPTED 訂單脫節
+    # 【技巧】純 order 單機、不啟 account 時改 false；Kafka on（profile=demo）時 syncTrade 自動略過，避免雙重入帳
+    feign-sync: true
   services:
     # 【技巧】本機預設 localhost；compose／K8s 用環境變數覆寫成服務名
     risk-url: http://localhost:8082

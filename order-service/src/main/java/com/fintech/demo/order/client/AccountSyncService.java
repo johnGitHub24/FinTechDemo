@@ -3,6 +3,7 @@ package com.fintech.demo.order.client;
 import com.fintech.demo.common.dto.AccountDto;
 import com.fintech.demo.common.dto.ApplyTradeRequest;
 import com.fintech.demo.common.event.TradeExecutedEvent;
+import com.fintech.demo.order.common.BusinessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * 【職責】同步通知 account-service 入帳（Kafka 關閉時的分散式路徑）。
- * 【技巧】feign-sync 可關；失敗只打 warn，不阻斷本機 order 帳本（standalone Demo）。
- * 【概念】Kafka on → 走 trade-events；Kafka off + feign-sync → Feign 強一致寫 account。
+ * 【技巧】預設 feign-sync=true；失敗拋 BusinessException，讓 execute 交易回滾，避免 ACCEPTED 與 Portal 帳本脫節。
+ * 【概念】Kafka on → 走 trade-events（略過 Feign）；Kafka off + feign-sync → Feign 強一致寫 account。
  */
 @Service
 public class AccountSyncService {
@@ -25,7 +26,7 @@ public class AccountSyncService {
 
     public AccountSyncService(
             AccountClient accountClient,
-            @Value("${fintech.account.feign-sync:false}") boolean feignSync,
+            @Value("${fintech.account.feign-sync:true}") boolean feignSync,
             @Value("${fintech.kafka.enabled:false}") boolean kafkaEnabled,
             @Value("${fintech.job.token:demo-job-token}") String internalToken) {
         this.accountClient = accountClient;
@@ -53,7 +54,7 @@ public class AccountSyncService {
 
     /**
      * 【職責】把成交事件同步轉為 account-service 的入帳請求。
-     * 【技巧】只在非 Kafka 的 Feign 模式組裝 ApplyTradeRequest，並帶內部 token 呼叫。
+     * 【技巧】只在非 Kafka 的 Feign 模式組裝 ApplyTradeRequest；失敗必須上拋，與 order 本機帳本同進退。
      * 【概念】Kafka 與同步 HTTP 是兩條互斥的服務整合路徑，避免同筆成交重複入帳。
      */
     public void syncTrade(TradeExecutedEvent event) {
@@ -71,7 +72,9 @@ public class AccountSyncService {
             req.setNotional(event.notional());
             accountClient.applyTrade(event.userId(), req, internalToken);
         } catch (Exception ex) {
-            log.warn("account-service applyTrade failed orderId={}: {}", event.orderId(), ex.getMessage());
+            log.error("account-service applyTrade failed orderId={}: {}", event.orderId(), ex.getMessage());
+            throw new BusinessException(
+                    "account sync failed (orderId=" + event.orderId() + "): " + ex.getMessage());
         }
     }
 }

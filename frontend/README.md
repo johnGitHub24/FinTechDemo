@@ -30,4 +30,5 @@ Demo：`trader1` 對帳（85000＋AAPL）；`admin` 看全站訂單，餘額／�
 | `/portal` | 後台餘額／持倉／歷史分頁 |
 | `/portal/audit` | ADMIN 審計 |
 
-Proxy：`/api` → `http://localhost:8081`（P4 改 Gateway :8080）
+Proxy：`開啟Demo.cmd` 在 Gateway UP 後會重啟 Vite，`/api` → `:8080`；純手動 `npm run dev` 仍預設 → `:8081`。  
+要手動走 Gateway：`$env:VITE_API_TARGET='http://localhost:8080'; npm run dev`

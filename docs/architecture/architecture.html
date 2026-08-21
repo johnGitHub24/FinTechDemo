@@ -211,7 +211,7 @@ POST /api/orders
 【同步學習 — kafka=false】
 POST /api/orders/{id}/execute
   → Feign risk → 本機帳本（standalone）
-  → 可選 feign-sync → account-service（雙寫；預設關）
+  → feign-sync → account-service（Kafka off 預設開；Portal 經 Gateway 讀 account）
 </code></pre>
 <table>
 <thead>

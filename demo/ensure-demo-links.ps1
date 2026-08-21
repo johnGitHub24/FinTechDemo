@@ -5,6 +5,7 @@
 # 【Root cause】Windows 上 Start-Process 直接跑 .bat／npm.cmd + RedirectStandard*
 # 常會「行程沒起來、log 0 byte」。一律改 cmd.exe /c + 檔案重新導向。
 # 【概念】localhost 時好時壞＝本機行程沒常駐；kind Pod ≠ :5173。
+# 【Demo 入口】Gateway UP 後 Force 重啟 Vite，VITE_API_TARGET=http://localhost:8080（經 Gateway）。
 param(
     [switch]$SkipDocker,
     [switch]$SkipLocust,
@@ -12,6 +13,8 @@ param(
     [switch]$FrontendOnly,
     # Order 自動觸發：先保 Order+Risk+Vite，再補齊橫幅全部服務（Gateway/Job/Account/Docs/監控/Locust）
     [switch]$FromOrder,
+    # 開啟Demo：即使 UP 也重啟 Order／Account，載入最新 yml（feign-sync）與清 H2
+    [switch]$ForceRestart,
     # 覆蓋 platform-run.properties 的 ENABLE_K8S
     [switch]$EnableK8s,
     [switch]$SkipK8s
@@ -110,39 +113,54 @@ function Wait-HttpOk([string]$Url, [int]$Seconds = 120) {
     return $false
 }
 
-function Clear-ZombiePort([int]$Port, [string]$HealthUrl) {
-    if (Test-HttpOk $HealthUrl) { return }
+function Clear-ZombiePort([int]$Port, [string]$HealthUrl, [switch]$Force) {
+    # Force＝即使 health 仍 UP 也清埠（前端改 VITE_API_TARGET 必須重啟）
+    if (-not $Force -and (Test-HttpOk $HealthUrl)) { return }
     $conns = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
     foreach ($c in $conns) {
         $ownerPid = [int]$c.OwningProcess
         if ($ownerPid -le 0) { continue }
-        Write-Host "  clear zombie :$Port pid=$ownerPid" -ForegroundColor DarkGray
+        Write-Host "  clear :$Port pid=$ownerPid$(if ($Force) { ' (force)' })" -ForegroundColor DarkGray
         Stop-Process -Id $ownerPid -Force -ErrorAction SilentlyContinue
     }
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds $(if ($Force) { 2 } else { 1 })
 }
 
 # 【目的】可靠啟動長駐行程（Windows）。
 # 【根修】寫暫時 .cmd 再 Start-Process（避免 ArgumentList 引號把 redirect 吃掉 → 空 log／秒退）。
-function Start-DetachedViaCmd([string]$WorkDir, [string]$InnerCmd, [string]$OutLog, [string]$ErrLog) {
+function Start-DetachedViaCmd(
+    [string]$WorkDir,
+    [string]$InnerCmd,
+    [string]$OutLog,
+    [string]$ErrLog,
+    [string[]]$EnvLines = @()
+) {
     if (-not (Test-Path $WorkDir)) {
         Write-Host "  FAIL missing workdir: $WorkDir" -ForegroundColor Red
         return $false
     }
     $stamp = Get-Date -Format 'yyyyMMddHHmmssfff'
     $cmdFile = Join-Path $logs ("run-" + $stamp + ".cmd")
-    @(
+    $lines = @(
         '@echo off'
         "cd /d `"$WorkDir`""
-        "$InnerCmd > `"$OutLog`" 2> `"$ErrLog`""
-    ) | Set-Content -Encoding ascii -Path $cmdFile
+    )
+    foreach ($e in $EnvLines) {
+        if ($e) { $lines += $e }
+    }
+    # >> 附加：舊 Vite 若仍鎖 log 也不會擋新行程啟動
+    $lines += "$InnerCmd >> `"$OutLog`" 2>> `"$ErrLog`""
+    $lines | Set-Content -Encoding ascii -Path $cmdFile
     Start-Process -FilePath $cmdFile -WorkingDirectory $WorkDir -WindowStyle Minimized | Out-Null
     return $true
 }
 
-function Ensure-BootService([string]$Name, [string]$GradleTask, [string]$HealthUrl, [int]$Port, [int]$Attempts = 2) {
+function Ensure-BootService([string]$Name, [string]$GradleTask, [string]$HealthUrl, [int]$Port, [int]$Attempts = 2, [switch]$Force) {
     $health = $HealthUrl -replace 'localhost', '127.0.0.1'
-    if ((Test-HttpOk $health) -or (Test-HttpOk $HealthUrl)) {
+    if ($Force) {
+        Write-Host "  ForceRestart $Name :$Port ..." -ForegroundColor Yellow
+        Clear-ZombiePort $Port $health -Force
+    } elseif ((Test-HttpOk $health) -or (Test-HttpOk $HealthUrl)) {
         Write-Host "  OK UP $Name  $health" -ForegroundColor Green
         return $true
     }
@@ -183,9 +201,11 @@ function Ensure-BootService([string]$Name, [string]$GradleTask, [string]$HealthU
     return $false
 }
 
-function Ensure-Frontend([int]$Attempts = 2) {
+function Ensure-Frontend([int]$Attempts = 2, [switch]$ViaGateway, [switch]$Force) {
     $loginUrl = "http://127.0.0.1:5173/login"
-    if ((Test-HttpOk $loginUrl) -or (Test-HttpOk "http://localhost:5173/login") -or (Test-HttpOk "http://127.0.0.1:5173/")) {
+    # Demo 預設經 Gateway；Force＝Gateway 就緒後重啟 Vite 讓環境變數生效
+    $apiTarget = if ($ViaGateway) { 'http://localhost:8080' } else { 'http://localhost:8081' }
+    if (-not $Force -and ((Test-HttpOk $loginUrl) -or (Test-HttpOk "http://localhost:5173/login") -or (Test-HttpOk "http://127.0.0.1:5173/"))) {
         Write-Host "  OK frontend :5173" -ForegroundColor Green
         return $true
     }
@@ -206,29 +226,42 @@ function Ensure-Frontend([int]$Attempts = 2) {
         & $npmCmd.Source install
         Pop-Location
     }
-    $outLog = Join-Path $logs "frontend.out.log"
-    $errLog = Join-Path $logs "frontend.err.log"
+    $runStamp = Get-Date -Format 'yyyyMMddHHmmss'
+    $outLog = Join-Path $logs ("frontend-$runStamp.out.log")
+    $errLog = Join-Path $logs ("frontend-$runStamp.err.log")
     $viteJs = Join-Path $feDir "node_modules\vite\bin\vite.js"
+    $envLines = @(
+        "set VITE_API_TARGET=$apiTarget"
+    )
     for ($i = 1; $i -le $Attempts; $i++) {
-        Clear-ZombiePort 5173 $loginUrl
-        Write-Host "  START frontend try $i/$Attempts ..." -ForegroundColor Cyan
+        # Force／重試必須殺掉仍 UP 的舊 Vite，否則 VITE_API_TARGET 不會生效
+        Clear-ZombiePort 5173 $loginUrl -Force:($Force -or $i -gt 1)
+        Write-Host ("  START frontend try {0}/{1}  VITE_API_TARGET={2} ..." -f $i, $Attempts, $apiTarget) -ForegroundColor Cyan
         $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-        "$( $stamp ) START frontend" | Set-Content -Encoding utf8 $outLog
+        try {
+            "$( $stamp ) START frontend VITE_API_TARGET=$apiTarget" | Set-Content -Encoding utf8 -Path $outLog -ErrorAction Stop
+        } catch {
+            Write-Host "  WARN log write skipped (file locked) — $($_.Exception.Message)" -ForegroundColor DarkYellow
+        }
         $started = $false
         # 優先 npm run dev；失敗再直接 node + vite.js
         if ($npmCmd) {
             $inner = "`"$($npmCmd.Source)`" run dev -- --host 0.0.0.0 --port 5173 --strictPort"
-            $started = Start-DetachedViaCmd -WorkDir $feDir -InnerCmd $inner -OutLog $outLog -ErrLog $errLog
+            $started = Start-DetachedViaCmd -WorkDir $feDir -InnerCmd $inner -OutLog $outLog -ErrLog $errLog -EnvLines $envLines
         } elseif ($nodeCmd -and (Test-Path $viteJs)) {
             $inner = "`"$($nodeCmd.Source)`" `"$viteJs`" --host 0.0.0.0 --port 5173 --strictPort"
-            $started = Start-DetachedViaCmd -WorkDir $feDir -InnerCmd $inner -OutLog $outLog -ErrLog $errLog
+            $started = Start-DetachedViaCmd -WorkDir $feDir -InnerCmd $inner -OutLog $outLog -ErrLog $errLog -EnvLines $envLines
         }
         if (-not $started) { continue }
         if ((Wait-HttpOk $loginUrl 120) -or (Wait-HttpOk "http://127.0.0.1:5173/" 15) -or (Wait-HttpOk "http://localhost:5173/login" 15)) {
-            Write-Host "  OK frontend :5173" -ForegroundColor Green
+            if ($ViaGateway) {
+                Write-Host "  OK frontend :5173 → API Gateway :8080" -ForegroundColor Green
+            } else {
+                Write-Host "  OK frontend :5173 → API Order :8081" -ForegroundColor Green
+            }
             return $true
         }
-        Write-Host "  WARN frontend not ready on try $i — tail logs\frontend.err.log" -ForegroundColor Yellow
+        Write-Host "  WARN frontend not ready on try $i — tail $errLog" -ForegroundColor Yellow
         if (Test-Path $errLog) {
             Get-Content $errLog -Tail 20 -ErrorAction SilentlyContinue | ForEach-Object {
                 Write-Host "    $_" -ForegroundColor DarkRed
@@ -290,7 +323,8 @@ function Invoke-TradeReadyEnsure([int]$BootAttempts = 3, [int]$FrontendAttempts 
     Write-Host "== P0 trade-ready（Order + Risk + Vite）==" -ForegroundColor Cyan
     $okRisk = Ensure-BootService "risk-service" ":risk-service:bootRun" "http://127.0.0.1:8082/actuator/health" 8082 $BootAttempts
     $okVite = Ensure-Frontend $FrontendAttempts
-    $okOrder = Ensure-BootService "order-service" ":order-service:bootRun" "http://127.0.0.1:8081/actuator/health" 8081 1
+    # ForceRestart：載入最新碼／清 H2（開啟Demo 預設開）
+    $okOrder = Ensure-BootService "order-service" ":order-service:bootRun" "http://127.0.0.1:8081/actuator/health" 8081 1 -Force:$ForceRestart
     $bannerOk = Write-TradeReadyBanner
     return ($okRisk -and $okVite -and $okOrder -and $bannerOk)
 }
@@ -317,10 +351,20 @@ if (-not $tradeOk) {
 # ---- P1：橫幅其餘後端（FromOrder 也要拉；依序避免一次搶爆 RAM）----
 Write-Host ""
 Write-Host "== P1 banner backends（Account / Gateway / Job / Docs）==" -ForegroundColor Cyan
-Ensure-BootService "account-service" ":account-service:bootRun" "http://127.0.0.1:8084/actuator/health" 8084 2 | Out-Null
-Ensure-BootService "gateway" ":gateway:bootRun" "http://127.0.0.1:8080/actuator/health" 8080 2 | Out-Null
+Ensure-BootService "account-service" ":account-service:bootRun" "http://127.0.0.1:8084/actuator/health" 8084 2 -Force:$ForceRestart | Out-Null
+$gwUp = Ensure-BootService "gateway" ":gateway:bootRun" "http://127.0.0.1:8080/actuator/health" 8080 2
 Ensure-BootService "job-service" ":job-service:bootRun" "http://127.0.0.1:8083/actuator/health" 8083 2 | Out-Null
 Ensure-Docs | Out-Null
+
+# Gateway 就緒後重啟 Vite，讓 Demo 預設走統一入口（不必再手動設 VITE_API_TARGET）
+Write-Host ""
+Write-Host "== P1b frontend API 入口 ==" -ForegroundColor Cyan
+if ($gwUp) {
+    Write-Host "  Gateway UP → 重啟 Vite，/api 經 :8080" -ForegroundColor Cyan
+    Ensure-Frontend -Attempts 2 -ViaGateway -Force | Out-Null
+} else {
+    Write-Host "  WARN Gateway DOWN → 前端維持直連 Order :8081（最短路徑）" -ForegroundColor Yellow
+}
 
 function Ensure-K8sDemo {
     if (-not $WantK8s) {

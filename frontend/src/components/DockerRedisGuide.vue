@@ -1,6 +1,11 @@
 <template>
-  <section id="docker-redis" class="card docker-redis-guide">
-    <h2>{{ heading }}</h2>
+  <section
+    :id="sectionId"
+    class="docker-redis-guide"
+    :class="{ card: !embedded, 'docker-redis-embedded': embedded }"
+  >
+    <h2 v-if="!embedded">{{ heading }}</h2>
+    <h3 v-else class="observe-h3" style="margin-top:0">{{ heading }}</h3>
     <p class="story-meta">
       先看<strong>提示字元</strong>再下指令。
       <code>Docker Desktop.exe</code> 只開 GUI；真正指令在 <strong>Windows PowerShell</strong>。
@@ -101,7 +106,10 @@
 import { ref } from 'vue';
 
 defineProps({
-  heading: { type: String, default: 'Docker／Redis 指令（本機 Demo）' }
+  heading: { type: String, default: 'Docker／Redis 指令（本機 Demo）' },
+  /** 嵌在 Demo 面板時去掉外層 card，避免雙重框 */
+  embedded: { type: Boolean, default: false },
+  sectionId: { type: String, default: 'docker-redis' }
 });
 
 const copyMsg = ref('');

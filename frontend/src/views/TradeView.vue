@@ -127,8 +127,6 @@
           </tbody>
         </table>
       </div>
-
-      <DockerRedisGuide heading="系統運作 · Docker／Redis 指令" />
     </div>
     <BackendStoryPanel />
   </div>
@@ -145,7 +143,6 @@ import { cancelOrder, createOrder, executeOrder, fetchOrders, fetchSymbols } fro
 import { useAuthStore } from '../stores/auth';
 import { isOwnOrder, orderOwnerName } from '../utils/orderOwner';
 import BackendStoryPanel from '../components/BackendStoryPanel.vue';
-import DockerRedisGuide from '../components/DockerRedisGuide.vue';
 
 const auth = useAuthStore();
 const isAdmin = computed(() => auth.isAdmin);

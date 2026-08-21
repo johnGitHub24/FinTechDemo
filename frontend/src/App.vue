@@ -88,8 +88,8 @@ async function onNavClick(btn) {
       await goSpa(router, btn.to, btn.hash);
       setMsg(`已前往 ${btn.label}`, true);
     } else if (btn.kind === 'panel') {
-      openDemoPanel(demoPanel);
-      setMsg('已展開 Demo 快捷面板', true);
+      openDemoPanel(demoPanel, btn.panelTab);
+      setMsg(btn.panelTab === 'docker' ? '已展開 Docker 分頁' : '已展開 Demo 快捷面板', true);
     }
   } finally {
     navBusy.value = '';

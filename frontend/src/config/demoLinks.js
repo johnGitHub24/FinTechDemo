@@ -79,17 +79,17 @@ export const navDemoButtons = [
     startHint: '.\\docs\\tools\\serve-docs.ps1 或 .\\開啟Demo.cmd'
   },
   {
-    id: 'redis',
-    label: 'Redis 指令',
-    kind: 'spa',
-    to: '/blueprint',
-    hash: 'docker-redis',
-    hint: 'Docker Desktop／redis-cli 教學'
+    id: 'docker',
+    label: 'Docker',
+    kind: 'panel',
+    panelTab: 'docker',
+    hint: '展開 Demo 面板 → Docker／Redis 指令分頁'
   },
   {
     id: 'demo',
     label: 'Demo 快捷',
     kind: 'panel',
+    panelTab: 'links',
     hint: '展開下方快捷面板（Trade／Health／Docs）'
   }
 ];
@@ -102,7 +102,7 @@ export const loginDemoGroups = [
       { label: 'Portal', spaPath: '/portal', needLogin: true },
       { label: 'Audit', spaPath: '/portal/audit', needLogin: true, needAdmin: true },
       { label: '藍圖', spaPath: '/blueprint' },
-      { label: '藍圖·Redis', spaPath: '/blueprint#docker-redis' },
+      { label: 'Docker／Redis', panelTab: 'docker', hint: '切到本面板 Docker 分頁' },
       { label: '藍圖·K8s', spaPath: '/blueprint#k8s-intellij' },
       { label: '藍圖·K8s 驗證', spaPath: '/blueprint#k8s-verify' }
     ]

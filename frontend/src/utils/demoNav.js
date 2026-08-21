@@ -89,9 +89,12 @@ export async function goSpa(router, path, hash) {
 }
 
 /**
- * 【目的】展開並捲到 Demo 快捷面板。
+ * 【目的】展開並捲到 Demo 快捷面板；可選 tab=docker｜links。
  */
-export function openDemoPanel(panelRef) {
-  if (panelRef?.value?.expand) panelRef.value.expand();
-  scrollToSelector('#demo-shortcuts');
+export function openDemoPanel(panelRef, tab) {
+  if (panelRef?.value?.expand) {
+    panelRef.value.expand(tab);
+    return;
+  }
+  scrollToSelector(tab === 'docker' ? '#demo-docker' : '#demo-shortcuts');
 }

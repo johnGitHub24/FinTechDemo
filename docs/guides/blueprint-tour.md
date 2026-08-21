@@ -28,7 +28,7 @@
 | `#docker-start` | Docker／本機怎麼開 | Desktop Ready → `開啟Demo.cmd` | 最短 Demo 入口 |
 | `#frontend-pages` | **前端 HTML 頁面關係** | index.html → App.vue → Router | **/blueprint 不是獨立 HTML** |
 | `#frontend-image` | 前端 Docker 映像／ENABLE_K8S | Dockerfile、compose、properties | 打包與 K8s 開關 |
-| `#docker-redis` | Docker／Redis | redis-cli 指令、IntelliJ 連 :6379 | 基建除錯 |
+| `#docker-redis` | Docker／Redis | redis-cli 指令、IntelliJ 連 :6379（與 Demo 面板 Docker 分頁同源元件） | 基建除錯 |
 | `#stack` | 技術棧 | Vue / Boot / Cloud / JWT / H2… | 版本與選型 |
 | `#layers` | 分層架構 | 前端→Gateway→微服務→DB | **架構一張圖** |
 | `#mechanisms` | 邊緣機制 | 限流、CORS、Redis Cache | 進階加分 |

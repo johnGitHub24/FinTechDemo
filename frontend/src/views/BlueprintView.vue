@@ -141,7 +141,7 @@
             <div class="howto-body">
               <a href="#docker-start">Docker／本機開啟</a>
               <p>Docker Desktop → 開啟Demo.cmd</p>
-              <p><a href="#docker-redis">Docker／Redis 指令</a></p>
+              <p><a href="#docker-redis">Docker／Redis 指令</a>（亦見頂欄 <strong>Docker</strong>／Demo 面板分頁）</p>
               <p><a href="#frontend-pages">前端頁面關係</a></p>
               <p><a href="#frontend-image">前端映像／ENABLE_K8S</a></p>
               <p><a href="#k8s-intellij">IntelliJ vs K8s</a></p>

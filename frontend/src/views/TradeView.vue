@@ -39,16 +39,21 @@
       </div>
 
       <div class="card">
-        <div class="row" style="align-items:center">
-          <h3 style="margin:0;flex:2">{{ isAdmin ? '進行中（全站 PENDING）' : '進行中（我的 PENDING）' }}</h3>
-          <button
-            class="secondary"
-            type="button"
-            :class="{ 'is-refreshing': refreshing }"
-            :disabled="refreshing"
-            @click="onRefresh"
-          >{{ refreshing ? '刷新中…' : refreshDone ? '已更新' : '刷新' }}</button>
+        <div class="pager-row">
+          <h3>{{ isAdmin ? '進行中（全站 PENDING）' : '進行中（我的 PENDING）' }}</h3>
+          <div class="pager-actions">
+            <button class="secondary sm" type="button" @click="prevPending" :disabled="pendingPage<=0">上一頁</button>
+            <button class="secondary sm" type="button" @click="nextPending" :disabled="pendingPage>=pendingTotalPages-1">下一頁</button>
+            <button
+              class="secondary sm"
+              type="button"
+              :class="{ 'is-refreshing': refreshing }"
+              :disabled="refreshing"
+              @click="onRefresh"
+            >{{ refreshing ? '刷新中…' : refreshDone ? '已更新' : '刷新' }}</button>
+          </div>
         </div>
+        <p class="muted small">page {{ pendingPage + 1 }} / {{ pendingTotalPages }} · total {{ pendingTotal }}（與後台同 API／每頁 {{ pageSize }}）</p>
         <p v-if="refreshHint" class="refresh-hint" :class="{ ok: refreshDone }" role="status">{{ refreshHint }}</p>
         <p v-if="!pendingOrders.length" class="muted">目前沒有待成交訂單</p>
         <table v-else :class="{ 'table-refreshing': refreshing }">
@@ -92,7 +97,14 @@
       </div>
 
       <div class="card">
-        <h3>{{ isAdmin ? '全站訂單（含結果）' : '我的訂單（含結果）' }}</h3>
+        <div class="pager-row">
+          <h3>{{ isAdmin ? '全站訂單（含結果）' : '我的訂單（含結果）' }}</h3>
+          <div class="pager-actions">
+            <button class="secondary sm" type="button" @click="prevAll" :disabled="allPage<=0">上一頁</button>
+            <button class="secondary sm" type="button" @click="nextAll" :disabled="allPage>=allTotalPages-1">下一頁</button>
+          </div>
+        </div>
+        <p class="muted small">page {{ allPage + 1 }} / {{ allTotalPages }} · total {{ allTotal }}（與後台交易歷史同一列表）</p>
         <table :class="{ 'table-refreshing': refreshing }">
           <thead>
             <tr>
@@ -135,8 +147,8 @@
 <script setup>
 /**
  * 【職責】交易前台，讓登入使用者建立、執行、取消並查看訂單。
- * 【頁面角色】核心下單操作頁；ADMIN 列表為全站，進行中只列 PENDING，避免與後台對錯帳。
- * 【與後端關係】透過市場與訂單 API 讀寫；取消／成交僅能操作本人 PENDING。
+ * 【技巧】訂單列表與後台同契約：伺服器分頁、每頁 5；PENDING 另帶 status 篩選。
+ * 【概念】壓測後大表不能前端 filter 假分頁，否則與 Portal total 對不齊。
  */
 import { computed, onMounted, reactive, ref } from 'vue';
 import { cancelOrder, createOrder, executeOrder, fetchOrders, fetchSymbols } from '../api/client';
@@ -144,11 +156,20 @@ import { useAuthStore } from '../stores/auth';
 import { isOwnOrder, orderOwnerName } from '../utils/orderOwner';
 import BackendStoryPanel from '../components/BackendStoryPanel.vue';
 
+/** 與 PortalView 相同，前後台換頁才對得上同一批列。 */
+const pageSize = 5;
+
 const auth = useAuthStore();
 const isAdmin = computed(() => auth.isAdmin);
 const symbols = ref([]);
+const pendingOrders = ref([]);
 const orders = ref([]);
-const pendingOrders = computed(() => orders.value.filter((o) => o.status === 'PENDING'));
+const pendingPage = ref(0);
+const allPage = ref(0);
+const pendingTotal = ref(0);
+const allTotal = ref(0);
+const pendingTotalPages = computed(() => Math.ceil(pendingTotal.value / pageSize) || 1);
+const allTotalPages = computed(() => Math.ceil(allTotal.value / pageSize) || 1);
 const msg = ref('');
 const error = ref('');
 const refreshing = ref(false);
@@ -157,21 +178,54 @@ const refreshHint = ref('');
 const form = reactive({ symbol: 'AAPL', side: 'BUY', quantity: 1, price: 150 });
 let refreshDoneTimer = null;
 
-/**
- * 【目的】ADMIN 雖可見他人訂單，成交／取消仍只能動本人的 PENDING。
- */
 function canAct(order) {
   return order.status === 'PENDING' && isOwnOrder(order, auth.username);
 }
 
-async function load() {
-  const page = await fetchOrders({ page: 0, size: 20 });
-  orders.value = page.data || [];
+async function loadPending() {
+  const res = await fetchOrders({ status: 'PENDING', page: pendingPage.value, size: pageSize });
+  pendingOrders.value = res.data || [];
+  pendingTotal.value = res.meta?.total || 0;
 }
 
-/**
- * 【目的】手動刷新訂單列表，帶 loading／完成感受。
- */
+async function loadAll() {
+  const res = await fetchOrders({ page: allPage.value, size: pageSize });
+  orders.value = res.data || [];
+  allTotal.value = res.meta?.total || 0;
+}
+
+async function load() {
+  await Promise.all([loadPending(), loadAll()]);
+}
+
+function prevPending() {
+  if (pendingPage.value > 0) {
+    pendingPage.value -= 1;
+    loadPending();
+  }
+}
+
+function nextPending() {
+  if (pendingPage.value < pendingTotalPages.value - 1) {
+    pendingPage.value += 1;
+    loadPending();
+  }
+}
+
+function prevAll() {
+  if (allPage.value > 0) {
+    allPage.value -= 1;
+    loadAll();
+  }
+}
+
+function nextAll() {
+  if (allPage.value < allTotalPages.value - 1) {
+    allPage.value += 1;
+    loadAll();
+  }
+}
+
 async function onRefresh() {
   if (refreshing.value) return;
   refreshing.value = true;
@@ -180,7 +234,7 @@ async function onRefresh() {
   error.value = '';
   try {
     await load();
-    refreshHint.value = `已更新 · 進行中 ${pendingOrders.value.length} 筆／全部 ${orders.value.length} 筆`;
+    refreshHint.value = `已更新 · PENDING total ${pendingTotal.value}／全部 total ${allTotal.value}`;
     refreshDone.value = true;
     if (refreshDoneTimer) clearTimeout(refreshDoneTimer);
     refreshDoneTimer = setTimeout(() => {
@@ -217,6 +271,8 @@ async function submit() {
       price: form.price
     });
     msg.value = '已建立 PENDING 訂單';
+    pendingPage.value = 0;
+    allPage.value = 0;
     await load();
   } catch (e) {
     error.value = e.response?.data?.error || '下單失敗';

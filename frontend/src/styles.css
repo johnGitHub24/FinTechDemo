@@ -251,6 +251,31 @@ tbody tr:hover { background: var(--surface2); }
 .row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .row > * { flex: 1 1 8rem; min-width: 0; }
 
+/* 分頁列：標題吃剩餘寬，按鈕依文字寬度（勿吃 .row 的 flex 拉伸） */
+.pager-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.pager-row h3 {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+.pager-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.pager-actions button {
+  margin-top: 0;
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
+}
+
 /* 下單表單：雙欄避免數量／價格在 story 半寬擠爆 */
 .form-row {
   display: grid;

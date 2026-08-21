@@ -28,12 +28,14 @@
         </table>
       </div>
       <div class="card">
-        <div class="row" style="align-items:center">
-          <h3 style="margin:0;flex:2">{{ isAdmin ? '交易歷史（全站監察）' : '交易歷史（我的訂單）' }}</h3>
-          <button class="secondary" type="button" @click="prev" :disabled="page<=0">上一頁</button>
-          <button class="secondary" type="button" @click="next" :disabled="page>=totalPages-1">下一頁</button>
+        <div class="pager-row">
+          <h3>{{ isAdmin ? '交易歷史（全站監察）' : '交易歷史（我的訂單）' }}</h3>
+          <div class="pager-actions">
+            <button class="secondary sm" type="button" @click="prev" :disabled="page<=0">上一頁</button>
+            <button class="secondary sm" type="button" @click="next" :disabled="page>=totalPages-1">下一頁</button>
+          </div>
         </div>
-        <p style="color:#8b9cb3">page {{ page + 1 }} / {{ totalPages }} · total {{ total }}</p>
+        <p style="color:#8b9cb3">page {{ page + 1 }} / {{ totalPages }} · total {{ total }}（每頁 {{ size }}，與交易前台「含結果」同一 API）</p>
         <table>
           <thead>
             <tr>

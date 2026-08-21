@@ -13,14 +13,12 @@ Sync: `apply-workspace.ps1 -WithDemo`
 
 改埠或 K8s 叢集名：**只改** `platform-run.properties`，Demo 腳本 dot-source `platform-env.ps1`。
 
-`ENABLE_K8S=false`（預設）＝只本機 bootRun／Vite；`true` 或 `.\demo\ensure-demo-links.ps1 -EnableK8s` 才順便跑 `start-k8s-demo.ps1`。Vue／npm **不能**起 kind。
-
-文件：**[docs/文件完整度.md](../docs/文件完整度.md)** · 藍圖：http://localhost:5173/blueprint#frontend-pages · K8s：http://localhost:5173/blueprint#k8s-intellij
+`ENABLE_K8S=false`（預設）＝本機一鍵。K8s 請雙擊專案根 **`開啟K8sDemo.cmd`**（與本機擇一，勿雙棧搶 RAM）。Vue／npm **不能**起 kind。
 
 ```powershell
-.\開啟Demo.cmd
+.\開啟Demo.cmd          # 本機 bootRun／Vite／Gateway
+.\開啟K8sDemo.cmd       # kind 全棧（Docker Desktop Ready）
 .\demo\doctor-demo.ps1 -Fix
-.\demo\start-k8s-demo.ps1
 .\demo\verify-pipeline.ps1
 ```
 

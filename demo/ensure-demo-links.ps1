@@ -67,7 +67,10 @@ function Clear-DemoHostileContainers {
     $names = @()
     try { $names = @(docker ps -a --format '{{.Names}}' 2>$null) } catch { return }
     foreach ($name in $names) {
-        if ($name -match '^(trading-local|tradingkubernetes|kind-)' -or
+        # 本機 Demo 清 kind 省 RAM；若本次要起 K8s（WantK8s）則勿刪，避免拆再建
+        $isKind = $name -match '^(trading-local|tradingkubernetes|kind-)'
+        if ($isKind -and $WantK8s) { continue }
+        if ($isKind -or
             ($name -match 'kafka|zookeeper|redpanda' -and $name -notmatch 'fintech-demo-prometheus|fintech-demo-grafana')) {
             Write-Host "  docker rm -f $name (free RAM)" -ForegroundColor DarkGray
             docker rm -f $name 2>$null | Out-Null
@@ -368,7 +371,7 @@ if ($gwUp) {
 
 function Ensure-K8sDemo {
     if (-not $WantK8s) {
-        Write-Host "  SKIP K8s (ENABLE_K8S=false) — 本機 bootRun／Vite；改 true 見 demo/platform-run.properties" -ForegroundColor DarkGray
+        Write-Host "  SKIP K8s — 本機 Demo；要叢集請雙擊 開啟K8sDemo.cmd" -ForegroundColor DarkGray
         return $true
     }
     Write-Host ""

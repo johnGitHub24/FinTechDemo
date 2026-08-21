@@ -10,6 +10,58 @@
       Compose 起的是 redis／Kafka 容器；微服務在 K8s 裡要另外 <strong>kind + kubectl apply</strong>。
     </p>
 
+    <h3 class="observe-h3">⓪ 兩條一鍵：操作方式與為什麼拆開</h3>
+    <p class="muted small">
+      <strong>不是</strong>先開 Demo 再開 K8s。<strong>同一套</strong> Gateway／Order／Risk／Account，用<strong>兩種環境擇一</strong>跑。
+    </p>
+    <table>
+      <thead>
+        <tr><th>雙擊（專案根）</th><th>起什麼</th><th>何時用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>開啟Demo.cmd</code></td>
+          <td>本機 JVM <code>:8080–8084</code>＋Vite <code>:5173</code></td>
+          <td>日常成交、Portal、壓測、講流程</td>
+        </tr>
+        <tr>
+          <td><code>開啟K8sDemo.cmd</code></td>
+          <td>kind 叢集裡 4 個 Pod（需 Docker Desktop Ready）</td>
+          <td>講部署、映像、Pod、IntelliJ Kubernetes</td>
+        </tr>
+      </tbody>
+    </table>
+    <aside class="story-note">
+      <strong>為什麼拆兩個？</strong>
+      <ul class="muted small" style="margin:0.4rem 0 0;padding-left:1.2rem">
+        <li><strong>RAM</strong>：本機 bootRun 與 kind 雙棧同時開會搶記憶體、埠與心智模型都亂。</li>
+        <li><strong>時間</strong>：本機快；K8s 要建映像／load／等 Pod，不該綁在每次日常 Demo。</li>
+        <li><strong>入口不同</strong>：本機直接 <code>:8080</code>；K8s 要 <code>port-forward → :18080</code> 才打到叢集。</li>
+      </ul>
+    </aside>
+    <h4 class="observe-h3">開啟 K8sDemo 後，前台怎麼用？</h4>
+    <p class="muted small">
+      <code>開啟K8sDemo.cmd</code><strong>只起叢集，不起 Vite</strong>。要瀏覽器交易再做三步（另開 PowerShell）：
+    </p>
+    <ol class="muted small" style="margin:0.35rem 0 0.75rem;padding-left:1.25rem">
+      <li><code>kubectl -n fintech-demo port-forward svc/gateway 18080:8080</code>（保持開著）</li>
+      <li><code>$env:VITE_API_TARGET='http://localhost:18080'; cd frontend; npm run dev</code></li>
+      <li>開 <code>http://localhost:5173</code> — 此時 <code>/api</code> 走叢集 Gateway，不是本機 <code>:8080</code></li>
+    </ol>
+    <p class="muted small">
+      若本機還留著舊的 <code>開啟Demo</code> 服務，前台預設會打本機棧 — <strong>與 Pod 是兩套後端，勿混用</strong>。
+    </p>
+    <div class="observe-cmd-row">
+      <code class="observe-cmd">.\開啟K8sDemo.cmd</code>
+      <button type="button" class="secondary sm" @click="copyText('.\\開啟K8sDemo.cmd')">複製</button>
+      <span class="muted small">等同 <code>.\demo\start-k8s-demo.ps1</code></span>
+    </div>
+    <div class="observe-cmd-row">
+      <code class="observe-cmd">.\開啟Demo.cmd</code>
+      <button type="button" class="secondary sm" @click="copyText('.\\開啟Demo.cmd')">複製</button>
+      <span class="muted small">本機日常（與上一行擇一）</span>
+    </div>
+
     <h3 class="observe-h3">① IntelliJ Services 各自能做什麼</h3>
     <table>
       <thead>
@@ -164,7 +216,7 @@
         </tr>
         <tr>
           <td>—</td>
-          <td>一鍵 <code>demo/start-k8s-demo.ps1</code></td>
+          <td>一鍵 <code>開啟K8sDemo.cmd</code>（內部 <code>demo/start-k8s-demo.ps1</code>）</td>
         </tr>
       </tbody>
     </table>
@@ -258,12 +310,12 @@
         </tr>
         <tr>
           <td><strong>L2</strong> 日常 Demo</td>
-          <td>Gradle <code>bootRun</code> + Compose redis + Vite</td>
+          <td>雙擊 <code>開啟Demo.cmd</code>（bootRun＋Vite）</td>
           <td>否</td>
         </tr>
         <tr>
           <td><strong>L3</strong> 真跑 Pod</td>
-          <td>kind 起叢集 → build/load 映像 → <code>kubectl apply -k</code></td>
+          <td>雙擊 <code>開啟K8sDemo.cmd</code>（kind＋映像＋apply）</td>
           <td>是</td>
         </tr>
       </tbody>
@@ -276,15 +328,16 @@
       <span class="muted small">不連 API；CI／日常綠燈常用</span>
     </div>
 
-    <h3 class="observe-h3">⑧ L3：在 K8s 跑四個微服務（PowerShell）</h3>
-    <p class="muted small">先 <strong>Docker Desktop Ready</strong>。建議一鍵：<code>.\demo\start-k8s-demo.ps1</code>。</p>
+    <h3 class="observe-h3">⑧ L3：在 K8s 跑四個微服務</h3>
+    <p class="muted small">先 <strong>Docker Desktop Ready</strong>。建議雙擊 <code>開啟K8sDemo.cmd</code>（與本機 <code>開啟Demo.cmd</code> 擇一）。</p>
     <div v-for="row in k8sDeployCmds" :key="row.cmd" class="observe-cmd-row">
       <code class="observe-cmd">{{ row.cmd }}</code>
       <button type="button" class="secondary sm" @click="copyText(row.cmd)">複製</button>
       <span class="muted small">{{ row.hint }}</span>
     </div>
 
-    <h3 class="observe-h3">⑨ 部署完：驗證 + 打 API</h3>
+    <h3 class="observe-h3">⑨ 部署完：驗證 + 前台打到叢集</h3>
+    <p class="muted small">K8sDemo <strong>不起</strong> Vite；要瀏覽器對 Pod 交易，用下面 port-forward＋前端指令。</p>
     <div v-for="row in k8sVerifyCmds" :key="row.cmd" class="observe-cmd-row">
       <code class="observe-cmd">{{ row.cmd }}</code>
       <button type="button" class="secondary sm" @click="copyText(row.cmd)">複製</button>
@@ -419,12 +472,16 @@ const intellijVerifyCmds = [
 
 const k8sDeployCmds = [
   {
+    cmd: '.\\開啟K8sDemo.cmd',
+    hint: '雙擊同效果：kind + build + load + apply（與 開啟Demo.cmd 擇一）'
+  },
+  {
     cmd: '.\\demo\\k8s-walkthrough.ps1',
     hint: '檢查 Layer 1/2/3 對照（Images · kind · pods）'
   },
   {
     cmd: '.\\demo\\start-k8s-demo.ps1',
-    hint: '一鍵 K8s Demo（kind + build + load + apply + 等 Pod）'
+    hint: '與 開啟K8sDemo.cmd 相同腳本（PowerShell）'
   },
   {
     cmd: '.\\demo\\start-k8s-demo.ps1 -RecreateCluster',
@@ -457,7 +514,11 @@ const k8sVerifyCmds = [
   { cmd: 'kubectl get all -n fintech-demo', hint: '四服務 svc + pod' },
   {
     cmd: 'kubectl -n fintech-demo port-forward svc/gateway 18080:8080',
-    hint: '另開終端；瀏覽器 http://localhost:18080/actuator/health'
+    hint: '另開終端並保持；health → http://localhost:18080/actuator/health'
+  },
+  {
+    cmd: "$env:VITE_API_TARGET='http://localhost:18080'; cd frontend; npm run dev",
+    hint: '前台 /api 打叢集 Gateway（勿與本機 :8080 混用）'
   }
 ];
 

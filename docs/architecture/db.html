@@ -46,37 +46,166 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
     <p class="links">
       <a href="../index.html">統一學習入口</a>
       <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../portals/handbook.html#ch05">學習手冊 · ER 章</a>
       <a href="../md-reader.html">MD 閱讀器</a>
       <a href="../portals/swagger.html">Swagger</a>
     </p>
   </header>
   <main>
-    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。雙庫教學敘事見 <a href="../portals/handbook.html#ch05">handbook §5 雙庫與 ER</a>。</div>
     <article class="md-body">
 <h1>FinTechDemo — 資料庫設計</h1>
-<h2>引擎</h2>
+
+<h2>教學介紹：本機 Demo 是兩個 H2</h2>
+<p><strong>是的，本機 Demo 預設就是兩個資料庫</strong>（兩個獨立的 H2 記憶體庫），<strong>不是</strong>同一個 DB 裡只分表而已。risk、job、gateway 沒有自己的業務表。</p>
+
+<h3>兩個庫長什麼樣</h3>
 <table>
 <thead>
 <tr>
-<th>Profile</th>
-<th>DB</th>
+<th>服務</th>
+<th>資料庫（本機）</th>
+<th>主要表</th>
 </tr>
 </thead>
-<tbody><tr>
-<td>local／test</td>
-<td>H2（<code>MODE=PostgreSQL</code>）</td>
+<tbody>
+<tr>
+<td>order-service :8081</td>
+<td><code>jdbc:h2:mem:fintechdemo</code></td>
+<td>users、orders、audit_log，<strong>還有</strong> accounts、positions</td>
 </tr>
 <tr>
-<td>docker／demo</td>
-<td>PostgreSQL</td>
+<td>account-service :8084</td>
+<td><code>jdbc:h2:mem:accountdb</code></td>
+<td>accounts、positions</td>
 </tr>
 </tbody></table>
-<h2>ER Model（全部 tables）</h2>
-<div class="mermaid">erDiagram
-  USERS ||--|| ACCOUNTS : owns
-  USERS ||--o{ ORDERS : places
-  USERS ||--o{ POSITIONS : holds
-  USERS ||--o{ AUDIT_LOG : audits
+<ul>
+<li>表名 <code>accounts</code>／<code>positions</code> 在兩邊<strong>各有一份</strong>，但在<strong>不同服務、不同 H2 實例</strong>裡。</li>
+<li>兩邊<strong>沒有跨庫 FK</strong>，只靠 <code>user_id</code> 約定對齊（種子：1＝trader1、2＝admin）。</li>
+</ul>
+
+<h3>為什麼要這樣運作？</h3>
+<p>這是<strong>微服務拆邊界</strong>的 Demo 設計，不是 bug：</p>
+<ol>
+<li><strong>各服務管自己的資料</strong> — order：登入／下單／審計；account：餘額／持倉（Portal 看的「正式帳本」）。</li>
+<li><strong>order 裡仍有一份 accounts／positions</strong>（<em>order 本機複本</em>／<em>standalone 帳本</em>）— 只起 order 也能練成交；成交時 order 先改自己庫，再同步到 account。</li>
+<li><strong>Portal 走 Gateway → account-service</strong> — 後台餘額／持倉讀的是 <code>accountdb</code>，不是 order 那份。</li>
+</ol>
+
+<h3>平常 Demo 成交（execute）怎麼跑？</h3>
+<ol>
+<li>order 讀 <strong>order 庫</strong> 的 accounts → 送 risk 風控</li>
+<li>風控過 → 改 <strong>order 庫</strong> 的 accounts／positions</li>
+<li>再<strong>同步</strong>到 account-service（Feign <code>apply-trade</code>，或 Kafka <code>trade-events</code>）</li>
+<li>Portal 查餘額 → 讀 <strong>account 庫</strong></li>
+</ol>
+<p>若只改 order 庫、沒同步到 account，Portal 就會<strong>不同步</strong>（因此預設 <code>fintech.account.feign-sync: true</code>）。</p>
+<div class="mermaid">
+flowchart LR
+  subgraph ODB["order DB · fintechdemo"]
+    U[users / orders]
+    OA[accounts 本機複本]
+    OP[positions 本機複本]
+  end
+  subgraph ADB["account DB · accountdb"]
+    AA[accounts 正式]
+    AP[positions 正式]
+  end
+  EX[order 成交 execute] --> OA
+  EX --> OP
+  EX -->|"Feign 或 Kafka"| AA
+  EX --> AP
+  Portal["Portal / 前台"] -->|Gateway| AA
+</div>
+<blockquote>
+<p><strong>一句話：</strong>兩個 H2、兩份帳本表名相同但不在同一庫；<strong>畫面看 account</strong>，<strong>成交先改 order 再同步</strong>。docker 可改 PostgreSQL，邊界不變。</p>
+<p><strong>用詞：</strong><em>order 本機複本</em>＝order-service 內 H2 的 accounts／positions（成交內部用）；<em>正式帳本</em>＝account-service 的 accounts／positions（Portal 讀這裡）。舊稿偶爾寫「便道」，語意相同，已改為上述說法。</p>
+</blockquote>
+
+<h2>引擎與擁有者</h2>
+<table>
+<thead>
+<tr>
+<th>服務</th>
+<th>本機 H2</th>
+<th>表</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>order-service :8081</td>
+<td><code>jdbc:h2:mem:fintechdemo</code></td>
+<td>users、orders、accounts、positions、audit_log</td>
+<td>登入／訂單／審計；accounts／positions 為 <strong>order 本機複本</strong></td>
+</tr>
+<tr>
+<td>account-service :8084</td>
+<td><code>jdbc:h2:mem:accountdb</code></td>
+<td>accounts、positions</td>
+<td><strong>正式</strong>餘額／持倉（Portal 經 Gateway 讀這裡）</td>
+</tr>
+<tr>
+<td>risk／job／gateway</td>
+<td>—</td>
+<td>（無 JPA 表）</td>
+<td>規則／排程／路由</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Demo 預設各服務獨立 H2（無跨庫 FK）。docker／demo 可改 PostgreSQL，邊界仍是「order 擁有訂單、account 擁有帳本」。<br>JPA <strong>沒有</strong> <code>@ManyToOne</code>：關聯全是邏輯 <code>user_id</code>／<code>username</code>。</p>
+</blockquote>
+
+<h2 id="h2-conn">H2 連線字串（本機 Demo）</h2>
+<p>兩張表所在的是<strong>兩個不同的 H2 記憶體庫</strong>（各服務各一個 JVM process）。服務關掉，該庫資料就沒了。共通帳密：<code>username=sa</code>、<code>password=</code>（空白）、<code>driver=org.h2.Driver</code>。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>order-service :8081</th>
+<th>account-service :8084</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>設定檔</td>
+<td><code>order-service/src/main/resources/application.yml</code></td>
+<td><code>account-service/src/main/resources/application.yml</code></td>
+</tr>
+<tr>
+<td><strong>Spring JDBC URL</strong><br>（應用程式實際連線）</td>
+<td><code>jdbc:h2:mem:fintechdemo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1</code></td>
+<td><code>jdbc:h2:mem:accountdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1</code></td>
+</tr>
+<tr>
+<td>庫名（mem）</td>
+<td><code>fintechdemo</code></td>
+<td><code>accountdb</code></td>
+</tr>
+<tr>
+<td>H2 Console</td>
+<td><a href="http://localhost:8081/h2-console">http://localhost:8081/h2-console</a><br>登入時 JDBC URL 填<strong>左欄 Spring URL</strong></td>
+<td><a href="http://localhost:8084/h2-console">http://localhost:8084/h2-console</a><br>登入時 JDBC URL 填<strong>右欄 Spring URL</strong></td>
+</tr>
+<tr>
+<td>DataGrip／IntelliJ</td>
+<td><code>jdbc:h2:tcp://localhost:9093/mem:fintechdemo</code><br>（order 啟動時開 TCP；見啟動 log）</td>
+<td>本專案<strong>未開</strong> H2 TCP → 請用瀏覽器 Console，且 account 須在跑</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>常見錯誤：</strong>在 DataGrip 對 order 填 <code>jdbc:h2:mem:fintechdemo</code> 會連到<strong>另一份空庫</strong>，不是正在跑的 order 進程。order 要用 TCP URL 或瀏覽器 <code>:8081/h2-console</code>。<br>
+<strong>參數：</strong><code>MODE=PostgreSQL</code>＝SQL 方言靠近 Postgres；<code>DB_CLOSE_DELAY=-1</code>＝JVM 活著就保留 mem 資料。</p>
+</blockquote>
+
+<h2>ER Model — order DB（fintechdemo）</h2>
+<div class="mermaid">
+erDiagram
+  USERS ||--|| ACCOUNTS : "owns user_id UK"
+  USERS ||--o{ ORDERS : "places user_id"
+  USERS ||--o{ POSITIONS : "holds user_id"
+  USERS }o..o{ AUDIT_LOG : "username soft"
 
   USERS {
     bigint id PK
@@ -86,13 +215,13 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
   }
   ACCOUNTS {
     bigint id PK
-    bigint user_id FK
+    bigint user_id UK
     decimal cash_balance
     varchar currency
   }
   ORDERS {
     bigint id PK
-    bigint user_id FK
+    bigint user_id
     varchar client_order_id UK
     varchar symbol
     varchar side
@@ -104,7 +233,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
   }
   POSITIONS {
     bigint id PK
-    bigint user_id FK
+    bigint user_id
     varchar symbol
     int quantity
     decimal avg_price
@@ -119,8 +248,50 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
   }
 </div>
 <blockquote>
-<p>列舉語意（圖上省略 <code>|</code>，避免 Mermaid erDiagram 語法錯誤）：<br><code>role</code>＝USER／ADMIN；<code>side</code>＝BUY／SELL；<code>status</code>＝PENDING／ACCEPTED／REJECTED／CANCELLED。<br><code>accounts.user_id</code>、<code>positions(user_id,symbol)</code> 為 UNIQUE（見下方索引）。</p>
+<p><code>role</code>＝USER／ADMIN；<code>side</code>＝BUY／SELL；<code>status</code>＝PENDING／ACCEPTED／REJECTED／CANCELLED。<br><code>accounts.user_id</code> UNIQUE；<code>positions(user_id,symbol)</code> UNIQUE。<br><code>AUDIT_LOG</code> 以 <code>username</code> 字串對齊 <code>users.username</code>（虛線＝非 DB FK）。此側 accounts／positions 是 <strong>standalone 帳本</strong>（order 本機複本）；正式帳本在 account DB。</p>
 </blockquote>
+
+<h2>ER Model — account DB（accountdb）</h2>
+<div class="mermaid">
+erDiagram
+  ACC_ACCOUNTS {
+    bigint id PK
+    bigint user_id UK
+    decimal cash_balance
+    varchar currency
+  }
+  ACC_POSITIONS {
+    bigint id PK
+    bigint user_id
+    varchar symbol
+    int quantity
+    decimal avg_price
+  }
+  ACC_ACCOUNTS ||--o{ ACC_POSITIONS : "same user_id"
+</div>
+<blockquote>
+<p>表名實際仍是 <code>accounts</code>／<code>positions</code>（圖上加 <code>ACC_</code> 前綴以免與 order 側混淆）。種子 <code>user_id</code> 1／2 對齊 order 的 trader1／admin，<strong>約定式對齊、無跨庫 FK</strong>。</p>
+</blockquote>
+
+<h2>跨庫關係（非 FK：Feign／Kafka）</h2>
+<div class="mermaid">
+flowchart LR
+  subgraph ORD["order :8081 · fintechdemo"]
+    U[users]
+    O[orders]
+    OA[accounts 本機複本]
+    OP[positions 本機複本]
+    A[audit_log]
+  end
+  subgraph ACC["account :8084 · accountdb"]
+    AA[accounts 正式]
+    AP[positions 正式]
+  end
+  O -->|"execute → Feign apply-trade<br/>或 Kafka trade-events"| AA
+  O --> AP
+  U -.->|"user_id 約定"| AA
+  U -.->|"user_id 約定"| AP
+</div>
 <h2>種子資料故事線（必須互相串連）</h2>
 <table>
 <thead>
@@ -172,11 +343,11 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 <tr>
 <td>GET <code>/api/accounts/me</code></td>
-<td>accounts</td>
+<td>account DB <code>accounts</code>（經 Gateway；order 本機複本僅內部／降級）</td>
 </tr>
 <tr>
 <td>GET <code>/api/positions</code></td>
-<td>positions</td>
+<td>account DB <code>positions</code></td>
 </tr>
 <tr>
 <td>GET <code>/api/audit-logs</code></td>

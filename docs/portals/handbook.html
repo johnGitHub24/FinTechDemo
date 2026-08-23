@@ -58,15 +58,18 @@
   <a href="#ch03">第 3 章　前後台劇本</a>
   <h2>架構</h2>
   <a href="#ch04">第 4 章　模組與埠</a>
-  <a href="#ch05">第 5 章　分散式怎麼講</a>
+  <a href="#ch05">第 5 章　雙庫與 ER Model</a>
+  <a href="#ch06">第 6 章　分散式怎麼講</a>
   <h2>API</h2>
-  <a href="#ch06">第 6 章　API 地圖</a>
+  <a href="#ch07">第 7 章　API 地圖</a>
   <a href="swagger.html">→ 開 Swagger UI</a>
   <h2>測試</h2>
-  <a href="#ch07">第 7 章　測試與 Pipeline</a>
+  <a href="#ch08">第 8 章　測試與 Pipeline</a>
   <h2>互動</h2>
   <a href="demo-flow.html">啟動流程 HTML</a>
+  <a href="demo-scripts.html">demo/ 腳本指南</a>
   <a href="codeGraphic.html">CodeGraphic</a>
+  <a href="../architecture/db.html">資料庫設計（權威 ER）</a>
   <a href="../architecture/architecture.html">architecture.md</a>
 </nav>
 <main>
@@ -158,29 +161,197 @@ flowchart LR
       <tr><td>account</td><td>8084</td><td>餘額持倉／Redis／Kafka 消費</td></tr>
       <tr><td>job</td><td>8083</td><td>逾時取消排程</td></tr>
     </table>
+    <p>表與雙庫邊界：下一章 <a href="#ch05">雙庫與 ER Model</a> · 權威細圖 <a href="../architecture/db.html">資料庫設計</a>。</p>
   </div>
 </article>
 
 <article class="chapter" id="ch05">
   <header class="chapter-header">
     <span class="chapter-label">架構</span>
-    <h2>第 5 章　分散式怎麼講</h2>
+    <h2>第 5 章　雙庫與 ER Model</h2>
   </header>
   <div class="md-content">
+    <blockquote>
+      <strong>本機 Demo 預設是兩個 H2</strong>（不是同一 DB 分表）。欄位細節與 ER 圖權威：
+      <a href="../architecture/db.html">docs/architecture/db.html</a>。
+    </blockquote>
+
+    <h3>5.0 兩個資料庫，不是 bug</h3>
+    <p>order-service 與 account-service 各有一個<strong>獨立的 H2 記憶體庫</strong>。risk、job、gateway 沒有業務表。</p>
+
+    <h3>5.1 兩個庫長什麼樣</h3>
+    <table>
+      <tr><th>服務</th><th>資料庫</th><th>主要表</th></tr>
+      <tr><td>order :8081</td><td><code>jdbc:h2:mem:fintechdemo</code></td><td>users、orders、audit_log，<strong>還有</strong> accounts、positions</td></tr>
+      <tr><td>account :8084</td><td><code>jdbc:h2:mem:accountdb</code></td><td>accounts、positions</td></tr>
+    </table>
     <ul>
-      <li><b>微服務</b>：三個業務服務拆邊界（不一定要 Eureka）</li>
-      <li><b>同步</b>：Feign 叫 risk</li>
-      <li><b>非同步</b>：Kafka topic 當 event bus</li>
-      <li><b>快取</b>：account 讀路徑 Redis，入帳後 evict</li>
-      <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
+      <li>表名 <code>accounts</code>／<code>positions</code> 兩邊各一份，但在<strong>不同 H2 實例</strong></li>
+      <li>無跨庫 FK；<code>user_id</code> 約定對齊（1＝trader1、2＝admin）</li>
     </ul>
+
+    <h3>5.2 H2 連線字串（本機）</h3>
+    <p>共通：<code>username=sa</code>、<code>password=</code>（空白）。服務關閉後 mem 庫即消失。</p>
+    <table>
+      <tr><th>項目</th><th>order :8081</th><th>account :8084</th></tr>
+      <tr>
+        <td>Spring JDBC URL</td>
+        <td><code>jdbc:h2:mem:fintechdemo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1</code></td>
+        <td><code>jdbc:h2:mem:accountdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1</code></td>
+      </tr>
+      <tr>
+        <td>H2 Console</td>
+        <td><code>http://localhost:8081/h2-console</code><br>URL 填左欄</td>
+        <td><code>http://localhost:8084/h2-console</code><br>URL 填右欄</td>
+      </tr>
+      <tr>
+        <td>DataGrip</td>
+        <td><code>jdbc:h2:tcp://localhost:9093/mem:fintechdemo</code>（order 須已啟動）</td>
+        <td>用瀏覽器 Console；account 須已啟動</td>
+      </tr>
+      <tr>
+        <td>設定檔</td>
+        <td colspan="2"><code>order-service/…/application.yml</code> · <code>account-service/…/application.yml</code></td>
+      </tr>
+    </table>
+    <p class="muted">完整說明與常見錯誤：<a href="../architecture/db.html#h2-conn">資料庫設計 · H2 連線</a>。</p>
+
+    <h3>5.3 為什麼要這樣？</h3>
+    <ol>
+      <li><b>微服務邊界</b> — order 管登入／訂單／審計；account 管餘額／持倉（Portal 正式帳本）</li>
+      <li><b>order 本機複本</b>（standalone 帳本）— 只起 order 也能練；成交先改 order 庫，再同步 account</li>
+      <li><b>Portal</b> — Gateway → account-service，讀 <code>accountdb</code>，不讀 order 那份</li>
+    </ol>
+
+    <h3>5.4 平常 Demo 成交怎麼跑？</h3>
+    <ol>
+      <li>order 讀 order 庫 accounts → risk 風控</li>
+      <li>風控過 → 改 order 庫 accounts／positions</li>
+      <li>Feign <code>apply-trade</code> 或 Kafka <code>trade-events</code> → 寫入 account 庫</li>
+      <li>Portal 查餘額 → 讀 account 庫</li>
+    </ol>
+    <p>只改 order、沒同步 → Portal 不同步（故預設 <code>feign-sync: true</code>）。</p>
+    <div class="mermaid">
+flowchart LR
+  subgraph ODB["order DB · fintechdemo"]
+    U[users / orders]
+    OA[accounts 本機複本]
+    OP[positions 本機複本]
+  end
+  subgraph ADB["account DB · accountdb"]
+    AA[accounts 正式]
+    AP[positions 正式]
+  end
+  EX[execute] --> OA
+  EX --> OP
+  EX -->|"Feign / Kafka"| AA
+  EX --> AP
+  Portal["Portal"] -->|Gateway| AA
+    </div>
+    <blockquote>
+      <strong>一句話：</strong>兩個 H2、表名相同但不在同一庫；<strong>畫面看 account</strong>，<strong>成交先改 order 再同步</strong>。
+    </blockquote>
+
+    <h3>5.5 order DB — ER（五張表）</h3>
+    <div class="mermaid">
+erDiagram
+  USERS ||--|| ACCOUNTS : "user_id UK"
+  USERS ||--o{ ORDERS : "user_id"
+  USERS ||--o{ POSITIONS : "user_id"
+  USERS }o..o{ AUDIT_LOG : "username soft"
+
+  USERS {
+    bigint id PK
+    varchar username UK
+    varchar password_hash
+    varchar role
+  }
+  ACCOUNTS {
+    bigint id PK
+    bigint user_id UK
+    decimal cash_balance
+    varchar currency
+  }
+  ORDERS {
+    bigint id PK
+    bigint user_id
+    varchar client_order_id UK
+    varchar symbol
+    varchar side
+    int quantity
+    decimal price
+    varchar status
+  }
+  POSITIONS {
+    bigint id PK
+    bigint user_id
+    varchar symbol
+    int quantity
+    decimal avg_price
+  }
+  AUDIT_LOG {
+    bigint id PK
+    varchar action
+    varchar username
+    timestamp created_at
+  }
+    </div>
+    <ul>
+      <li><code>USERS 1—1 ACCOUNTS</code>、<code>1—N ORDERS／POSITIONS</code>：邏輯 <code>user_id</code>（無 JPA 關聯註解）</li>
+      <li><code>AUDIT_LOG</code>：虛線＝用 <code>username</code> 字串對齊，不是 FK</li>
+      <li>列舉：role USER／ADMIN；side BUY／SELL；status PENDING／ACCEPTED／REJECTED／CANCELLED</li>
+    </ul>
+
+    <h3>5.6 account DB — 正式帳本 ER</h3>
+    <div class="mermaid">
+erDiagram
+  ACC_ACCOUNTS {
+    bigint id PK
+    bigint user_id UK
+    decimal cash_balance
+    varchar currency
+  }
+  ACC_POSITIONS {
+    bigint id PK
+    bigint user_id
+    varchar symbol
+    int quantity
+    decimal avg_price
+  }
+  ACC_ACCOUNTS ||--o{ ACC_POSITIONS : "same user_id"
+    </div>
+    <p>實際表名仍是 <code>accounts</code>／<code>positions</code>。圖上 <code>ACC_</code> 只為與 order <strong>本機複本</strong>區隔。</p>
+
+    <h3>5.7 誰讀哪張表</h3>
+      <tr><th>表</th><th>在哪</th><th>誰讀／寫</th></tr>
+      <tr><td>users、orders、audit_log</td><td>order</td><td>登入、下單、審計</td></tr>
+      <tr><td>accounts、positions（order 本機複本）</td><td>order</td><td>成交內部／standalone；非 Portal 主路徑</td></tr>
+      <tr><td>accounts、positions（正式）</td><td>account</td><td>成交同步寫入；Portal 經 Gateway 讀</td></tr>
+    </table>
   </div>
 </article>
 
 <article class="chapter" id="ch06">
   <header class="chapter-header">
+    <span class="chapter-label">架構</span>
+    <h2>第 6 章　分散式怎麼講</h2>
+  </header>
+  <div class="md-content">
+    <ul>
+      <li><b>微服務</b>：三個業務服務拆邊界（不一定要 Eureka）</li>
+      <li><b>同步</b>：Feign 叫 risk；帳本可 Feign <code>apply-trade</code></li>
+      <li><b>非同步</b>：Kafka topic 當 event bus（trade-events → account）</li>
+      <li><b>快取</b>：account 讀路徑 Redis，入帳後 evict</li>
+      <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
+      <li><b>資料邊界</b>：見 <a href="#ch05">§5 ER</a> — 訂單與帳本分庫，用事件／Feign 對齊</li>
+    </ul>
+  </div>
+</article>
+
+<article class="chapter" id="ch07">
+  <header class="chapter-header">
     <span class="chapter-label">API</span>
-    <h2>第 6 章　API 地圖</h2>
+    <h2>第 7 章　API 地圖</h2>
   </header>
   <div class="md-content">
     <p>權威互動：<a href="swagger.html">swagger.html</a> · Markdown：<a href="../architecture/api-spec.html">API規格書.md</a></p>
@@ -193,15 +364,15 @@ flowchart LR
   </div>
 </article>
 
-<article class="chapter" id="ch07">
+<article class="chapter" id="ch08">
   <header class="chapter-header">
     <span class="chapter-label">測試</span>
-    <h2>第 7 章　測試與 Pipeline</h2>
+    <h2>第 8 章　測試與 Pipeline</h2>
   </header>
   <div class="md-content">
-<pre>.\scripts\verify-pipeline.ps1   # check + compose + k8s
+<pre>.\demo\verify-pipeline.ps1     # check + compose + k8s
 .\scripts\check.ps1             # 僅測試</pre>
-    <p>單元／整合在 order、account、risk、gateway、job 各模組；種子資料 trader1 餘額 85000、AAPL 持倉 100。</p>
+    <p>單元／整合在 order、account、risk、gateway、job 各模組；種子資料 trader1 餘額 85000、AAPL 持倉 100（見 <a href="#ch05">§5</a> 表故事）。</p>
   </div>
 </article>
 

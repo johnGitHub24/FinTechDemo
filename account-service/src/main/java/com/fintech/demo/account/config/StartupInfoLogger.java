@@ -60,8 +60,17 @@ public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEv
         }
         if (h2) {
             link(out, probe, "H2 Console", base + "/h2-console");
-            String jdbc = env.getProperty("spring.datasource.url", "jdbc:h2:mem:account");
+            String jdbc = env.getProperty("spring.datasource.url", "jdbc:h2:mem:accountdb");
             out.printf("║   H2 JDBC URL  %s  帳號 sa  密碼 (空白)%n", jdbc);
+            if (!Boolean.FALSE.equals(env.getProperty("spring.h2.tcp.enabled", Boolean.class, true))) {
+                String h2Port = env.getProperty("spring.h2.tcp.port", "9094");
+                out.printf("║   DataGrip     jdbc:h2:tcp://localhost:%s/mem:accountdb  (sa / 空白)%n", h2Port);
+            }
+            if (!Boolean.FALSE.equals(env.getProperty("fintech.redis.enabled", Boolean.class, true))) {
+                String rhost = env.getProperty("spring.data.redis.host", "localhost");
+                String rport = env.getProperty("spring.data.redis.port", "6379");
+                out.printf("║   Redis        %s:%s  key account:{id} / positions:{id}%n", rhost, rport);
+            }
         }
 
         if (!"none".equalsIgnoreCase(frontend)) {

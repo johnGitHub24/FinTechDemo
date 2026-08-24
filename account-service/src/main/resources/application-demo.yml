@@ -1,7 +1,7 @@
 # =============================================================================
 # account-service — application-demo.yml（profile = demo）
-# 【職責】compose 全棧時啟用 Kafka consumer＋Redis；並拿掉 Redis autoconfig 排除
-# 【技巧】spring.autoconfigure.exclude: [] 清空預設排除清單
+# 【職責】compose 全棧：開 Kafka consumer，並讓 /actuator/health 真實檢查 Redis
+# 【技巧】spring.autoconfigure.exclude: [] 保留空陣列（本機預設已不再排除 RedisAutoConfiguration）
 # 【概念】需先 docker compose up -d（Redis :6379、Kafka／Redpanda）；與 order 的 demo 成對
 # =============================================================================
 

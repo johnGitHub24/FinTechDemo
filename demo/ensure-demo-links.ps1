@@ -351,9 +351,60 @@ if (-not $tradeOk) {
     Write-Host "WARN trade-ready 未齊 — 仍繼續補齊橫幅其餘服務" -ForegroundColor Yellow
 }
 
+function Test-TcpPort([int]$Port) {
+    try {
+        $client = New-Object System.Net.Sockets.TcpClient
+        $iar = $client.BeginConnect('127.0.0.1', $Port, $null, $null)
+        $ok = $iar.AsyncWaitHandle.WaitOne(500)
+        if ($ok -and $client.Connected) {
+            $client.Close()
+            return $true
+        }
+        $client.Close()
+        return $false
+    } catch {
+        return $false
+    }
+}
+
+function Ensure-Redis {
+    if (Test-TcpPort 6379) {
+        Write-Host "  OK redis :6379" -ForegroundColor Green
+        return $true
+    }
+    $dockerOk = $false
+    if (Get-Command docker -ErrorAction SilentlyContinue) {
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        $dinfo = docker info 2>&1 | Out-String
+        $ErrorActionPreference = $prev
+        $dockerOk = ($dinfo -match 'Server Version:')
+    }
+    if (-not $dockerOk) {
+        Write-Host "  SKIP redis (Docker not Ready). Start Desktop then: docker compose up -d redis" -ForegroundColor Yellow
+        return $false
+    }
+    Write-Host "  START docker compose up -d redis ..." -ForegroundColor Cyan
+    & docker compose up -d redis
+    for ($i = 0; $i -lt 24; $i++) {
+        if (Test-TcpPort 6379) {
+            Write-Host "  OK redis :6379" -ForegroundColor Green
+            return $true
+        }
+        Start-Sleep -Seconds 2
+    }
+    Write-Host "  FAIL redis :6379 — check: docker compose up -d redis" -ForegroundColor Red
+    return $false
+}
+
 # ---- P1：橫幅其餘後端（FromOrder 也要拉；依序避免一次搶爆 RAM）----
 Write-Host ""
-Write-Host "== P1 banner backends（Account / Gateway / Job / Docs）==" -ForegroundColor Cyan
+Write-Host "== P1 banner backends（Redis / Account / Gateway / Job / Docs）==" -ForegroundColor Cyan
+if (-not $SkipDocker) {
+    Ensure-Redis
+} else {
+    Write-Host "  SKIP redis (-SkipDocker) — account 仍可打 H2" -ForegroundColor DarkGray
+}
 Ensure-BootService "account-service" ":account-service:bootRun" "http://127.0.0.1:8084/actuator/health" 8084 2 -Force:$ForceRestart | Out-Null
 $gwUp = Ensure-BootService "gateway" ":gateway:bootRun" "http://127.0.0.1:8080/actuator/health" 8080 2
 Ensure-BootService "job-service" ":job-service:bootRun" "http://127.0.0.1:8083/actuator/health" 8083 2 | Out-Null

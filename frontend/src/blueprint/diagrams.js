@@ -22,7 +22,7 @@ export const TECH_STACK = [
   { layer: '後端', tech: 'springdoc OpenAPI', version: '2.3.0', purpose: '自動產生 API 文件與試打介面', note: 'Order :8081 /swagger-ui.html' },
   { layer: '後端', tech: 'Actuator + Prometheus', version: 'Micrometer', purpose: '健康檢查與監控指標輸出', note: '/actuator/health 拓撲燈；/actuator/prometheus 刮取' },
   { layer: '基建', tech: 'Kafka', version: 'spring-kafka', purpose: '非同步訊息／事件串流', note: 'order／account 事件（可選）；無 broker 時降級' },
-  { layer: '基建', tech: 'Redis Cache', version: 'starter-data-redis', purpose: '讀側 cache-aside 快取', note: 'Account：key account:{id}／positions:{id}；TTL 60s；入帳 evict；可關降級' },
+  { layer: '基建', tech: 'Redis Cache', version: 'starter-data-redis', purpose: '讀側 cache-aside 快取', note: '僅 account 連 :6379；key account:{id}／positions:{id}；TTL 600s；入帳 evict；本機 Demo 預設開' },
   { layer: '基建', tech: 'PostgreSQL', version: 'prod 敘述', purpose: '正式環境持久化關聯式資料庫', note: 'docker／prod profile；local 改用 H2' },
   { layer: '排程', tech: 'Job Service', version: 'Spring Boot 3.2', purpose: '定時背景工作（排程任務）', note: ':8083 逾時 PENDING→CANCELLED（可選；不進 S 公式）' }
 ];
@@ -48,8 +48,10 @@ export const PORTS = [
   { port: 8081, service: 'Order', role: '登入／下單／成交／審計／WebConfig CORS' },
   { port: 8082, service: 'Risk', role: '名目金額風控（成交必開）' },
   { port: 8083, service: 'Job', role: '逾時取消排程（可選）' },
-  { port: 8084, service: 'Account', role: '餘額／持倉／Redis Cache／Kafka（可選）' },
-  { port: 6379, service: 'Redis', role: 'Account 快取（可選；docker compose up -d redis）' },
+  { port: 8084, service: 'Account', role: '餘額／持倉／Redis Cache（本機預設開）／Kafka（可選）' },
+  { port: 6379, service: 'Redis', role: 'Account 快取（開啟Demo 預設 docker compose up -d redis）' },
+  { port: 9093, service: 'order H2 TCP', role: 'DataGrip：jdbc:h2:tcp://localhost:9093/mem:fintechdemo' },
+  { port: 9094, service: 'account H2 TCP', role: 'DataGrip：jdbc:h2:tcp://localhost:9094/mem:accountdb' },
   { port: 5173, service: 'Vue Dev', role: '前端 SPA' },
   { port: 3000, service: 'Grafana', role: '把監控數字畫成圖表；登入 admin／admin' },
   { port: 9090, service: 'Prometheus', role: '定時收集各服務數字；可查詢／看曲線' },
@@ -79,8 +81,8 @@ export const EDGE_MECHANISMS = [
     name: 'Redis Cache',
     where: 'account-service/.../AccountQueryService.java',
     what: '讀側 cache-aside；入帳後 evict，避免髒讀',
-    config: 'key account:{userId}／positions:{userId}；TTL 60s；fintech.redis.enabled',
-    demo: '見藍圖 #docker-redis：compose 起 :6379；demo profile 才寫 account:{userId}；無 Redis 降級打 DB'
+    config: 'key account:{userId}／positions:{userId}；TTL 600s；fintech.redis.enabled（本機預設 true）',
+    demo: '見藍圖 #docker-redis：開啟Demo 起 :6379；種子預熱 key；無 Redis 降級打 H2'
   }
 ];
 
@@ -114,7 +116,7 @@ export const DIAGRAM_LAYERS = `flowchart TB
   Order -.->|"事件（可選）"| Kafka
   Order --> H2
   Account --> H2
-  Account -->|"TTL 60s / evict"| Redis
+  Account -->|"TTL 600s / evict"| Redis
   Account -.-> Kafka
   Job -->|"取消 PENDING"| Order
 `;

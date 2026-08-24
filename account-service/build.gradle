@@ -19,7 +19,8 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
-    runtimeOnly 'com.h2database:h2'
+    // 【技巧】implementation（非 runtimeOnly）：H2TcpConfig 編譯期要用 org.h2.tools.Server
+    implementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation testFixtures(project(':common'))

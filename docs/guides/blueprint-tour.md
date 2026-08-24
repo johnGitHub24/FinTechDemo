@@ -100,7 +100,7 @@ docker compose --profile full up -d frontend
 
 - 教 **提示字元**：PowerShell vs redis-cli vs 容器 shell
 - 指令可一鍵複製：`docker compose up -d redis`、`PING`、`KEYS *`
-- Account 可選 Redis cache-aside（:6379）
+- 本機 Demo 預設開 Redis cache-aside（僅 account :6379；TTL 600s；`開啟Demo` 起容器）
 
 ---
 
@@ -119,7 +119,7 @@ docker compose --profile full up -d frontend
 ### `#layers` — 分層架構（Mermaid）
 
 - **實線**：Vue :5173 → Order :8081 → Feign Risk :8082
-- **虛線**：Gateway、Kafka、Job、Redis（可選）
+- **虛線**：Gateway、Kafka、Job；Redis 本機 Demo 預設開（僅 account）
 - 區塊下 **↔ 檔案對照**：各層對應 Java/Vue 路徑
 
 **講法：** 「最短可成交不經 Gateway；講分散式時才開 :8080。」
@@ -132,7 +132,7 @@ docker compose --profile full up -d frontend
 |------|------|--------|
 | RateLimitWebFilter | Gateway | 入口限流 429 |
 | WebConfig | Order | CORS 允許 Vue |
-| Redis Cache | Account | cache-aside TTL 60s |
+| Redis Cache | Account | cache-aside TTL 600s；只有 account 連 :6379 |
 
 每張卡片含 **設定 key** 與 **怎麼 Demo**。
 

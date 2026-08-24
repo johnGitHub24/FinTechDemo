@@ -161,6 +161,16 @@ flowchart LR
       <tr><td>account</td><td>8084</td><td>餘額持倉／Redis／Kafka 消費</td></tr>
       <tr><td>job</td><td>8083</td><td>逾時取消排程</td></tr>
     </table>
+    <h3>本機誰連 Redis（:6379）</h3>
+    <table>
+      <tr><th>服務</th><th>跟 Redis 的關係</th></tr>
+      <tr><td>account :8084</td><td>才會連 <code>:6379</code>，寫 <code>account:{id}</code>／<code>positions:{id}</code>（TTL 600s；讀快取；入帳 evict）。<strong>開啟Demo 預設</strong>會 <code>docker compose up -d redis</code></td></tr>
+      <tr><td>order／risk／gateway／job</td><td>本機預設<strong>不連</strong> Redis</td></tr>
+    </table>
+    <blockquote>
+      開 Redis <strong>不會改</strong>下單／風控／Gateway 邏輯。沒開 Docker Redis 時，account 仍可打 H2；DataGrip 連 <code>6379</code> 是 Redis，不是 H2（帳本在 <code>9094/mem:accountdb</code>）。
+      連線表：<a href="../architecture/db.html#redis-conn">資料庫設計 · Redis</a>。
+    </blockquote>
     <p>表與雙庫邊界：下一章 <a href="#ch05">雙庫與 ER Model</a> · 權威細圖 <a href="../architecture/db.html">資料庫設計</a>。</p>
   </div>
 </article>
@@ -207,7 +217,7 @@ flowchart LR
       <tr>
         <td>DataGrip</td>
         <td><code>jdbc:h2:tcp://localhost:9093/mem:fintechdemo</code>（order 須已啟動）</td>
-        <td>用瀏覽器 Console；account 須已啟動</td>
+        <td><code>jdbc:h2:tcp://localhost:9094/mem:accountdb</code>（account 須已啟動）</td>
       </tr>
       <tr>
         <td>設定檔</td>
@@ -216,14 +226,112 @@ flowchart LR
     </table>
     <p class="muted">完整說明與常見錯誤：<a href="../architecture/db.html#h2-conn">資料庫設計 · H2 連線</a>。</p>
 
-    <h3>5.3 為什麼要這樣？</h3>
+    <h3>5.3 三種架構怎麼看</h3>
+    <table>
+      <tr><th>做法</th><th>長相</th><th>優點</th><th>代價</th><th>適合</th></tr>
+      <tr>
+        <td>單體 + 單 DB</td>
+        <td>一個 Spring Boot + 一個資料庫</td>
+        <td>最簡單；<code>@Transactional</code> 好處理；不太會有同步問題</td>
+        <td>模組容易耦合；邊界不明；不容易練分散式</td>
+        <td>CRUD 初學、功能先做出來</td>
+      </tr>
+      <tr>
+        <td>微服務 + 共用 DB</td>
+        <td>多個服務，但都連同一個 DB</td>
+        <td>比雙庫簡單；查詢方便；交易一致性較容易</td>
+        <td>服務容易互相偷讀 table；像拆了 API、沒拆資料</td>
+        <td>過渡期、團隊剛開始拆服務</td>
+      </tr>
+      <tr>
+        <td><strong>微服務 + 各自 DB</strong></td>
+        <td><strong>每個服務管理自己的資料</strong></td>
+        <td><strong>邊界清楚</strong>；可各自部署；能練 Feign／Kafka／source of truth</td>
+        <td><strong>最複雜</strong>；要處理同步、重試、最終一致性；跨服務查詢較麻煩</td>
+        <td><strong>本專案現在這種教學型分散式架構</strong></td>
+      </tr>
+    </table>
+    <blockquote>
+      <strong>本專案的選擇：</strong>FinTechDemo 不是要走最省事的 CRUD，而是要練「服務拆開後，資料怎麼同步、畫面該信誰、Feign/Kafka 怎麼接」，
+      所以刻意採用 <strong>微服務 + 各自 DB</strong>。
+    </blockquote>
+
+    <h3>5.4 初學者怎麼走比較順</h3>
+    <ol>
+      <li><b>先學 單體 + 單 DB</b>：先把 CRUD、JPA、交易流程、<code>@Transactional</code> 搞懂。</li>
+      <li><b>再看 微服務 + 共用 DB</b>：理解「API 雖然拆了，但資料其實還黏在一起」的過渡狀態。</li>
+      <li><b>最後練 微服務 + 各自 DB</b>：開始面對同步、Feign、Kafka、source of truth、最終一致性。</li>
+    </ol>
+    <blockquote>
+      <strong>白話：</strong>先學「一台店怎麼營業」，再學「分店怎麼分工」，最後才學「分店之間帳怎麼對」。
+      FinTechDemo 目前就是第三階段的練習。
+    </blockquote>
+
+    <h3>5.5 概念對應檔案</h3>
+    <table>
+      <tr><th>你想學的概念</th><th>代表檔案</th><th>看什麼</th></tr>
+      <tr>
+        <td>單體 + 單 DB 思維</td>
+        <td><code>order-service/.../TradingService.java</code></td>
+        <td>先看一支 service 如何下單、風控、扣款、改狀態</td>
+      </tr>
+      <tr>
+        <td>order 自己的資料</td>
+        <td><code>order-service/.../OrderEntity.java</code><br><code>order-service/.../AccountEntity.java</code><br><code>order-service/.../PositionEntity.java</code></td>
+        <td>order 庫裡有哪些表，為何有本機複本</td>
+      </tr>
+      <tr>
+        <td>account 自己的資料</td>
+        <td><code>account-service/.../AccountEntity.java</code><br><code>account-service/.../PositionEntity.java</code></td>
+        <td>正式帳本在哪，Portal 最後讀誰</td>
+      </tr>
+      <tr>
+        <td>微服務 + 各自 DB</td>
+        <td><code>order-service/src/main/resources/application.yml</code><br><code>account-service/src/main/resources/application.yml</code></td>
+        <td>直接看兩條不同的 <code>jdbc:h2:mem:...</code></td>
+      </tr>
+      <tr>
+        <td>同步問題怎麼解</td>
+        <td><code>order-service/.../AccountSyncService.java</code></td>
+        <td>Feign 同步、Kafka 開關、失敗就拋錯避免脫節</td>
+      </tr>
+      <tr>
+        <td>Portal 為什麼只看 account</td>
+        <td><code>frontend/src/views/PortalView.vue</code><br><code>frontend/src/api/client.js</code></td>
+        <td>餘額／持倉打 <code>/api/accounts/me</code>、<code>/api/positions</code></td>
+      </tr>
+      <tr>
+        <td>文件總覽</td>
+        <td><code>docs/architecture/db.html</code><br><code>docs/architecture/architecture.html</code></td>
+        <td>ER、雙庫邊界、source of truth 的文字版</td>
+      </tr>
+    </table>
+    <blockquote>
+      <strong>建議閱讀順序：</strong><code>TradingService</code> →
+      <code>application.yml</code>（兩個 DB）→
+      <code>AccountSyncService</code>（同步）→
+      <code>PortalView</code>（畫面讀誰）。
+    </blockquote>
+    <div class="mermaid">
+flowchart LR
+  TS["TradingService.java<br/>execute()"] --> CFG["application.yml x2<br/>order: fintechdemo<br/>account: accountdb"]
+  TS --> SYNC["AccountSyncService.java<br/>Feign/Kafka 同步"]
+  SYNC --> ACCDB["account-service<br/>accounts / positions（正式帳本）"]
+  TS --> ORDDB["order-service<br/>orders + 本機複本"]
+  PV["PortalView.vue / client.js"] -->|GET /api/accounts/me<br/>GET /api/positions| ACCDB
+  PV -->|GET /api/orders| ORDDB
+  CFG --> TS
+    </div>
+    <p class="muted">讀碼重點：<strong>下單邏輯在 order</strong>、<strong>同步邏輯在 AccountSyncService</strong>、<strong>畫面資產最終讀 account</strong>。</p>
+
+    <h3>5.6 為什麼要這樣？</h3>
     <ol>
       <li><b>微服務邊界</b> — order 管登入／訂單／審計；account 管餘額／持倉（Portal 正式帳本）</li>
       <li><b>order 本機複本</b>（standalone 帳本）— 只起 order 也能練；成交先改 order 庫，再同步 account</li>
       <li><b>Portal</b> — Gateway → account-service，讀 <code>accountdb</code>，不讀 order 那份</li>
     </ol>
 
-    <h3>5.4 平常 Demo 成交怎麼跑？</h3>
+    <h3>5.7 平常 Demo 成交怎麼跑？</h3>
     <ol>
       <li>order 讀 order 庫 accounts → risk 風控</li>
       <li>風控過 → 改 order 庫 accounts／positions</li>
@@ -252,7 +360,7 @@ flowchart LR
       <strong>一句話：</strong>兩個 H2、表名相同但不在同一庫；<strong>畫面看 account</strong>，<strong>成交先改 order 再同步</strong>。
     </blockquote>
 
-    <h3>5.5 order DB — ER（五張表）</h3>
+    <h3>5.8 order DB — ER（五張表）</h3>
     <div class="mermaid">
 erDiagram
   USERS ||--|| ACCOUNTS : "user_id UK"
@@ -302,7 +410,7 @@ erDiagram
       <li>列舉：role USER／ADMIN；side BUY／SELL；status PENDING／ACCEPTED／REJECTED／CANCELLED</li>
     </ul>
 
-    <h3>5.6 account DB — 正式帳本 ER</h3>
+    <h3>5.9 account DB — 正式帳本 ER</h3>
     <div class="mermaid">
 erDiagram
   ACC_ACCOUNTS {
@@ -322,7 +430,7 @@ erDiagram
     </div>
     <p>實際表名仍是 <code>accounts</code>／<code>positions</code>。圖上 <code>ACC_</code> 只為與 order <strong>本機複本</strong>區隔。</p>
 
-    <h3>5.7 誰讀哪張表</h3>
+    <h3>5.10 誰讀哪張表</h3>
       <tr><th>表</th><th>在哪</th><th>誰讀／寫</th></tr>
       <tr><td>users、orders、audit_log</td><td>order</td><td>登入、下單、審計</td></tr>
       <tr><td>accounts、positions（order 本機複本）</td><td>order</td><td>成交內部／standalone；非 Portal 主路徑</td></tr>
@@ -341,7 +449,7 @@ erDiagram
       <li><b>微服務</b>：三個業務服務拆邊界（不一定要 Eureka）</li>
       <li><b>同步</b>：Feign 叫 risk；帳本可 Feign <code>apply-trade</code></li>
       <li><b>非同步</b>：Kafka topic 當 event bus（trade-events → account）</li>
-      <li><b>快取</b>：account 讀路徑 Redis，入帳後 evict</li>
+      <li><b>快取</b>：只有 account 讀路徑連 Redis；order／risk／gateway／job 本機預設不連。入帳後 evict</li>
       <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
       <li><b>資料邊界</b>：見 <a href="#ch05">§5 ER</a> — 訂單與帳本分庫，用事件／Feign 對齊</li>
     </ul>

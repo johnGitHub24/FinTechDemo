@@ -87,9 +87,9 @@
       <strong>NOTE · 為什麼 KEYS * 是空的</strong>
       <ul>
         <li><code>PING</code>＝<code>PONG</code> 代表連線成功；<code>DBSIZE 0</code>＝庫裡還沒有 key</li>
-        <li>Account 預設 <code>fintech.redis.enabled=false</code>，查帳戶只打 H2，不寫 Redis</li>
-        <li>要看程式寫入：account 加 <code>--spring.profiles.active=demo</code>，再打 <code>GET /api/accounts/me</code></li>
-        <li>key：<code>account:&#123;userId&#125;</code>／<code>positions:&#123;userId&#125;</code>，TTL 約 60 秒</li>
+        <li>本機 Demo 預設 <code>fintech.redis.enabled=true</code>；<code>開啟Demo.cmd</code> 會先起 redis 容器。種子啟動會預熱 <code>account:1</code>／<code>positions:1</code>（與 admin <code>:2</code>）</li>
+        <li>沒開 Docker Redis 時 account 仍可打 H2（QueryService warn 後降級），不擋查詢</li>
+        <li>key：<code>account:&#123;userId&#125;</code>／<code>positions:&#123;userId&#125;</code>，TTL 600 秒（<code>fintech.redis.ttl-seconds</code>）</li>
         <li>練習可先 <code>SET account:1 "demo"</code>，刷新 IntelliJ database 0 就看得到</li>
       </ul>
     </aside>

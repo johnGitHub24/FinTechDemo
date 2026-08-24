@@ -52,7 +52,7 @@ Sync: `apply-workspace.ps1 -WithDemo`
 
 | 檔案 | 目的 |
 |------|------|
-| `ensure-demo-links.ps1` | LOOP 拉起服務；`開啟Demo.cmd`／`DemoStackBootstrap -FromOrder` 呼叫 |
+| `ensure-demo-links.ps1` | LOOP 拉起服務＋預設 Redis；`開啟Demo.cmd`／`DemoStackBootstrap -FromOrder` 呼叫 |
 | `start-demo-ready.ps1` | **相容**：轉發 ensure |
 | `start-demo.ps1` | **相容**：轉發 ensure（或 `-Minimal` 印指引） |
 | `start-guide.ps1` | **相容**：印入口說明 |

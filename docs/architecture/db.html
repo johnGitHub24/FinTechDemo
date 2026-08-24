@@ -87,6 +87,51 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 
 <h3>為什麼要這樣運作？</h3>
 <p>這是<strong>微服務拆邊界</strong>的 Demo 設計，不是 bug：</p>
+<h3>三種架構怎麼看</h3>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>長相</th>
+<th>優點</th>
+<th>代價</th>
+<th>適合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>單體 + 單 DB</td>
+<td>一個 Spring Boot + 一個資料庫</td>
+<td>最簡單；交易一致性好處理；很少同步問題</td>
+<td>模組容易耦合；不容易練分散式</td>
+<td>CRUD 初學、先做功能</td>
+</tr>
+<tr>
+<td>微服務 + 共用 DB</td>
+<td>多個服務共用同一個 DB</td>
+<td>比雙庫簡單；查詢方便</td>
+<td>服務邊界容易被資料表打穿</td>
+<td>過渡期拆服務</td>
+</tr>
+<tr>
+<td><strong>微服務 + 各自 DB</strong></td>
+<td><strong>每個服務管理自己的資料</strong></td>
+<td><strong>邊界清楚</strong>；能練 Feign／Kafka／source of truth</td>
+<td><strong>最複雜</strong>；要處理同步、重試、最終一致性</td>
+<td><strong>本專案目前架構</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>本專案刻意選第三種，不是因為單 DB 做不到，而是因為要練「服務拆開後，資料怎麼同步」這件事。</p>
+</blockquote>
+<h3>初學者怎麼走比較順</h3>
+<ol>
+<li><strong>先學 單體 + 單 DB</strong>：先把 CRUD、JPA、交易流程、<code>@Transactional</code> 搞懂。</li>
+<li><strong>再看 微服務 + 共用 DB</strong>：理解 API 雖然拆了，但資料仍可能共用。</li>
+<li><strong>最後練 微服務 + 各自 DB</strong>：開始面對同步、Feign、Kafka、source of truth、最終一致性。</li>
+</ol>
+<blockquote>
+<p><strong>白話：</strong>先學「一台店怎麼營業」，再學「分店怎麼分工」，最後才學「分店之間帳怎麼對」。FinTechDemo 目前就是第三階段。</p>
+</blockquote>
 <ol>
 <li><strong>各服務管自己的資料</strong> — order：登入／下單／審計；account：餘額／持倉（Portal 看的「正式帳本」）。</li>
 <li><strong>order 裡仍有一份 accounts／positions</strong>（<em>order 本機複本</em>／<em>standalone 帳本</em>）— 只起 order 也能練成交；成交時 order 先改自己庫，再同步到 account。</li>
@@ -190,14 +235,30 @@ flowchart LR
 </tr>
 <tr>
 <td>DataGrip／IntelliJ</td>
-<td><code>jdbc:h2:tcp://localhost:9093/mem:fintechdemo</code><br>（order 啟動時開 TCP；見啟動 log）</td>
-<td>本專案<strong>未開</strong> H2 TCP → 請用瀏覽器 Console，且 account 須在跑</td>
+<td><code>jdbc:h2:tcp://localhost:9093/mem:fintechdemo</code><br>（order 須在跑；見啟動 log）</td>
+<td><code>jdbc:h2:tcp://localhost:9094/mem:accountdb</code><br>（account 須在跑；見啟動 log）</td>
 </tr>
 </tbody></table>
 <blockquote>
-<p><strong>常見錯誤：</strong>在 DataGrip 對 order 填 <code>jdbc:h2:mem:fintechdemo</code> 會連到<strong>另一份空庫</strong>，不是正在跑的 order 進程。order 要用 TCP URL 或瀏覽器 <code>:8081/h2-console</code>。<br>
+<p><strong>常見錯誤：</strong>DataGrip 填 <code>jdbc:h2:mem:...</code> 會連到<strong>另一份空庫</strong>（看不到表）。要用 TCP：order <code>9093/mem:fintechdemo</code>、account <code>9094/mem:accountdb</code>。TCP URL 不可寫成 <code>.../mem</code>（缺庫名會 90011）。<br>
 <strong>參數：</strong><code>MODE=PostgreSQL</code>＝SQL 方言靠近 Postgres；<code>DB_CLOSE_DELAY=-1</code>＝JVM 活著就保留 mem 資料。</p>
 </blockquote>
+
+<h2 id="redis-conn">Redis（僅 account，不是帳本）</h2>
+<p>帳本在 H2 <code>accountdb</code>（上表 TCP <code>:9094</code>）。<code>:6379</code> 是讀側快取，<strong>只有 account-service 會連</strong>。</p>
+<table>
+<thead>
+<tr><th>項目</th><th>值</th></tr>
+</thead>
+<tbody>
+<tr><td>Host／Port</td><td><code>127.0.0.1:6379</code>（無密碼；容器名 <code>fintech-demo-redis</code>）</td></tr>
+<tr><td>Key</td><td><code>account:{userId}</code>、<code>positions:{userId}</code></td></tr>
+<tr><td>TTL</td><td>600 秒（<code>fintech.redis.ttl-seconds</code>）</td></tr>
+<tr><td>本機 Demo</td><td>預設 <code>fintech.redis.enabled=true</code>；<code>開啟Demo.cmd</code> 先 <code>docker compose up -d redis</code></td></tr>
+<tr><td>測試</td><td><code>account-service/src/test/resources/application.properties</code> 關掉</td></tr>
+<tr><td>沒開容器</td><td>QueryService warn 後改打 H2，不擋查詢</td></tr>
+</tbody>
+</table>
 
 <h2>ER Model — order DB（fintechdemo）</h2>
 <div class="mermaid">

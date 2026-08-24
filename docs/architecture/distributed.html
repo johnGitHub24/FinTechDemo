@@ -143,21 +143,28 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </tr>
 <tr>
 <td>TTL</td>
-<td>60s</td>
+<td>600s（<code>fintech.redis.ttl-seconds</code>；種子啟動會預熱 key）</td>
 </tr>
 <tr>
 <td>失效</td>
 <td>入帳（Kafka／Feign apply-trade）後 <code>evict</code></td>
 </tr>
 <tr>
-<td>降級</td>
-<td>預設 <code>fintech.redis.enabled=false</code> + exclude RedisAutoConfiguration（無 Redis 可啟動）</td>
+<td>本機 Demo</td>
+<td>預設 <code>fintech.redis.enabled=true</code>；<code>開啟Demo.cmd</code> 會 <code>docker compose up -d redis</code>（<code>-SkipDocker</code> 才略過）</td>
 </tr>
 <tr>
-<td>Demo</td>
-<td><code>application-demo.yml</code> 開啟 Redis</td>
+<td>測試</td>
+<td><code>src/test/resources/application.properties</code> 關 Redis＋exclude autoconfig</td>
+</tr>
+<tr>
+<td>連線失敗</td>
+<td>QueryService warn 後改打 H2，不擋查詢</td>
 </tr>
 </tbody></table>
+<blockquote>
+<p><strong>Note：</strong>只有 account 連 <code>localhost:6379</code>。order／risk／gateway／job 本機預設不連 Redis；開 Redis 不會改那些服務的行為。</p>
+</blockquote>
 <h2>雙路徑一致性</h2>
 <table>
 <thead>

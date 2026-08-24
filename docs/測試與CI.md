@@ -57,6 +57,8 @@ HTTP API Case 必須 Unit + Integration 同一 ID。
 
 Boot／面試煙測（`*-BOOT-001`）只斷言 ApplicationContext 載入，標 **unit-only**，不強制 HTTP 成對。
 
+Account 測試關 Redis／H2 TCP：`account-service/src/test/resources/application.properties`（`fintech.redis.enabled=false`、`spring.h2.tcp.enabled=false`）。本機 Demo 預設開 Redis（TTL 600s），與測試設定不同。
+
 掃描 hook 可能把 `ORDER-001`／`RISK-001`／`SEC-001`／`JWT-001` 的子字串（如 `RDER-001`、`ISK-001`、`EC-001`、`WT-001`）當成獨立 Case；**不是程式錯字**，勿為此新增假 Case。
 
 載入器：`com.fintech.demo.support.DemoTestFixtures`（`testFixtures(project(':common'))`）

@@ -1,8 +1,8 @@
 # =============================================================================
 # account-service — 預設 application.yml（local／test 基線）
-# 【職責】帳務／持倉：H2、JWT、Kafka／Redis（預設關）、Actuator
-# 【技巧】排除 RedisAutoConfiguration → 本機無 Redis 也能啟動
-# 【概念】「可選基礎設施」：enabled=false＋排除 autoconfig；demo profile 再打開
+# 【職責】帳務／持倉：H2、JWT、Redis 快取（本機 Demo 預設開）、Kafka（預設關）、Actuator
+# 【技巧】本機 Demo 由 ensure-demo-links 先 docker compose up -d redis；測試 profile 再關 Redis
+# 【概念】只有 account 連 :6379；order／risk／gateway／job 不連 Redis
 # =============================================================================
 
 server:
@@ -11,10 +11,6 @@ server:
 spring:
   application:
     name: account-service
-  autoconfigure:
-    # 【技巧】exclude 完整類名字串：關掉 Spring Boot 自動 Redis 連線
-    # 【概念】redis 預設關閉：避免本機無 Redis 時啟動失敗
-    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   datasource:
     url: jdbc:h2:mem:accountdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
@@ -32,9 +28,13 @@ spring:
     console:
       enabled: true
       path: /h2-console
+    tcp:
+      # 【概念】同 JVM 開 TCP，IntelliJ／DataGrip 才能看到 mem 裡的表（測時關）
+      # 【技巧】9094 避開 Kafka 9092、order H2 TCP 9093；URL：jdbc:h2:tcp://localhost:9094/mem:accountdb
+      enabled: true
+      port: 9094
   data:
     redis:
-      # 【技巧】占位主機；fintech.redis.enabled=false 時通常不會真連
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
   kafka:
@@ -61,7 +61,9 @@ fintech:
   kafka:
     enabled: false
   redis:
-    enabled: false
+    # 【概念】本機 Demo 預設開；ensure 會先起 redis 容器。測試 application.properties 關掉。
+    enabled: true
+    ttl-seconds: 600
   job:
     token: demo-job-token
 

@@ -64,7 +64,12 @@ class StartupInfoLoggerTest {
         when(env.getProperty("startup.info.h2", Boolean.class, true)).thenReturn(true);
         when(env.getProperty("startup.info.api-docs", Boolean.class, true)).thenReturn(true);
         when(env.getProperty("startup.info.probe", Boolean.class, true)).thenReturn(false);
-        when(env.getProperty("spring.datasource.url", "jdbc:h2:mem:account")).thenReturn("jdbc:h2:mem:account");
+        when(env.getProperty("spring.datasource.url", "jdbc:h2:mem:accountdb")).thenReturn("jdbc:h2:mem:accountdb");
+        when(env.getProperty("spring.h2.tcp.enabled", Boolean.class, true)).thenReturn(true);
+        when(env.getProperty("spring.h2.tcp.port", "9094")).thenReturn("9094");
+        when(env.getProperty("fintech.redis.enabled", Boolean.class, true)).thenReturn(true);
+        when(env.getProperty("spring.data.redis.host", "localhost")).thenReturn("localhost");
+        when(env.getProperty("spring.data.redis.port", "6379")).thenReturn("6379");
         when(env.getProperty("startup.info.extra-paths[0]")).thenReturn(null);
         when(env.getProperty("startup.info.extra-paths")).thenReturn(null);
         when(env.getProperty("startup.info.related-urls[0]")).thenReturn(null);
@@ -74,6 +79,8 @@ class StartupInfoLoggerTest {
 
         assertThat(out).contains("FinTechDemo Account 後端已啟動");
         assertThat(out).contains("http://localhost:8084/actuator/health");
+        assertThat(out).contains("jdbc:h2:tcp://localhost:9094/mem:accountdb");
+        assertThat(out).contains("localhost:6379");
         assertThat(out).contains("╔");
         assertThat(out).doesNotContain("[UP]");
         assertThat(out).doesNotContain("[DOWN]");

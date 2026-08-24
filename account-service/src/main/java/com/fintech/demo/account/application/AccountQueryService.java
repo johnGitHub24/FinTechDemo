@@ -17,29 +17,31 @@ import java.util.List;
 
 /**
  * 【職責】讀側查詢＋可選 Redis 快取；入帳後淘汰 cache key。
- * 【技巧】ObjectProvider&lt;StringRedisTemplate&gt;：redis 關閉時無 bean 也不炸；TTL 60s。
+ * 【技巧】ObjectProvider&lt;StringRedisTemplate&gt;：redis 關閉時無 bean 也不炸；TTL 見 fintech.redis.ttl-seconds。
  * 【概念】Cache-aside：miss 打 DB 再寫入；寫路徑（applyTrade）必須 delete，避免髒讀。
  */
 @Service
 public class AccountQueryService {
 
     private static final Logger log = LoggerFactory.getLogger(AccountQueryService.class);
-    private static final Duration TTL = Duration.ofSeconds(60);
 
     private final AccountLedgerService ledgerService;
     private final ObjectProvider<StringRedisTemplate> redisTemplateProvider;
     private final ObjectMapper objectMapper;
+    private final Duration ttl;
     private final boolean redisEnabled;
 
     public AccountQueryService(
             AccountLedgerService ledgerService,
             ObjectProvider<StringRedisTemplate> redisTemplateProvider,
             ObjectMapper objectMapper,
-            @Value("${fintech.redis.enabled:false}") boolean redisEnabled) {
+            @Value("${fintech.redis.enabled:true}") boolean redisEnabled,
+            @Value("${fintech.redis.ttl-seconds:600}") long ttlSeconds) {
         this.ledgerService = ledgerService;
         this.redisTemplateProvider = redisTemplateProvider;
         this.objectMapper = objectMapper;
         this.redisEnabled = redisEnabled;
+        this.ttl = Duration.ofSeconds(ttlSeconds);
     }
 
     /**
@@ -133,7 +135,7 @@ public class AccountQueryService {
             return;
         }
         try {
-            redis.opsForValue().set(key, objectMapper.writeValueAsString(value), TTL);
+            redis.opsForValue().set(key, objectMapper.writeValueAsString(value), ttl);
         } catch (Exception ex) {
             log.warn("redis put failed key={}: {}", key, ex.getMessage());
         }

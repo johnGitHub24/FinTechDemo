@@ -283,9 +283,14 @@ POST /api/orders/{id}/execute
 <tr>
 <td>Redis Cache</td>
 <td><code>account-service</code> <code>AccountQueryService</code></td>
-<td>cache-aside；key <code>account:{id}</code>／<code>positions:{id}</code>；TTL 60s；入帳 evict；<code>fintech.redis.enabled</code> 可關</td>
+<td>cache-aside；key <code>account:{id}</code>／<code>positions:{id}</code>；TTL 600s；入帳 evict；本機 Demo 預設開（<code>開啟Demo</code> 起 redis 容器）</td>
 </tr>
 </tbody></table>
+<blockquote>
+<p><strong>誰連 Redis：</strong>只有 <strong>account-service</strong> 連 <code>:6379</code>，key 為 <code>account:{id}</code>／<code>positions:{id}</code>。
+<strong>order／risk／gateway／job 本機預設不連 Redis</strong>，開 Redis 不影響下單／風控／Gateway。
+沒開容器時 account 仍可打 H2；DataGrip 的 <code>6379</code> 是 Redis，H2 帳本是 <code>9094/mem:accountdb</code>。</p>
+</blockquote>
 <hr>
 <h2>6. 流量模式</h2>
 <table>

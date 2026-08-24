@@ -48,9 +48,10 @@ services:
       retries: 12
 
   # -------------------------------------------------------------------------
-  # Redis — account 快取／狀態（demo profile 才真正啟用）
-  # 【職責】示範「服務可選依賴」：本機預設關 Redis，compose demo 才開
-  # 【技巧】redis-cli ping → PONG 視為健康
+  # Redis — account 快取（本機 Demo 預設由 ensure-demo-links 拉起）
+  # 【職責】示範 cache-aside：key account:{id}／positions:{id}
+  # 【技巧】redis-cli ping → PONG 視為健康；只有 account 連此埠
+  # 【概念】order／risk／gateway／job 本機不連 Redis
   # -------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -87,9 +88,9 @@ services:
 
   # -------------------------------------------------------------------------
   # account-service :8084 — 餘額／持倉；可消費 Kafka、用 Redis
-  # 【職責】帳務邊界；demo profile 打開 Kafka／Redis
+  # 【職責】帳務邊界；compose 全棧用 demo profile 開 Kafka（本機 bootRun 預設已開 Redis）
   # 【技巧】depends_on + condition: service_healthy＝等 infra 就緒再啟動
-  # 【概念】SPRING_PROFILES_ACTIVE=demo 載入 application-demo.yml 覆寫
+  # 【概念】SPRING_PROFILES_ACTIVE=demo 載入 application-demo.yml（Kafka on＋health 查 Redis）
   # -------------------------------------------------------------------------
   account-service:
     build:

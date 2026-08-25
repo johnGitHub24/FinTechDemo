@@ -60,11 +60,12 @@
   <a href="#ch04">第 4 章　模組與埠</a>
   <a href="#ch05">第 5 章　雙庫與 ER Model</a>
   <a href="#ch06">第 6 章　分散式怎麼講</a>
+  <a href="#ch-job">第 7 章　Job 逾時取消</a>
   <h2>API</h2>
-  <a href="#ch07">第 7 章　API 地圖</a>
+  <a href="#ch07">第 8 章　API 地圖</a>
   <a href="swagger.html">→ 開 Swagger UI</a>
   <h2>測試</h2>
-  <a href="#ch08">第 8 章　測試與 Pipeline</a>
+  <a href="#ch08">第 9 章　測試與 Pipeline</a>
   <h2>互動</h2>
   <a href="demo-flow.html">啟動流程 HTML</a>
   <a href="demo-scripts.html">demo/ 腳本指南</a>
@@ -159,7 +160,7 @@ flowchart LR
       <tr><td>order</td><td>8081</td><td>登入／訂單／審計／Kafka 生產</td></tr>
       <tr><td>risk</td><td>8082</td><td>名義金額風控</td></tr>
       <tr><td>account</td><td>8084</td><td>餘額持倉／Redis／Kafka 消費</td></tr>
-      <tr><td>job</td><td>8083</td><td>逾時取消排程</td></tr>
+      <tr><td>job</td><td>8083</td><td>逾時取消排程（詳 <a href="#ch-job">第 7 章</a>）</td></tr>
     </table>
     <h3>本機誰連 Redis（:6379）</h3>
     <table>
@@ -431,6 +432,7 @@ erDiagram
     <p>實際表名仍是 <code>accounts</code>／<code>positions</code>。圖上 <code>ACC_</code> 只為與 order <strong>本機複本</strong>區隔。</p>
 
     <h3>5.10 誰讀哪張表</h3>
+    <table>
       <tr><th>表</th><th>在哪</th><th>誰讀／寫</th></tr>
       <tr><td>users、orders、audit_log</td><td>order</td><td>登入、下單、審計</td></tr>
       <tr><td>accounts、positions（order 本機複本）</td><td>order</td><td>成交內部／standalone；非 Portal 主路徑</td></tr>
@@ -452,14 +454,103 @@ erDiagram
       <li><b>快取</b>：只有 account 讀路徑連 Redis；order／risk／gateway／job 本機預設不連。入帳後 evict</li>
       <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
       <li><b>資料邊界</b>：見 <a href="#ch05">§5 ER</a> — 訂單與帳本分庫，用事件／Feign 對齊</li>
+      <li><b>排程</b>：Job 不碰訂單表，只敲門；見 <a href="#ch-job">第 7 章</a></li>
     </ul>
+  </div>
+</article>
+
+<article class="chapter" id="ch-job">
+  <header class="chapter-header">
+    <span class="chapter-label">架構</span>
+    <h2>第 7 章　Job 逾時取消</h2>
+  </header>
+  <div class="md-content">
+    <blockquote>
+      <strong>一句話：</strong>Job 負責「時間到了去敲門」；真正把 <code>PENDING</code> 改成 <code>CANCELLED</code> 的是 <strong>order-service</strong>。
+      job-service <strong>沒有 DB</strong>，不連 Redis。
+    </blockquote>
+
+    <h3>7.1 系統流程</h3>
+    <div class="mermaid">
+flowchart TB
+  CRON["@Scheduled cron<br/>每分鐘第 0 秒"]
+  subgraph JOB["job-service :8083"]
+    SCH["SchedulingConfig<br/>ThreadPool ≥ 2"]
+    CJ["CancelStaleOrdersJob"]
+    RT["RemoteJobTriggerService"]
+  end
+  subgraph ORD["order-service :8081"]
+    API["POST /api/internal/jobs/cancel-stale<br/>Header X-Job-Token"]
+    SVC["StaleOrderService"]
+    DB[("H2 fintechdemo<br/>orders")]
+  end
+  CRON --> SCH
+  SCH --> CJ
+  CJ --> RT
+  RT -->|"RestClient + token"| API
+  API -->|token 錯 → 403| X[拒絕]
+  API -->|token 對| SVC
+  SVC -->|"PENDING 且超過 30 分"| DB
+  DB --> DONE["status = CANCELLED"]
+    </div>
+
+    <h3>7.2 呼叫流程（看這張就好）</h3>
+    <blockquote>
+      <strong>怎麼讀：</strong>箭頭都是<strong>實線、往下走</strong>＝一步做完再下一步。
+      中間的菱形是「token 對不對」：錯就 <code>403</code> 結束；對才進 Service 改資料庫。
+      （舊版時序圖裡的<strong>虛線</strong>＝HTTP 回傳，不是另一條業務路，容易誤會，已改成這張。）
+    </blockquote>
+    <div class="mermaid">
+flowchart TD
+  A["① Scheduler<br/>cron 觸發 run"] --> B["② job-service<br/>組 POST + X-Job-Token"]
+  B --> C["③ InternalJobController<br/>收到 /cancel-stale"]
+  C --> D{"④ token<br/>是否等於<br/>demo-job-token？"}
+  D -->|不符| E["回 403 拒絕<br/>不碰 orders 表"]
+  D -->|正確| F["⑤ StaleOrderService<br/>cancelStalePending"]
+  F --> G["⑥ 查 orders 表<br/>PENDING 且超過 30 分"]
+  G --> H["⑦ 改成 CANCELLED"]
+  H --> I["⑧ 回 200<br/>cancelled = N"]
+    </div>
+    <table>
+      <tr><th>步驟</th><th>誰</th><th>做什麼</th></tr>
+      <tr><td>①～②</td><td>job-service</td><td>時間到了，帶 token 去敲門</td></tr>
+      <tr><td>③～④</td><td>InternalJobController</td><td>先驗 token；錯 → 403，對 → 往下</td></tr>
+      <tr><td>⑤～⑦</td><td>StaleOrderService + orders</td><td>真的改狀態</td></tr>
+      <tr><td>⑧</td><td>Controller → job</td><td>告訴 job 取消了幾筆</td></tr>
+    </table>
+
+    <h3>7.3 兩條觸發路徑（可只開 order）</h3>
+    <table>
+      <tr><th>誰觸發</th><th>檔案</th><th>何時用</th></tr>
+      <tr>
+        <td>本機 order 內建排程</td>
+        <td><code>order-service/.../StaleOrderCancelJob.java</code></td>
+        <td>只起 Order 也能掃逾時（LOOP 最短路徑）</td>
+      </tr>
+      <tr>
+        <td>獨立 job-service</td>
+        <td><code>job-service/.../CancelStaleOrdersJob.java</code></td>
+        <td>示範「排程獨立部署」：HTTP 敲門，不共用 DB</td>
+      </tr>
+    </table>
+    <p>兩邊 cron 都是 <code>0 */1 * * * *</code>（Spring 六欄）。同時開時可能掃兩次，第二次 <code>cancelled=0</code>，狀態不會錯。</p>
+
+    <h3>7.4 設定與安全</h3>
+    <table>
+      <tr><th>項目</th><th>值</th></tr>
+      <tr><td>逾時門檻</td><td><code>fintech.job.stale-order-minutes: 30</code></td></tr>
+      <tr><td>內部密鑰</td><td><code>X-Job-Token: demo-job-token</code>（與 JWT 無關）</td></tr>
+      <tr><td>Security</td><td><code>/api/internal/jobs/**</code> permitAll，靠 token 擋外部誤打</td></tr>
+      <tr><td>Job 失敗</td><td>order 沒起來時 job 只 warn，不讓排程執行緒掛掉</td></tr>
+    </table>
+    <p>Case：<code>STALE-001</code>（單元＋整合）。檔案對照：<code>SchedulingConfig</code>、<code>RemoteJobTriggerService</code>、<code>InternalJobController</code>、<code>StaleOrderService</code>。</p>
   </div>
 </article>
 
 <article class="chapter" id="ch07">
   <header class="chapter-header">
     <span class="chapter-label">API</span>
-    <h2>第 7 章　API 地圖</h2>
+    <h2>第 8 章　API 地圖</h2>
   </header>
   <div class="md-content">
     <p>權威互動：<a href="swagger.html">swagger.html</a> · Markdown：<a href="../architecture/api-spec.html">API規格書.md</a></p>
@@ -468,6 +559,7 @@ erDiagram
       <li>Orders：<code>/api/orders</code> CRUD／execute</li>
       <li>Account：<code>/api/accounts/me</code>、<code>/api/positions</code></li>
       <li>Audit：<code>/api/audit-logs</code>（ADMIN）</li>
+      <li>內部 Job：<code>POST /api/internal/jobs/cancel-stale</code>（<code>X-Job-Token</code>，見 <a href="#ch-job">第 7 章</a>）</li>
     </ul>
   </div>
 </article>
@@ -475,7 +567,7 @@ erDiagram
 <article class="chapter" id="ch08">
   <header class="chapter-header">
     <span class="chapter-label">測試</span>
-    <h2>第 8 章　測試與 Pipeline</h2>
+    <h2>第 9 章　測試與 Pipeline</h2>
   </header>
   <div class="md-content">
 <pre>.\demo\verify-pipeline.ps1     # check + compose + k8s

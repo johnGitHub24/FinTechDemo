@@ -57,6 +57,7 @@
       <button type="button" class="tab" role="tab" aria-selected="false" data-tab="why">② 為什麼分層</button>
       <button type="button" class="tab" role="tab" aria-selected="false" data-tab="flow">③ 請求主路徑</button>
       <button type="button" class="tab" role="tab" aria-selected="false" data-tab="build">④ 實作與上雲</button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="job">⑤ Job 逾時取消</button>
     </nav>
   </header>
 
@@ -172,10 +173,37 @@ flowchart TB
       </div>
       <p class="note">K8s 採 TradingKubernetes 最小結構：apps + infrastructure + clusters/{dev,staging,prod}；check 用 kustomize build，不強求本機真實叢集。</p>
     </section>
+
+    <section id="panel-job" class="panel" role="tabpanel" hidden>
+      <h2>⑤ Job 逾時取消（排程敲門、order 改狀態）</h2>
+      <ul class="blurb">
+        <li>job-service <strong>沒有 DB</strong>：cron → RestClient → order 內部 API。</li>
+        <li>真正掃 <code>PENDING</code>、改 <code>CANCELLED</code> 的是 <code>StaleOrderService</code>（逾時 30 分）。</li>
+        <li>只起 Order 也有內建 <code>StaleOrderCancelJob</code>；獨立 Job 服務是「排程可拆走」示範。</li>
+      </ul>
+      <div class="mermaid">
+flowchart TB
+  CRON["@Scheduled 每分鐘"]
+  subgraph JOB["job-service :8083"]
+    CJ["CancelStaleOrdersJob"]
+    RT["RemoteJobTriggerService"]
+  end
+  subgraph ORD["order-service :8081"]
+    API["POST /api/internal/jobs/cancel-stale<br/>X-Job-Token"]
+    SVC["StaleOrderService"]
+    DB[("orders 表")]
+  end
+  CRON --> CJ --> RT
+  RT -->|"HTTP + token"| API
+  API --> SVC --> DB
+  DB --> DONE["PENDING → CANCELLED"]
+      </div>
+      <p class="note">長文＋時序圖：<a href="handbook.html#ch-job">完整學習手冊 · 第 7 章</a>。Case <code>STALE-001</code>。</p>
+    </section>
   </main>
 
   <footer>
-    FinTechDemo · EngineeringOS eos-minimal CodeGraphic · 權威敘事見 docs/技術次序與架構為什麼.md
+    FinTechDemo · EngineeringOS eos-minimal CodeGraphic · 權威敘事見 docs/技術次序與架構為什麼.md · Job 長文見 handbook 第 7 章
   </footer>
 
   <script>

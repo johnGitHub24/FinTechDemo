@@ -1,4 +1,4 @@
-﻿# demo/ — FinTechDemo only（Platform Demo 層）
+# demo/ — FinTechDemo only（Platform Demo 層）
 
 Canonical: `EngineeringOS/.../optional-demo-scripts/demo/`  
 Sync: `apply-workspace.ps1 -WithDemo`  
@@ -61,7 +61,7 @@ Sync: `apply-workspace.ps1 -WithDemo`
 
 | 檔案 | 目的 |
 |------|------|
-| `start-k8s-demo.ps1` | kind + build/load + apply（`開啟K8sDemo.cmd`） |
+| `start-k8s-demo.ps1` | **先停本機 Demo 埠** → kind + build/load + apply（`開啟K8sDemo.cmd`）；成功後 port-forward `:18080` + **預設重起 Vite**；`-SkipFrontend` 略過 |
 | `k8s-walkthrough.ps1` | Images／kind／Pods 三層檢查 |
 | `check-k8s.ps1` | 只 kustomize 驗 YAML（不連叢集） |
 

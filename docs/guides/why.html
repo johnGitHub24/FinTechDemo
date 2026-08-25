@@ -314,7 +314,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
   K -->|consume| ORD
   ORD --> PG[(PostgreSQL)]
   ORD --> RD[(Redis)]
-  JOB["job-service :8083"] --> PG
+  JOB["job-service :8083"] -->|HTTP cancel-stale| ORD
   ORD -. audit .-> AL[(audit_log)]
   LOC[Locust] --> GW
   PROM[Prometheus scrape] --> GW
@@ -332,7 +332,7 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 </thead>
 <tbody><tr>
 <td><a href="../portals/codeGraphic.html">codeGraphic.html</a></td>
-<td>Tab＋Mermaid 視覺版（為什麼／次序／流量／部署）</td>
+<td>Tab＋Mermaid 視覺版（為什麼／次序／流量／部署／Job）</td>
 </tr>
 <tr>
 <td><a href="../architecture/architecture.html">architecture</a></td>

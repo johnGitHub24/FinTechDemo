@@ -103,14 +103,16 @@ main { max-width:960px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <pre><code>.\開啟K8sDemo.cmd
 .\demo\k8s-walkthrough.ps1
 kubectl -n fintech-demo get pods   # 4× Running
-kubectl -n fintech-demo port-forward svc/gateway 18080:8080
+# 成功後腳本預設另開視窗 port-forward → :18080（或手動見下）
 curl http://localhost:18080/actuator/health</code></pre>
-<p>四服務在 <strong>叢集內</strong>；本機 <code>:8080</code> 預設<strong>沒有</strong> Gateway，除非 port-forward。腳本<strong>不起</strong> Vite。</p>
+<p>四服務在 <strong>叢集內</strong>；本機 <code>:8080</code> 預設<strong>沒有</strong> Gateway，除非 port-forward。腳本<strong>不起</strong> Vite。略過自動轉發：<code>.\開啟K8sDemo.cmd -SkipPortForward</code>。</p>
 </div>
 
 <div class="path-card">
 <strong>路線 C — K8s 後端 + 前台一起</strong>
-<pre><code># 視窗1：K8s 已 Running
+<pre><code># 視窗1：K8s 已 Running（開啟K8sDemo 已轉 :18080 可跳過這行）
+$env:KUBECONFIG="$PWD\demo\.tools\kubeconfig-kind-trading-local"
+kubectl config use-context kind-trading-local
 kubectl -n fintech-demo port-forward svc/gateway 18080:8080
 
 # 視窗2

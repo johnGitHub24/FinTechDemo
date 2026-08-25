@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-  FinTechDemo 完整 K8s Demo：kind 叢集 → build 映像 → load → apply → 等 Pod Ready。
+  FinTechDemo 完整 K8s Demo：kind 叢集 -> build 映像 -> load -> apply -> 等 Pod Ready。
 
 .DESCRIPTION
   對齊 deploy/k8s/overlays/dev（gateway + order + risk + account）。
@@ -12,13 +12,28 @@
 .PARAMETER SkipBuild
   跳過 docker compose build（映像已存在時）
 
+.PARAMETER SkipPortForward
+  成功後不另開視窗做 Gateway port-forward（預設會開）
+
+.PARAMETER SkipStopLocal
+  略過「先停本機 bootRun／Vite／舊 port-forward」（預設會停，與本機 Demo 擇一）
+
+.PARAMETER SkipFrontend
+  SkipFrontend: skip Vite :5173 (default starts Vite, VITE_API_TARGET=http://127.0.0.1:18080)
+
 .EXAMPLE
   .\demo\start-k8s-demo.ps1
   .\demo\start-k8s-demo.ps1 -RecreateCluster
+  .\demo\start-k8s-demo.ps1 -SkipPortForward
+  .\demo\start-k8s-demo.ps1 -SkipFrontend
 #>
+# Encoding: UTF-8 with BOM (Windows PowerShell 5.x)
 param(
     [switch]$RecreateCluster,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$SkipPortForward,
+    [switch]$SkipStopLocal,
+    [switch]$SkipFrontend
 )
 
 $ErrorActionPreference = 'Stop'
@@ -38,6 +53,122 @@ $Images = $PlatformK8sImages
 function Write-Step([string]$msg) {
     Write-Host ""
     Write-Host "=== $msg ===" -ForegroundColor Cyan
+}
+
+function Stop-ListeningPort([int]$Port) {
+    $conns = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+    foreach ($c in $conns) {
+        $ownerPid = [int]$c.OwningProcess
+        if ($ownerPid -le 0) { continue }
+        Write-Host "  stop :$Port pid=$ownerPid" -ForegroundColor DarkGray
+        Stop-Process -Id $ownerPid -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Stop-LocalDemoServices {
+    Write-Step 'Stop local Demo (bootRun / Vite / docs / old port-forward)'
+    Write-Host '  K8s vs local 808x: pick one. Free RAM and ports before kind.' -ForegroundColor DarkCyan
+    $ports = @(
+        $PlatformGatewayPort,
+        $PlatformOrderPort,
+        $PlatformRiskPort,
+        $PlatformJobPort,
+        $PlatformAccountPort,
+        $PlatformVitePort,
+        $PlatformH2TcpPort,
+        9094,
+        5500,
+        $PlatformK8sGatewayPfLocal
+    ) | Select-Object -Unique
+    foreach ($p in $ports) {
+        Stop-ListeningPort $p
+    }
+    Get-CimInstance Win32_Process -Filter "Name='java.exe'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -match 'GradleDaemon' -and
+            $_.CommandLine -notmatch 'bootRun' -and
+            $_.CommandLine -notmatch 'GradleWrapperMain'
+        } |
+        ForEach-Object {
+            Write-Host "  stop gradle-daemon pid=$($_.ProcessId)" -ForegroundColor DarkGray
+            Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+    Start-Sleep -Seconds 2
+    Write-Host '  Local Demo ports cleared.' -ForegroundColor Green
+}
+
+function Test-HttpOk([string]$Url) {
+    try {
+        $r = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 3
+        return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 500)
+    } catch {
+        $resp = $_.Exception.Response
+        if ($null -ne $resp) {
+            try {
+                $code = [int]$resp.StatusCode
+                return ($code -ge 200 -and $code -lt 500)
+            } catch {
+                return $true
+            }
+        }
+        return $false
+    }
+}
+
+function Wait-HttpOk([string]$Url, [int]$Seconds = 90) {
+    $deadline = (Get-Date).AddSeconds($Seconds)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-HttpOk $Url) { return $true }
+        Start-Sleep -Seconds 2
+    }
+    return $false
+}
+
+function Start-K8sFrontend {
+    $pf = $PlatformK8sGatewayPfLocal
+    $apiTarget = "http://127.0.0.1:$pf"
+    $healthUrl = "$apiTarget/actuator/health"
+    Write-Step "Vite frontend -> $apiTarget"
+    if (-not (Wait-HttpOk $healthUrl 45)) {
+        Write-Host "  WARN Gateway $healthUrl not ready - skip Vite" -ForegroundColor Yellow
+        return $false
+    }
+    $feDir = Join-Path $Root 'frontend'
+    $logs = Join-Path $Root 'logs'
+    New-Item -ItemType Directory -Force -Path $logs | Out-Null
+    $npmCmd = Get-Command npm.cmd -ErrorAction SilentlyContinue
+    if (-not $npmCmd) {
+        Write-Host '  WARN npm.cmd not found - manual: cd frontend; $env:VITE_API_TARGET=...; npm run dev' -ForegroundColor Yellow
+        return $false
+    }
+    if (-not (Test-Path (Join-Path $feDir 'node_modules'))) {
+        Write-Host '  npm install (frontend) ...' -ForegroundColor Cyan
+        Push-Location $feDir
+        & $npmCmd.Source install
+        Pop-Location
+    }
+    Stop-ListeningPort $PlatformVitePort
+    $stamp = Get-Date -Format 'yyyyMMddHHmmss'
+    $outLog = Join-Path $logs "frontend-k8s-$stamp.out.log"
+    $errLog = Join-Path $logs "frontend-k8s-$stamp.err.log"
+    $cmdFile = Join-Path $logs "run-k8s-vite-$stamp.cmd"
+    $lines = @(
+        '@echo off',
+        "cd /d `"$feDir`"",
+        "set VITE_API_TARGET=$apiTarget",
+        "`"$($npmCmd.Source)`" run dev -- --host 0.0.0.0 --port $PlatformVitePort --strictPort >> `"$outLog`" 2>> `"$errLog`""
+    )
+    $lines | Set-Content -Encoding ascii -Path $cmdFile
+    Start-Process -FilePath $cmdFile -WorkingDirectory $feDir -WindowStyle Minimized | Out-Null
+    $loginUrl = "http://127.0.0.1:$PlatformVitePort/login"
+    if (Wait-HttpOk $loginUrl 120) {
+        Write-Host "  OK frontend :$PlatformVitePort -> Gateway :$pf" -ForegroundColor Green
+        Write-Host "  Login: $loginUrl  (trader1 / password)" -ForegroundColor Cyan
+        return $true
+    }
+    Write-Host "  WARN frontend not ready - tail logs\frontend-k8s-*.err.log" -ForegroundColor Yellow
+    return $false
 }
 
 function Get-DockerKindPlatform {
@@ -109,7 +240,7 @@ function Ensure-KindCluster([string]$kindCmd) {
         $alive = ($LASTEXITCODE -eq 0)
         $ErrorActionPreference = $prev
         if (-not $alive) {
-            Write-Host 'Existing cluster API unhealthy — recreating.' -ForegroundColor Yellow
+            Write-Host 'Existing cluster API unhealthy - recreating.' -ForegroundColor Yellow
             $recreate = $true
         }
     }
@@ -135,7 +266,7 @@ nodes:
         if ($LASTEXITCODE -ne 0) { throw 'kind create failed' }
         Export-And-FixKube $kindCmd
     } else {
-        Write-Host 'Cluster exists — reuse'
+        Write-Host 'Cluster exists - reuse'
         Export-And-FixKube $kindCmd
     }
 
@@ -178,7 +309,7 @@ function Build-Images {
     foreach ($m in $modules) {
         $jar = Join-Path $Root "$($m.Module)\build\libs\app.jar"
         if (-not (Test-Path $jar)) {
-            throw "bootJar missing: $jar — check .dockerignore and gradlew :$($m.Module):bootJar"
+            throw "bootJar missing: $jar - check .dockerignore and gradlew :$($m.Module):bootJar"
         }
         Write-Host "  build $($m.Tag)"
         docker build --platform $platform -f Dockerfile.k8s-local --build-arg MODULE=$($m.Module) -t $($m.Tag) .
@@ -227,18 +358,63 @@ function Show-Summary {
     kubectl -n $Namespace get pods,svc
     Write-Host ""
     Write-Host ''
-    Write-Host 'Port-forward (new PowerShell window):' -ForegroundColor Cyan
     $pf = $PlatformK8sGatewayPfLocal
     $gw = $PlatformGatewayPort
-    Write-Host "  kubectl -n $Namespace port-forward svc/gateway ${pf}:${gw}"
-    Write-Host "  Browser: http://localhost:${pf}/actuator/health"
-    Write-Host ''
-    Write-Host "Frontend: Vite :$PlatformVitePort (npm run dev). Gateway via $pf."
-    Write-Host "Blueprint: http://localhost:$PlatformVitePort/blueprint#k8s-intellij"
+    Write-Host "Browser (after port-forward): http://127.0.0.1:${pf}/actuator/health" -ForegroundColor Cyan
+    Write-Host "Frontend (default): http://127.0.0.1:$PlatformVitePort/login  (trader1 / password)"
+    Write-Host "Blueprint: http://127.0.0.1:$PlatformVitePort/blueprint#k8s-intellij"
     Write-Host '=========================================' -ForegroundColor Green
 }
 
+function Start-GatewayPortForwardWindow {
+    if ($SkipPortForward) {
+        Write-Host 'SKIP port-forward (-SkipPortForward). Manual:' -ForegroundColor Yellow
+        Write-Host "  `$env:KUBECONFIG='$PlatformKubeConfig'"
+        Write-Host "  kubectl -n $Namespace port-forward --address 127.0.0.1 svc/gateway ${PlatformK8sGatewayPfLocal}:$PlatformGatewayPort"
+        return
+    }
+    $pf = $PlatformK8sGatewayPfLocal
+    $gw = $PlatformGatewayPort
+    $kube = $PlatformKubeConfig
+    $listening = Get-NetTCPConnection -LocalPort $pf -State Listen -ErrorAction SilentlyContinue
+    if ($listening) {
+        Write-Host "Port $pf in use - restart port-forward." -ForegroundColor Yellow
+        Stop-ListeningPort $pf
+        Start-Sleep -Seconds 1
+    }
+    Write-Step "Gateway port-forward :$pf (new window)"
+    # New window stays open; set KUBECONFIG so kubectl does not use docker-desktop.
+    $inner = @"
+`$ErrorActionPreference = 'Continue'
+`$env:KUBECONFIG = '$kube'
+kubectl config use-context $Context | Out-Null
+Write-Host ''
+Write-Host '======== Gateway port-forward ========' -ForegroundColor Green
+Write-Host "  kubectl -n $Namespace port-forward --address 127.0.0.1 svc/gateway ${pf}:${gw}"
+Write-Host "  Browser: http://127.0.0.1:${pf}/actuator/health"
+Write-Host '  E0825 wsarecv in this window is usually harmless (client closed).' -ForegroundColor DarkGray
+Write-Host '  Keep this window open. Ctrl+C to stop.' -ForegroundColor Yellow
+Write-Host '======================================' -ForegroundColor Green
+Write-Host ''
+kubectl -n $Namespace port-forward --address 127.0.0.1 svc/gateway ${pf}:${gw}
+Write-Host ''
+Write-Host 'port-forward ended.' -ForegroundColor Yellow
+pause
+"@
+    Start-Process -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile', '-ExecutionPolicy', 'Bypass', '-NoExit', '-Command', $inner
+    ) | Out-Null
+    Write-Host "Opened new PowerShell for :$pf -> svc/gateway:$gw" -ForegroundColor Green
+    Write-Host "  http://127.0.0.1:${pf}/actuator/health"
+}
+
 try {
+    Use-PlatformKube
+    if (-not $SkipStopLocal) {
+        Stop-LocalDemoServices
+    } else {
+        Write-Host 'SKIP stop local (-SkipStopLocal)' -ForegroundColor Yellow
+    }
     Wait-Docker
     $kind = Resolve-Kind
     Ensure-KindCluster $kind
@@ -246,10 +422,17 @@ try {
     Load-Images $kind
     Apply-And-Wait
     Show-Summary
+    Start-GatewayPortForwardWindow
+    if (-not $SkipFrontend) {
+        Start-Sleep -Seconds 3
+        Start-K8sFrontend | Out-Null
+    } else {
+        Write-Host 'SKIP frontend (-SkipFrontend)' -ForegroundColor Yellow
+    }
     exit 0
 } catch {
     Write-Host ""
     Write-Host "K8S_DEMO_FAIL: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host 'Hint: use context kind-trading-local not docker-desktop. See docs/deploy/k8s-tips.html' -ForegroundColor Yellow
+    Write-Host 'Hint: context kind-trading-local (not docker-desktop). See docs/guides/k8s-complete-guide.html' -ForegroundColor Yellow
     exit 1
 }

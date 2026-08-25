@@ -1,6 +1,6 @@
 @echo off
-REM K8s Demo 一鍵：kind + 映像 + apply（與本機 開啟Demo.cmd 擇一，勿同時雙棧搶 RAM）
-REM 就緒後：kubectl -n fintech-demo get pods；Gateway 例：port-forward → :18080
+REM K8s Demo one-click: stop local 808x/Vite, then kind+apply (pick one with Demo.cmd)
+REM On success: port-forward :18080 + Vite :5173 (use -SkipFrontend to skip Vite only)
 cd /d "%~dp0"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0demo\start-k8s-demo.ps1" %*
 if errorlevel 1 (

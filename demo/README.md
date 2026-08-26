@@ -4,8 +4,9 @@ Canonical: `EngineeringOS/.../optional-demo-scripts/demo/`
 Sync: `apply-workspace.ps1 -WithDemo`  
 **Do not copy to other projects.** Pure 層請用 [`../scripts/`](../scripts/)。
 
-**互動教學（逐支說明 + Mermaid）：** [`docs/portals/demo-scripts.html`](../docs/portals/demo-scripts.html)  
-（`.\docs\tools\serve-docs.ps1` → http://127.0.0.1:5500/docs/portals/demo-scripts.html）
+**瀏覽器請開 HTML 教學（UTF-8，不會亂碼）：** [`docs/portals/demo-scripts.html`](../docs/portals/demo-scripts.html)  
+`.\docs\tools\serve-docs.ps1` → http://127.0.0.1:5500/docs/portals/demo-scripts.html  
+（直開本 `.md` 也可以；伺服器會宣告 `charset=utf-8`。若仍亂碼，重跑 `serve-docs.ps1` 後強制重新整理。）
 
 ---
 

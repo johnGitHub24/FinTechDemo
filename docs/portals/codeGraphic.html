@@ -162,14 +162,14 @@ sequenceDiagram
       </ul>
       <div class="mermaid">
 flowchart TB
-  P1[P1 CRUD+分頁] --> P2[P2 JWT]
-  P2 --> P3[P3 Gateway+Feign]
-  P3 --> P4[P4 Kafka+Redis]
-  P4 --> P5[P5 Vue 打通]
-  P5 --> P6[P6 Job+AOP]
-  P6 --> P7[P7 Actuator]
-  P7 --> P8[P8 Locust]
-  P8 --> P9[P9 Compose→K8s apps/clusters]
+  P1["P1 CRUD + 分頁"] --> P2["P2 JWT"]
+  P2 --> P3["P3 Gateway + Feign"]
+  P3 --> P4["P4 Kafka + Redis"]
+  P4 --> P5["P5 Vue 打通"]
+  P5 --> P6["P6 Job + AOP"]
+  P6 --> P7["P7 Actuator"]
+  P7 --> P8["P8 Locust"]
+  P8 --> P9["P9 Compose then K8s"]
       </div>
       <p class="note">K8s 採 TradingKubernetes 最小結構：apps + infrastructure + clusters/{dev,staging,prod}；check 用 kustomize build，不強求本機真實叢集。</p>
     </section>
@@ -183,20 +183,22 @@ flowchart TB
       </ul>
       <div class="mermaid">
 flowchart TB
-  CRON["@Scheduled 每分鐘"]
-  subgraph JOB["job-service :8083"]
+  CRON["Scheduled every minute"]
+  subgraph JOB["job-service 8083"]
     CJ["CancelStaleOrdersJob"]
     RT["RemoteJobTriggerService"]
   end
-  subgraph ORD["order-service :8081"]
-    API["POST /api/internal/jobs/cancel-stale<br/>X-Job-Token"]
+  subgraph ORD["order-service 8081"]
+    API["POST cancel-stale<br/>X-Job-Token"]
     SVC["StaleOrderService"]
-    DB[("orders 表")]
+    DB[("orders")]
   end
-  CRON --> CJ --> RT
+  CRON --> CJ
+  CJ --> RT
   RT -->|"HTTP + token"| API
-  API --> SVC --> DB
-  DB --> DONE["PENDING → CANCELLED"]
+  API --> SVC
+  SVC --> DB
+  DB --> DONE["PENDING to CANCELLED"]
       </div>
       <p class="note">長文＋時序圖：<a href="handbook.html#ch-job">完整學習手冊 · 第 7 章</a>。Case <code>STALE-001</code>。</p>
     </section>
@@ -207,10 +209,17 @@ flowchart TB
   </footer>
 
   <script>
+    /**
+     * 【職責】分頁切換時才對「尚未處理」的 Mermaid 跑一次。
+     * 【技巧】隱藏 panel（display:none／hidden）若在 startOnLoad 渲染，10.9.x 常空白或 Syntax error；
+     *         切到可見後 mermaid.run 一次即可。勿對已轉 SVG 的節點再跑。
+     * 【概念】標籤避免 →、@、裸 :808x、未加引號的 +／／，否則 parser 當邊語法。
+     */
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: "base",
       securityLevel: "loose",
+      flowchart: { htmlLabels: true },
       themeVariables: {
         primaryColor: "#e6f3f2",
         primaryTextColor: "#1f2937",
@@ -230,20 +239,34 @@ flowchart TB
         signalTextColor: "#1f2937"
       }
     });
+
+    function renderMermaidIn(panel) {
+      if (!panel || !window.mermaid) return;
+      var nodes = panel.querySelectorAll(".mermaid:not([data-processed])");
+      if (!nodes.length) return;
+      mermaid.run({ nodes: nodes });
+    }
+
+    function showPanel(id) {
+      document.querySelectorAll(".tab").forEach(function (t) {
+        var on = t.getAttribute("data-tab") === id;
+        t.classList.toggle("active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      document.querySelectorAll(".panel").forEach(function (p) {
+        var on = p.id === "panel-" + id;
+        p.classList.toggle("active", on);
+        p.hidden = !on;
+        if (on) renderMermaidIn(p);
+      });
+    }
+
     document.querySelectorAll(".tab").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var id = btn.getAttribute("data-tab");
-        document.querySelectorAll(".tab").forEach(function (t) {
-          t.classList.toggle("active", t === btn);
-          t.setAttribute("aria-selected", t === btn ? "true" : "false");
-        });
-        document.querySelectorAll(".panel").forEach(function (p) {
-          var on = p.id === "panel-" + id;
-          p.classList.toggle("active", on);
-          p.hidden = !on;
-        });
+        showPanel(btn.getAttribute("data-tab"));
       });
     });
+    showPanel("order");
   </script>
 </body>
 </html>

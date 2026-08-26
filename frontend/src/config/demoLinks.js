@@ -196,3 +196,20 @@ export const NEXT_PATH_KEY = 'fintech_demo_next_path';
 
 export const ENSURE_SERVICES_CMD =
   '.\\開啟Demo.cmd';
+
+/** K8s 一鍵（與本機擇一）：先停本機 → kind → port-forward :18080 → Vite */
+export const ENSURE_K8S_CMD =
+  '.\\開啟K8sDemo.cmd';
+
+/**
+ * 是否為 K8s 前台模式（start-k8s-demo 設 VITE_API_TARGET=…:18080）。
+ * 【概念】燈號／一鍵確保指令應跟著 API 目標切換，勿在 K8s 下複製 開啟Demo.cmd。
+ */
+export function isK8sFrontendMode() {
+  const t = String(env.VITE_API_TARGET || '');
+  return /:18080\b/.test(t);
+}
+
+export function getEnsureServicesCmd() {
+  return isK8sFrontendMode() ? ENSURE_K8S_CMD : ENSURE_SERVICES_CMD;
+}

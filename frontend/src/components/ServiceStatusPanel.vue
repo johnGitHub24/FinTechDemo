@@ -46,12 +46,12 @@
 <script setup>
 /**
  * 【職責】探測各後端 health，並提供「一鍵確保 UP」引導（複製腳本＋輪詢）。
- * 【技巧】瀏覽器不能直接 bootRun；複製 doctor-demo -Fix，背景輪詢直到全 UP 或逾時。
- * 【概念】燈號 DOWN＝本機行程沒聽埠，不是前端壞掉。
+ * 【技巧】瀏覽器不能直接 bootRun；複製對應一鍵 cmd，背景輪詢直到 UP 或逾時。
+ * 【概念】燈號只探本機 :808x。K8s 時按鈕改複製 開啟K8sDemo.cmd（不改 vite proxy，無副作用）。
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { fetchTopology } from '../api/client';
-import { ENSURE_SERVICES_CMD } from '../config/demoLinks';
+import { getEnsureServicesCmd, isK8sFrontendMode } from '../config/demoLinks';
 
 const services = ref([
   { id: 'gateway', label: 'Gateway', port: 8080, up: false },
@@ -125,11 +125,13 @@ function stopPoll() {
 }
 
 async function onEnsure() {
-  const cmd = ENSURE_SERVICES_CMD;
+  const k8s = isK8sFrontendMode();
+  const cmd = getEnsureServicesCmd();
   try {
     await navigator.clipboard.writeText(cmd);
-    ensureHint.value =
-      '已複製啟動指令 → 到 PowerShell 貼上 Enter（約 1～3 分鐘）。本頁會自動刷新直到 UP。也可雙擊 開啟Demo.cmd';
+    ensureHint.value = k8s
+      ? '已複製 開啟K8sDemo.cmd → PowerShell 貼上或雙擊執行。燈號 :808x 是本機埠，K8s 可忽略；看 port-forward :18080。'
+      : '已複製啟動指令 → 到 PowerShell 貼上 Enter（約 1～3 分鐘）。本頁會自動刷新直到 UP。也可雙擊 開啟Demo.cmd';
   } catch {
     ensureHint.value = `請手動執行：${cmd}`;
   }
@@ -145,12 +147,13 @@ async function onEnsure() {
       stopPoll();
       return;
     }
-    // Risk+Order 最短成交也提示
     if (!orderDown.value && !riskDown.value && ticks >= 6) {
       ensureHint.value = `Order＋Risk 已 UP（${upCount.value}/5）。其餘可稍候或再跑一次腳本。`;
     }
     if (ticks >= 36) {
-      ensureHint.value = '逾時仍有 DOWN。看 logs\\*.err.log 或再執行 開啟Demo.cmd';
+      ensureHint.value = k8s
+        ? '逾時。K8s 請確認 port-forward 與 開啟K8sDemo.cmd；本頁燈號只看本機 :808x。'
+        : '逾時仍有 DOWN。看 logs\\*.err.log 或再執行 開啟Demo.cmd';
       stopPoll();
     }
   }, 5000);

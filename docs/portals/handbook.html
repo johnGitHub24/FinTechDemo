@@ -475,25 +475,25 @@ erDiagram
     <h3>7.1 系統流程</h3>
     <div class="mermaid">
 flowchart TB
-  CRON["@Scheduled cron<br/>每分鐘第 0 秒"]
-  subgraph JOB["job-service :8083"]
-    SCH["SchedulingConfig<br/>ThreadPool ≥ 2"]
+  CRON["Scheduled every minute"]
+  subgraph JOB["job-service 8083"]
+    SCH["SchedulingConfig"]
     CJ["CancelStaleOrdersJob"]
     RT["RemoteJobTriggerService"]
   end
-  subgraph ORD["order-service :8081"]
-    API["POST /api/internal/jobs/cancel-stale<br/>Header X-Job-Token"]
+  subgraph ORD["order-service 8081"]
+    API["POST cancel-stale<br/>X-Job-Token"]
     SVC["StaleOrderService"]
-    DB[("H2 fintechdemo<br/>orders")]
+    DB[("orders")]
   end
   CRON --> SCH
   SCH --> CJ
   CJ --> RT
-  RT -->|"RestClient + token"| API
-  API -->|token 錯 → 403| X[拒絕]
-  API -->|token 對| SVC
-  SVC -->|"PENDING 且超過 30 分"| DB
-  DB --> DONE["status = CANCELLED"]
+  RT -->|"HTTP + token"| API
+  API -->|token bad| X["403"]
+  API -->|token ok| SVC
+  SVC -->|"PENDING over 30 min"| DB
+  DB --> DONE["status CANCELLED"]
     </div>
 
     <h3>7.2 呼叫流程（看這張就好）</h3>
@@ -504,14 +504,14 @@ flowchart TB
     </blockquote>
     <div class="mermaid">
 flowchart TD
-  A["① Scheduler<br/>cron 觸發 run"] --> B["② job-service<br/>組 POST + X-Job-Token"]
-  B --> C["③ InternalJobController<br/>收到 /cancel-stale"]
-  C --> D{"④ token<br/>是否等於<br/>demo-job-token？"}
-  D -->|不符| E["回 403 拒絕<br/>不碰 orders 表"]
-  D -->|正確| F["⑤ StaleOrderService<br/>cancelStalePending"]
-  F --> G["⑥ 查 orders 表<br/>PENDING 且超過 30 分"]
-  G --> H["⑦ 改成 CANCELLED"]
-  H --> I["⑧ 回 200<br/>cancelled = N"]
+  A["1 Scheduler cron run"] --> B["2 job-service POST + X-Job-Token"]
+  B --> C["3 InternalJobController cancel-stale"]
+  C --> D{"4 token equals demo-job-token"}
+  D -->|no| E["403 reject"]
+  D -->|yes| F["5 StaleOrderService cancelStalePending"]
+  F --> G["6 find PENDING over 30 min"]
+  G --> H["7 set CANCELLED"]
+  H --> I["8 return 200 cancelled = N"]
     </div>
     <table>
       <tr><th>步驟</th><th>誰</th><th>做什麼</th></tr>
@@ -596,7 +596,7 @@ flowchart LR
   RISK --> ACC["帳務 Redis"]
   APP --> GATE["可選 Gateway Kafka"]
   TDD --> HARNESS["Harness check 閘門"]
-  HARNESS --> LOOP["Loop 直到 Demo ALL OK"]
+  HARNESS --> LOOPOK["Loop until Demo ALL OK"]
     </div>
     <p>實線主路徑：規格與測試先對齊，再走 Vue → Order → Feign 風控 → 帳務 Redis。Gateway／Kafka 是加分敘事。Harness 擋住壞變更後，Loop 把 Demo 拉到 ALL OK。</p>
 
@@ -632,17 +632,17 @@ flowchart LR
     </table>
     <div class="mermaid">
 flowchart TD
-  CHANGE["你或 AI 改了一段碼"]
-  HOOK["hooks 感測：測試是否成對、格式"]
-  CHECK["check／pipeline：單元+整合+Compose+K8s"]
-  DOCTOR["doctor：本機埠與 health"]
-  BLOCK{"全綠?"}
-  NO["擋住：不算完成、不該合併"]
-  YES["才算這次變更可過關"]
+  CHANGE["code change"]
+  HOOK["hooks: paired tests"]
+  CHECK["check / pipeline"]
+  DOCTOR["doctor: ports and health"]
+  BLOCK{"all green"}
+  NO["block: not done"]
+  YES["pass this change"]
 
   CHANGE --> HOOK --> CHECK --> DOCTOR --> BLOCK
-  BLOCK -->|紅燈| NO
-  BLOCK -->|綠燈| YES
+  BLOCK -->|red| NO
+  BLOCK -->|green| YES
     </div>
     <ul>
       <li><b>hooks</b>：像煙霧偵測器，問題剛出現就叫。</li>

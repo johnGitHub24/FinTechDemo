@@ -20,7 +20,7 @@ flowchart LR
   RISK --> ACC["帳務 Redis"]
   APP --> GATE["可選 Gateway Kafka"]
   TDD --> HARNESS["Harness check 閘門"]
-  HARNESS --> LOOP["Loop 直到 Demo ALL OK"]
+  HARNESS --> LOOPOK["Loop 直到 Demo ALL OK"]
 ```
 
 | 節點 | 在本專案是什麼 |
@@ -63,7 +63,7 @@ flowchart TD
   HOOK["hooks 感測：測試是否成對、格式"]
   CHECK["check／pipeline：單元+整合+Compose+K8s"]
   DOCTOR["doctor：本機埠與 health"]
-  BLOCK{"全綠?"}
+  BLOCK{"是否全綠"}
   NO["擋住：不算完成、不該合併"]
   YES["才算這次變更可過關"]
 

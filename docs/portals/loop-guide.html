@@ -108,7 +108,7 @@ flowchart LR
   RISK --> ACC["帳務 Redis"]
   APP --> GATE["可選 Gateway Kafka"]
   TDD --> HARNESS["Harness check 閘門"]
-  HARNESS --> LOOPOK["Loop until Demo ALL OK"]
+  HARNESS --> LOOPOK["Loop 直到 Demo 全綠"]
       </div>
       <h3>現場六步</h3>
       <ol class="steps">
@@ -144,17 +144,17 @@ flowchart LR
       </table>
       <div class="mermaid">
 flowchart TD
-  CHANGE["code change"]
-  HOOK["hooks: paired tests"]
-  CHECK["check / pipeline"]
-  DOCTOR["doctor: ports and health"]
-  BLOCK{"all green"}
-  NO["block: not done"]
-  YES["pass this change"]
+  CHANGE["程式變更"]
+  HOOK["hooks 成對測試"]
+  CHECK["check 與 pipeline"]
+  DOCTOR["doctor 埠與健康"]
+  BLOCK{"是否全綠"}
+  NO["擋住未完成"]
+  YES["本變更可過關"]
 
   CHANGE --> HOOK --> CHECK --> DOCTOR --> BLOCK
-  BLOCK -->|red| NO
-  BLOCK -->|green| YES
+  BLOCK -->|紅燈| NO
+  BLOCK -->|綠燈| YES
       </div>
       <ul class="blurb">
         <li><strong>hooks</strong>：像煙霧偵測器，問題剛出現就叫。</li>

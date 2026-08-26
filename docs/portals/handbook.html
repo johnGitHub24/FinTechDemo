@@ -66,6 +66,8 @@
   <a href="swagger.html">→ 開 Swagger UI</a>
   <h2>測試</h2>
   <a href="#ch08">第 9 章　測試與 Pipeline</a>
+  <h2>規範</h2>
+  <a href="#ch-norms">第 10 章　SDD／TDD／Harness／Loop</a>
   <h2>互動</h2>
   <a href="demo-flow.html">啟動流程 HTML</a>
   <a href="demo-scripts.html">demo/ 腳本指南</a>
@@ -573,6 +575,86 @@ flowchart TD
 <pre>.\demo\verify-pipeline.ps1     # check + compose + k8s
 .\scripts\check.ps1             # 僅測試</pre>
     <p>單元／整合在 order、account、risk、gateway、job 各模組；種子資料 trader1 餘額 85000、AAPL 持倉 100（見 <a href="#ch05">§5</a> 表故事）。</p>
+    <p>閘門怎麼擋壞變更、三道門（hooks／pipeline／doctor）見 <a href="#ch-norms">第 10 章　工程規範</a>。</p>
+  </div>
+</article>
+
+<article class="chapter" id="ch-norms">
+  <header class="chapter-header">
+    <span class="chapter-label">規範</span>
+    <h2>第 10 章　SDD／TDD／Harness／Loop</h2>
+  </header>
+  <div class="md-content">
+    <blockquote>完成的定義 = 閘門全綠，不是模型或口頭說 OK。長文權威：<a href="../guides/engineering-norms.html">工程規範</a> · 部署關卡：<a href="loop-guide.html">Loop Engineering 教學</a>。</blockquote>
+
+    <h3>一條鏈：規格 → 實作 → 閘門 → Demo</h3>
+    <div class="mermaid">
+flowchart LR
+  SPEC["SDD 規格與劇情"] --> TDD["TDD 單元加整合"]
+  TDD --> APP["Vue 下單到 Order"]
+  APP --> RISK["Feign 風控"]
+  RISK --> ACC["帳務 Redis"]
+  APP --> GATE["可選 Gateway Kafka"]
+  TDD --> HARNESS["Harness check 閘門"]
+  HARNESS --> LOOP["Loop 直到 Demo ALL OK"]
+    </div>
+    <p>實線主路徑：規格與測試先對齊，再走 Vue → Order → Feign 風控 → 帳務 Redis。Gateway／Kafka 是加分敘事。Harness 擋住壞變更後，Loop 把 Demo 拉到 ALL OK。</p>
+
+    <h3>現場六步（務必可走完）</h3>
+    <ol>
+      <li>登入 <code>trader1</code> / <code>password</code></li>
+      <li><code>/trade</code> 下單</li>
+      <li>Risk 成交（需 Risk <code>:8082</code>）</li>
+      <li><code>/portal</code> 看餘額／持倉／歷史</li>
+      <li>admin 看 <code>/portal/audit</code></li>
+      <li>（加分）Gateway／Kafka／Redis</li>
+    </ol>
+
+    <h3>三個工具各當哪一道門</h3>
+    <p>Harness 把「人工記得跑什麼」做成自動感測器 + 通過／不通過閘門。本專案三道門擋的「壞」不一樣。</p>
+    <table>
+      <tr><th>工具</th><th>它在擋什麼</th><th>你實際的指令</th></tr>
+      <tr>
+        <td><b>hooks</b></td>
+        <td>改碼當下的「漂移」：例如只改單元測試、沒改整合測試</td>
+        <td>EngineeringOS <code>scan-paired-tests.ps1</code>、commit 前 lint</td>
+      </tr>
+      <tr>
+        <td><b>pipeline</b></td>
+        <td>這次變更能不能當「可部署的成品」</td>
+        <td><code>.\demo\verify-pipeline.ps1</code>：<code>gradlew check</code> → <code>docker compose config</code> → K8s 清單</td>
+      </tr>
+      <tr>
+        <td><b>doctor</b></td>
+        <td>本機 Demo 現在能不能連（行程死了、埠空了）</td>
+        <td><code>.\demo\doctor-demo.ps1</code>；<code>-Fix</code> 再把缺的服務拉起來</td>
+      </tr>
+    </table>
+    <div class="mermaid">
+flowchart TD
+  CHANGE["你或 AI 改了一段碼"]
+  HOOK["hooks 感測：測試是否成對、格式"]
+  CHECK["check／pipeline：單元+整合+Compose+K8s"]
+  DOCTOR["doctor：本機埠與 health"]
+  BLOCK{"全綠?"}
+  NO["擋住：不算完成、不該合併"]
+  YES["才算這次變更可過關"]
+
+  CHANGE --> HOOK --> CHECK --> DOCTOR --> BLOCK
+  BLOCK -->|紅燈| NO
+  BLOCK -->|綠燈| YES
+    </div>
+    <ul>
+      <li><b>hooks</b>：像煙霧偵測器，問題剛出現就叫。</li>
+      <li><b>pipeline</b>：像出廠檢驗，測「這版能不能過 CI／能部署」。</li>
+      <li><b>doctor</b>：像現場體檢，測「現在 localhost 能不能 Demo」。</li>
+    </ul>
+    <p><b>pipeline 紅了</b>，多半是程式或設定壞了；<b>doctor 紅了</b>，常常是服務沒開（關掉終端、重開機），不一定是邏輯寫錯。兩者都是閘門，擋的「壞」不一樣。</p>
+<pre>.\scripts\check.ps1
+.\demo\verify-pipeline.ps1
+.\demo\doctor-demo.ps1 -Fix
+.\開啟Demo.cmd</pre>
+    <p>禁止：跳過驗證入口宣告完成；用「本機沒跑」當通過；關掉 hook 掩蓋紅燈。</p>
   </div>
 </article>
 

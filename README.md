@@ -55,5 +55,7 @@ cd ..\EngineeringOS\eos-minimal\hooks
 | [CLAUDE.md](CLAUDE.md) | AI 薄規則 |
 | 藍圖 SPA | http://localhost:5173/blueprint · 前端頁面：`#frontend-pages` · K8s：`#k8s-intellij` |
 | 雙庫／H2／Redis | [db.html](docs/architecture/db.html)（TCP 9093／9094、僅 account 連 :6379）· 手冊 [handbook.html#ch05](docs/portals/handbook.html#ch05) |
+| [docs/portals/handbook.html](docs/portals/handbook.html) | 完整學習手冊（第 10 章＝工程規範） |
+| [docs/guides/engineering-norms.html](docs/guides/engineering-norms.html) | SDD／TDD／Harness 三道門（hooks／pipeline／doctor） |
 | 前端頁面（HTML） | [k8s-complete-guide.html §11](docs/guides/k8s-complete-guide.html#s11) |
 

@@ -27,6 +27,7 @@
 
 - 學習入口：[docs/index.html](docs/index.html) · `.\docs\tools\serve-docs.ps1`
 - 地圖／Loop：[learning-map](docs/portals/learning-map.html) · [loop-guide](docs/portals/loop-guide.html)
+- **工程規範（SDD／TDD／Harness 三道門）**：[HTML](docs/guides/engineering-norms.html) · 手冊 [第 10 章](docs/portals/handbook.html#ch-norms)
 - 黃金對照：`eos-minimal/knowledge/golden-project.md`
 
 ## 註解

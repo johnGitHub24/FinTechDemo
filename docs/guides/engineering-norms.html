@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTechDemo — 工程規範（SDD／TDD／Harness／Loop）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>:root {
+  --bg:#f5f7fa; --surface:#fff; --surface2:#eef2f6; --border:#d5dde6;
+  --text:#1f2937; --muted:#5b6b7c; --accent:#0d7377; --warn:#b45309;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; font-family:"Segoe UI","Microsoft JhengHei",sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+header.top {
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#e6f3f2 0%,#e8eef5 55%,#f5f7fa 100%);
+  padding:0.9rem 1.25rem;
+}
+header.top h1 { font-size:1.2rem; margin:0 0 0.25rem; }
+header.top .sub { color:var(--muted); font-size:0.85rem; margin:0 0 0.45rem; }
+header.top .links a { color:var(--accent); text-decoration:none; margin-right:0.85rem; font-size:0.82rem; }
+main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
+.gate { background:var(--surface2); border-left:3px solid var(--accent); padding:0.55rem 0.85rem; font-size:0.85rem; margin-bottom:1rem; border-radius:0 6px 6px 0; }
+.md-body h1 { font-size:1.55rem; margin:0 0 0.75rem; padding-bottom:0.4rem; border-bottom:2px solid var(--accent); }
+.md-body h2 { font-size:1.2rem; margin:1.5rem 0 0.55rem; color:#0f4c5c; }
+.md-body h3 { font-size:1.02rem; margin:1.1rem 0 0.4rem; color:var(--accent); }
+.md-body p, .md-body li { color:#334155; margin-bottom:0.45rem; }
+.md-body ul, .md-body ol { padding-left:1.35rem; margin:0.4rem 0 0.85rem; }
+.md-body blockquote { border-left:3px solid var(--warn); background:var(--surface2); padding:0.55rem 0.9rem; margin:0.75rem 0; color:var(--muted); font-size:0.9rem; }
+.md-body table { width:100%; border-collapse:collapse; font-size:0.85rem; margin:0.85rem 0; background:var(--surface); }
+.md-body th, .md-body td { border:1px solid var(--border); padding:0.4rem 0.55rem; vertical-align:top; text-align:left; }
+.md-body th { background:var(--surface2); color:var(--accent); }
+.md-body code { background:#e8eef3; padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; color:#0f4c5c; }
+.md-body pre { background:#1e293b; color:#e2e8f0; padding:0.9rem 1rem; border-radius:8px; overflow-x:auto; font-size:0.8rem; margin:0.75rem 0; }
+.md-body pre code { background:transparent; color:inherit; padding:0; }
+.md-body a { color:var(--accent); }
+.md-body hr { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+.md-body .mermaid { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:0.85rem; margin:0.85rem 0; }
+.mermaid .note rect { fill:#fff8e6 !important; stroke:#d5dde6 !important; }
+.mermaid .note text, .mermaid .note tspan { fill:#1f2937 !important; }</style>
+</head>
+<body>
+  <header class="top">
+    <h1>工程規範（SDD／TDD／Harness／Loop）</h1>
+    <p class="sub">來源（IDE 編輯）：<code>_md/guides/engineering-norms.md</code> · 重跑：<code>.\scripts\generate-docs-html.ps1</code></p>
+    <p class="links">
+      <a href="../index.html">統一學習入口</a>
+      <a href="../portals/learning-map.html">學習導引地圖</a>
+      <a href="../md-reader.html">MD 閱讀器</a>
+      <a href="../portals/swagger.html">Swagger</a>
+    </p>
+  </header>
+  <main>
+    <div class="gate">請開本 HTML（或經 stub 導向）。勿依賴 raw <code>.md</code> 瀏覽。</div>
+    <article class="md-body">
+<h1>FinTechDemo — 工程規範（SDD／TDD／Harness／Loop）</h1>
+<blockquote>
+<p>瀏覽：<a href="./engineering-norms.html"><code>docs/guides/engineering-norms.html</code></a> · 手冊第 10 章：<a href="../portals/handbook.html#ch-norms"><code>handbook.html#ch-norms</code></a><br>部署關卡細節：<a href="../portals/loop-guide.html"><code>loop-guide.html</code></a> · 測試入口：<a href="../architecture/testing.html"><code>testing</code></a><br>公版：EngineeringOS <code>knowledge/agent-engineering.md</code>、<code>knowledge/testing.md</code></p>
+</blockquote>
+<p><strong>完成的定義 = 閘門全綠，不是模型或口頭說 OK。</strong></p>
+<hr>
+<h2>1. 一條鏈：規格 → 實作 → 閘門 → Demo</h2>
+<p>現場要能講、能跑的同一條敘事：</p>
+<div class="mermaid">flowchart LR
+  SPEC["SDD 規格與劇情"] --> TDD["TDD 單元加整合"]
+  TDD --> APP["Vue 下單到 Order"]
+  APP --> RISK["Feign 風控"]
+  RISK --> ACC["帳務 Redis"]
+  APP --> GATE["可選 Gateway Kafka"]
+  TDD --> HARNESS["Harness check 閘門"]
+  HARNESS --> LOOP["Loop 直到 Demo ALL OK"]
+</div>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>在本專案是什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SDD 規格與劇情</td>
+<td><code>FinTechDemo-SPEC.md</code> 為權威；先對齊登入→下單→查餘額，再導入技術</td>
+</tr>
+<tr>
+<td>TDD 單元加整合</td>
+<td>每個公開行為有單元；每個 API Happy Path + 錯誤路徑；契約變更必須成對更新</td>
+</tr>
+<tr>
+<td>Vue 下單到 Order</td>
+<td>前台 <code>/trade</code> → Order <code>:8081</code>（或經 Gateway <code>:8080</code>）寫 <code>PENDING</code></td>
+</tr>
+<tr>
+<td>Feign 風控</td>
+<td>Order → Risk <code>:8082</code> 名目風控，通過才成交</td>
+</tr>
+<tr>
+<td>帳務 Redis</td>
+<td>Account <code>:8084</code> 入帳／持倉；讀路徑 cache-aside，入帳 evict</td>
+</tr>
+<tr>
+<td>可選 Gateway Kafka</td>
+<td>分散式加分敘事；<strong>不是</strong>最短可成交的必要條件</td>
+</tr>
+<tr>
+<td>Harness check 閘門</td>
+<td><code>check</code>／pipeline／hooks：紅燈不算完成</td>
+</tr>
+<tr>
+<td>Loop 直到 Demo ALL OK</td>
+<td>verify → fix → verify（<code>.\開啟Demo.cmd</code>／<code>.\demo\doctor-demo.ps1 -Fix</code>）</td>
+</tr>
+</tbody></table>
+<h3>現場六步（務必可走完）</h3>
+<ol>
+<li>登入 <code>trader1</code> / <code>password</code>  </li>
+<li><code>/trade</code> 下單  </li>
+<li>Risk 成交（需 Risk <code>:8082</code>）  </li>
+<li><code>/portal</code> 看餘額／持倉／歷史  </li>
+<li>admin 看 <code>/portal/audit</code>  </li>
+<li>（加分）Gateway／Kafka／Redis</li>
+</ol>
+<hr>
+<h2>2. 三個工具各當哪一道門</h2>
+<p>Harness Engineering 把「人工記得跑什麼」做成<strong>自動感測器 + 通過／不通過閘門</strong>。紅燈就不能算完成、不該合併、不該對外說 Demo 好了。</p>
+<p>本專案三道門<strong>擋的「壞」不一樣</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>它在擋什麼</th>
+<th>你實際的指令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>hooks</strong></td>
+<td>改碼當下的「漂移」：例如只改單元測試、沒改整合測試</td>
+<td>EngineeringOS <code>scan-paired-tests.ps1</code>、commit 前 lint</td>
+</tr>
+<tr>
+<td><strong>pipeline</strong></td>
+<td>這次變更能不能當「可部署的成品」</td>
+<td><code>.\demo\verify-pipeline.ps1</code>：<code>gradlew check</code> → <code>docker compose config</code> → K8s 清單</td>
+</tr>
+<tr>
+<td><strong>doctor</strong></td>
+<td>本機 Demo 現在能不能連（行程死了、埠空了）</td>
+<td><code>.\demo\doctor-demo.ps1</code>；<code>-Fix</code> 再把缺的服務拉起來</td>
+</tr>
+</tbody></table>
+<div class="mermaid">flowchart TD
+  CHANGE["你或 AI 改了一段碼"]
+  HOOK["hooks 感測：測試是否成對、格式"]
+  CHECK["check／pipeline：單元+整合+Compose+K8s"]
+  DOCTOR["doctor：本機埠與 health"]
+  BLOCK{"全綠?"}
+  NO["擋住：不算完成、不該合併"]
+  YES["才算這次變更可過關"]
+
+  CHANGE --> HOOK --> CHECK --> DOCTOR --> BLOCK
+  BLOCK -->|紅燈| NO
+  BLOCK -->|綠燈| YES
+</div>
+<ul>
+<li><strong>hooks</strong>：像煙霧偵測器，問題剛出現就叫。  </li>
+<li><strong>pipeline</strong>：像出廠檢驗，測「這版能不能過 CI／能部署」。  </li>
+<li><strong>doctor</strong>：像現場體檢，測「現在 localhost 能不能 Demo」。</li>
+</ul>
+<p><strong>pipeline 紅了</strong>，多半是程式或設定壞了；<strong>doctor 紅了</strong>，常常是服務沒開（關掉終端、重開機），不一定是邏輯寫錯。兩者都是閘門，擋的「壞」不一樣。</p>
+<h3>指令速查</h3>
+<pre><code class="language-powershell"># hooks（成對測試感測；在 EngineeringOS）
+powershell -NoProfile -ExecutionPolicy Bypass -File `
+  D:\ClaudeCode\EngineeringOS\eos-minimal\hooks\scan-paired-tests.ps1 `
+  -ProjectRoot D:\ClaudeCode\FinTechDemo -IncludeGitDiffHint
+
+# pipeline（可部署成品）
+.\scripts\check.ps1                    # 僅 unit + integration
+.\demo\verify-pipeline.ps1             # check + compose config + k8s
+.\demo\verify-pipeline.ps1 -Up -Smoke
+
+# doctor（本機能不能 Demo）
+.\demo\doctor-demo.ps1
+.\demo\doctor-demo.ps1 -Fix
+.\開啟Demo.cmd                         # 本機 LOOP 直到可 Demo
+</code></pre>
+<hr>
+<h2>3. SDD／TDD／Loop／Harness 怎麼分工</h2>
+<table>
+<thead>
+<tr>
+<th>規範</th>
+<th>管什麼</th>
+<th>本倉落點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SDD</strong></td>
+<td>先寫規格與劇情，實作服從 SPEC</td>
+<td><code>FinTechDemo-SPEC.md</code>；薄 <code>CLAUDE.md</code> 只寫與公版差異</td>
+</tr>
+<tr>
+<td><strong>TDD</strong></td>
+<td>先測試再實作；單元 ↔ 整合成對</td>
+<td><code>knowledge/testing.md</code>；<code>.\scripts\check.ps1</code></td>
+</tr>
+<tr>
+<td><strong>Harness</strong></td>
+<td>感測與閘門：自動發現問題並擋住壞變更</td>
+<td>hooks／<code>check</code>／<code>verify-pipeline</code>／<code>doctor-demo</code></td>
+</tr>
+<tr>
+<td><strong>Loop</strong></td>
+<td>節奏：失敗就修最小根因，重跑同一關直到綠</td>
+<td><code>.\開啟Demo.cmd</code>／<code>.\demo\doctor-demo.ps1</code>；<a href="../portals/loop-guide.html"><code>loop-guide.html</code></a></td>
+</tr>
+</tbody></table>
+<p>禁止：跳過驗證入口宣告完成；用「本機沒跑」當通過；關掉 hook／<code>--no-verify</code> 掩蓋紅燈（除非使用者明確要求）。</p>
+<hr>
+<h2>4. 講本專案時的界線（勿誇大）</h2>
+<ul>
+<li><strong>可講</strong>：JWT＋RBAC 交易鏈、Feign 風控、Redis cache-aside、Kafka 可選事件、Compose／Kind 跑通、三道閘門。  </li>
+<li><strong>須標 Demo</strong>：Kafka／Gateway 是加分路徑；本版 Feign 固定 URL（Eureka 為升級項）。  </li>
+<li><strong>勿講成</strong>：券商級撮合、FIX、金檢系統、正式公有雲生產年資。</li>
+</ul>
+
+    </article>
+  </main>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "loose",
+      themeVariables: {
+        primaryColor: "#e6f3f2",
+        primaryTextColor: "#1f2937",
+        primaryBorderColor: "#0d7377",
+        lineColor: "#5b6b7c",
+        secondaryColor: "#eef2f6",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fff8e6",
+        noteTextColor: "#1f2937",
+        noteBorderColor: "#d5dde6",
+        background: "#ffffff",
+        mainBkg: "#ffffff",
+        actorBkg: "#e6f3f2",
+        actorTextColor: "#1f2937",
+        actorBorder: "#0d7377",
+        signalColor: "#1f2937",
+        signalTextColor: "#1f2937"
+      }
+    });
+  </script>
+</body>
+</html>

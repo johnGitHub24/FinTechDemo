@@ -88,4 +88,5 @@ Demo 快捷「學習文件」已含 **Javadoc／單元測試／整合測試** �
 1. Risk(:8082) + Order(:8081) + frontend `:5173`  
 2. `/login` → `/trade` 成交 → `/blueprint`  
 3. `.\scripts\check.ps1` → `.\demo\verify-pipeline.ps1`  
-4. （加分）Eureka 升級口徑見 SPEC §2.3／TradingMicroService  
+4. 閘門敘事見 [工程規範](guides/engineering-norms.html)（hooks／pipeline／doctor）  
+5. （加分）Eureka 升級口徑見 SPEC §2.3／TradingMicroService  

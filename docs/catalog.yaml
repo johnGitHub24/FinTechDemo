@@ -45,6 +45,13 @@ docs:
     md: _md/guides/claude.md
     html: guides/claude.html
 
+  - id: engineering-norms
+    section: guides
+    group: 權威／產品
+    title: 工程規範（SDD／TDD／Harness／Loop）
+    md: _md/guides/engineering-norms.md
+    html: guides/engineering-norms.html
+
   - id: architecture
     section: architecture
     group: 架構／設定

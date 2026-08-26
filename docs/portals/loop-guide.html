@@ -62,6 +62,7 @@
     </p>
     <nav class="tabs" role="tablist">
       <button type="button" class="tab active" data-tab="mind">心法</button>
+      <button type="button" class="tab" data-tab="norms">規範</button>
       <button type="button" class="tab" data-tab="ladder">關卡順序</button>
       <button type="button" class="tab" data-tab="compose">Compose 跑通</button>
       <button type="button" class="tab" data-tab="k8s">Kind 部署</button>
@@ -80,6 +81,7 @@
         <li><strong>先窄後寬</strong>：先修引擎（Docker）→ 再修契約（kustomize）→ 再真跑（compose／kind）。跳關會把時間花在假問題上。</li>
         <li><strong>Loop Engineering</strong>：每關失敗就診斷 → 修最小根因 → 重跑同一關 → 綠燈才進下一關。禁止「一次改十處猜」。</li>
         <li><strong>證據優先</strong>：用 <code>docker info</code>、<code>kubectl get --raw=/readyz</code>、<code>describe</code>、<code>logs</code>、<code>exit code</code> 說話，不要先改業務 Java。</li>
+        <li><strong>Harness 三道門</strong>：hooks 擋測試漂移、pipeline 擋不可部署、doctor 擋本機連不上。詳見本頁「規範」分頁與 <a href="handbook.html#ch-norms">學習手冊第 10 章</a>。</li>
       </ul>
       <div class="mermaid">
 flowchart LR
@@ -91,6 +93,77 @@ flowchart LR
   E -->|綠燈| F["下一關"]
       </div>
       <div class="gate warn">禁止：看到 <code>connection refused</code> 就改 Spring 設定；那通常是 Docker／kubeconfig／叢集死掉。</div>
+    </section>
+
+    <!-- 規範：SDD／TDD／三道閘門 -->
+    <section id="panel-norms" class="panel">
+      <h2>規範：規格鏈與三道閘門</h2>
+      <p class="blurb">完成的定義 = 閘門全綠。長文：<a href="../guides/engineering-norms.html">工程規範</a> · 手冊：<a href="handbook.html#ch-norms">第 10 章</a>。</p>
+      <h3>一條鏈：規格 → 實作 → 閘門 → Demo</h3>
+      <div class="mermaid">
+flowchart LR
+  SPEC["SDD 規格與劇情"] --> TDD["TDD 單元加整合"]
+  TDD --> APP["Vue 下單到 Order"]
+  APP --> RISK["Feign 風控"]
+  RISK --> ACC["帳務 Redis"]
+  APP --> GATE["可選 Gateway Kafka"]
+  TDD --> HARNESS["Harness check 閘門"]
+  HARNESS --> LOOP["Loop 直到 Demo ALL OK"]
+      </div>
+      <h3>現場六步</h3>
+      <ol class="steps">
+        <li>登入 <code>trader1</code> / <code>password</code></li>
+        <li><code>/trade</code> 下單</li>
+        <li>Risk 成交（需 Risk <code>:8082</code>）</li>
+        <li><code>/portal</code> 看餘額／持倉／歷史</li>
+        <li>admin 看 <code>/portal/audit</code></li>
+        <li>（加分）Gateway／Kafka／Redis</li>
+      </ol>
+      <h3>三個工具各當哪一道門</h3>
+      <table>
+        <thead>
+          <tr><th>工具</th><th>它在擋什麼</th><th>你實際的指令</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>hooks</strong></td>
+            <td>改碼當下的「漂移」：例如只改單元測試、沒改整合測試</td>
+            <td>EngineeringOS <code>scan-paired-tests.ps1</code>、commit 前 lint</td>
+          </tr>
+          <tr>
+            <td><strong>pipeline</strong></td>
+            <td>這次變更能不能當「可部署的成品」</td>
+            <td><code>.\demo\verify-pipeline.ps1</code>：<code>gradlew check</code> → <code>docker compose config</code> → K8s 清單</td>
+          </tr>
+          <tr>
+            <td><strong>doctor</strong></td>
+            <td>本機 Demo 現在能不能連（行程死了、埠空了）</td>
+            <td><code>.\demo\doctor-demo.ps1</code>；<code>-Fix</code> 再把缺的服務拉起來</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mermaid">
+flowchart TD
+  CHANGE["你或 AI 改了一段碼"]
+  HOOK["hooks 感測：測試是否成對、格式"]
+  CHECK["check／pipeline：單元+整合+Compose+K8s"]
+  DOCTOR["doctor：本機埠與 health"]
+  BLOCK{"全綠?"}
+  NO["擋住：不算完成、不該合併"]
+  YES["才算這次變更可過關"]
+
+  CHANGE --> HOOK --> CHECK --> DOCTOR --> BLOCK
+  BLOCK -->|紅燈| NO
+  BLOCK -->|綠燈| YES
+      </div>
+      <ul class="blurb">
+        <li><strong>hooks</strong>：像煙霧偵測器，問題剛出現就叫。</li>
+        <li><strong>pipeline</strong>：像出廠檢驗，測「這版能不能過 CI／能部署」。</li>
+        <li><strong>doctor</strong>：像現場體檢，測「現在 localhost 能不能 Demo」。</li>
+      </ul>
+      <div class="gate warn">
+        pipeline 紅了，多半是程式或設定壞了；doctor 紅了，常常是服務沒開（關掉終端、重開機），不一定是邏輯寫錯。兩者都是閘門，擋的「壞」不一樣。
+      </div>
     </section>
 
     <!-- 關卡 -->
@@ -438,6 +511,9 @@ docker compose -f D:\SouceDemo\RemoteSpringBoot\FinTechDemo\docker-compose.yml p
         document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
         btn.classList.add("active");
         document.getElementById("panel-" + btn.getAttribute("data-tab")).classList.add("active");
+        if (window.mermaid) {
+          mermaid.run({ nodes: document.querySelectorAll("#panel-" + btn.getAttribute("data-tab") + " .mermaid") });
+        }
       });
     });
   </script>

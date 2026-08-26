@@ -165,7 +165,17 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <blockquote>
 <p><strong>Note：</strong>只有 account 連 <code>localhost:6379</code>。order／risk／gateway／job 本機預設不連 Redis；開 Redis 不會改那些服務的行為。</p>
 </blockquote>
-<h2>雙路徑一致性</h2>
+<h3 id="redis-evict">NOTE：evict 是什麼？</h3>
+<p><strong>evict = 刪掉快取 key</strong>，不是刪帳本。正式資料在 H2 <code>accountdb</code>；Redis 只加速讀。</p>
+<ol>
+<li>讀：先 Redis → miss 再 H2 → 回填快取（TTL 600s）。</li>
+<li>寫後 evict：入帳成功刪 <code>account:{id}</code>／<code>positions:{id}</code>，下次讀到新數字。</li>
+<li>觸發：Feign <code>apply-trade</code>、<code>TradeEventConsumer</code> 入帳後 → <code>queryService.evict(userId)</code>。</li>
+</ol>
+<blockquote>
+<p>若不 evict 會髒讀。讀碼：<code>AccountQueryService.evict</code>。手冊：<a href="../portals/handbook.html#redis-evict">handbook §4</a> · <a href="./db.html#redis-evict">db.html</a>。</p>
+</blockquote>
+<h2 id="account-sync-rollback">雙路徑一致性</h2>
 <table>
 <thead>
 <tr>
@@ -186,6 +196,15 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <td>只起 order：改 <code>feign-sync=false</code>；portal 直打 :8081 讀本機帳本</td>
 </tr>
 </tbody></table>
+<blockquote>
+<p><strong>NOTE（失敗與 rollback／未來擴增）：</strong></p>
+<ul>
+<li><strong>Feign</strong>：<code>AccountSyncService.syncTrade</code> 失敗拋錯 → <code>TradingService.execute</code> 的 <code>@Transactional</code> <strong>回滾 order DB</strong>（單庫回滾，不是 Saga 補償）。</li>
+<li><strong>Kafka</strong>：order <strong>先 commit</strong> 再 <code>publishAfterCommit</code>；account 消費失敗<strong>不會</strong>自動 rollback order；<strong>目前沒有</strong> Saga／TCC／補償交易。</li>
+<li><strong>未來可擴增（Kafka 路徑）</strong>：補償交易（沖銷 order／compensate topic）、編排式 Saga、或 TCC；接到 <code>TradeEventConsumer</code>／outbox 即可演進，不必改雙庫邊界。</li>
+<li>詳表：<a href="../portals/handbook.html#account-sync-rollback">handbook §5.7.1</a> · <a href="./db.html#account-sync-rollback">db.html</a>。</li>
+</ul>
+</blockquote>
 <h2>Gateway 路由</h2>
 <ul>
 <li><code>/api/accounts/**</code>、<code>/api/positions</code> → account:8084</li>

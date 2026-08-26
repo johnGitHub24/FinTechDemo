@@ -174,6 +174,22 @@ flowchart LR
       開 Redis <strong>不會改</strong>下單／風控／Gateway 邏輯。沒開 Docker Redis 時，account 仍可打 H2；DataGrip 連 <code>6379</code> 是 Redis，不是 H2（帳本在 <code>9094/mem:accountdb</code>）。
       連線表：<a href="../architecture/db.html#redis-conn">資料庫設計 · Redis</a>。
     </blockquote>
+
+    <h3 id="redis-evict">NOTE：Redis evict 是什麼？</h3>
+    <p><strong>evict = 刪掉 Redis 裡的舊快取 key</strong>，不是刪帳本 DB。正式餘額／持倉仍在 H2 <code>accountdb</code>。</p>
+    <table>
+      <tr><th>步驟</th><th>做什麼</th></tr>
+      <tr><td>讀（cache-aside）</td><td>先看 <code>account:{userId}</code>／<code>positions:{userId}</code>；miss 再查 H2，寫回 Redis（TTL 600s）</td></tr>
+      <tr><td>寫後 evict</td><td>入帳成功後 <code>AccountQueryService.evict(userId)</code> 刪上述 key → 下次 Portal 讀到新數字</td></tr>
+      <tr><td>觸發點</td><td>Feign <code>apply-trade</code> 後；Kafka 消費 <code>trade-events</code> 入帳後</td></tr>
+    </table>
+    <blockquote>
+      <strong>NOTE：</strong>若不 evict，畫面可能髒讀舊餘額。Redis 掛了會降級打 H2，不擋查詢。
+      讀碼：<code>AccountQueryService</code> · 對照
+      <a href="../architecture/db.html#redis-evict">db.html</a> ·
+      <a href="../architecture/distributed.html#redis-evict">distributed.html</a>。
+    </blockquote>
+
     <p>表與雙庫邊界：下一章 <a href="#ch05">雙庫與 ER Model</a> · 權威細圖 <a href="../architecture/db.html">資料庫設計</a>。</p>
   </div>
 </article>
@@ -296,7 +312,7 @@ flowchart LR
       <tr>
         <td>同步問題怎麼解</td>
         <td><code>order-service/.../AccountSyncService.java</code></td>
-        <td>Feign 同步、Kafka 開關、失敗就拋錯避免脫節</td>
+        <td>Feign 失敗拋錯 → order 交易回滾；Kafka 最終一致（見 <a href="#account-sync-rollback">§5.7.1 NOTE</a>）</td>
       </tr>
       <tr>
         <td>Portal 為什麼只看 account</td>
@@ -361,6 +377,44 @@ flowchart LR
     </div>
     <blockquote>
       <strong>一句話：</strong>兩個 H2、表名相同但不在同一庫；<strong>畫面看 account</strong>，<strong>成交先改 order 再同步</strong>。
+    </blockquote>
+
+    <h3 id="account-sync-rollback">5.7.1 NOTE：account 更新失敗時，order 會不會 rollback？</h3>
+    <p>
+      成交在 <code>TradingService.execute</code>（<code>@Transactional</code>）：先改 <strong>order DB</strong>（本機複本 + 訂單狀態），
+      再同步 account。兩條路徑行為<strong>不一樣</strong>——這是 Demo 現況，不是完整 Saga／TCC。
+    </p>
+    <table>
+      <tr><th>模式</th><th>開關</th><th>account 失敗時 order 怎麼辦</th><th>機制</th></tr>
+      <tr>
+        <td><b>Feign 同步</b>（本機常見）</td>
+        <td><code>feign-sync=true</code> 且 <code>kafka=false</code></td>
+        <td><b>會 rollback</b> order 這筆交易</td>
+        <td>
+          <code>AccountSyncService.syncTrade</code> 失敗拋 <code>BusinessException</code> →
+          同方法 <code>@Transactional</code> 回滾 → 訂單不會停在 <code>ACCEPTED</code>、本機帳本也不留該次扣款
+        </td>
+      </tr>
+      <tr>
+        <td><b>Kafka</b>（分散式 Demo）</td>
+        <td><code>kafka.enabled=true</code></td>
+        <td><b>不會</b> rollback order</td>
+        <td>
+          <code>syncTrade</code> 略過 Feign；<code>publishAfterCommit</code> 先 commit order 再發
+          <code>trade-events</code> → account 消費入帳＝<b>最終一致</b>；消費失敗靠重試／人工，
+          <b>目前沒有</b> Saga／TCC／補償交易
+        </td>
+      </tr>
+    </table>
+    <blockquote>
+      <strong>NOTE：</strong>Feign 路徑是「order 單庫交易回滾」，不是去呼叫 account 反向沖銷。
+      現況<strong>刻意不做</strong>跨服務 Saga／TCC／補償——Demo 先講清「先 commit 再事件」的最終一致。
+      <strong>未來可擴增</strong>（Kafka 路徑）：例如消費失敗補償（沖銷 order／發 compensate topic）、
+      編排式 Saga、或 TCC 試單；接到 <code>TradeEventConsumer</code>／outbox 之後即可演進，不必改雙庫邊界。
+      讀碼：<code>TradingService.execute</code>、<code>AccountSyncService.syncTrade</code>、
+      <code>TradeEventPublisher.publishAfterCommit</code>。
+      架構對照：<a href="../architecture/db.html#account-sync-rollback">db.html</a> ·
+      <a href="../architecture/distributed.html#account-sync-rollback">distributed.html</a>。
     </blockquote>
 
     <h3>5.8 order DB — ER（五張表）</h3>

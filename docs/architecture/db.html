@@ -168,6 +168,36 @@ flowchart LR
 <p><strong>用詞：</strong><em>order 本機複本</em>＝order-service 內 H2 的 accounts／positions（成交內部用）；<em>正式帳本</em>＝account-service 的 accounts／positions（Portal 讀這裡）。舊稿偶爾寫「便道」，語意相同，已改為上述說法。</p>
 </blockquote>
 
+<h3 id="account-sync-rollback">NOTE：account 更新失敗 → order 如何 rollback？</h3>
+<p><code>TradingService.execute</code> 先改 order DB，再同步 account。現況只有「部分機制」，不是完整 Saga／TCC：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>開關</th>
+<th>account 失敗時</th>
+<th>機制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Feign 同步</strong></td>
+<td><code>fintech.account.feign-sync=true</code> 且 <code>fintech.kafka.enabled=false</code></td>
+<td><strong>會</strong> rollback order 交易</td>
+<td><code>AccountSyncService.syncTrade</code> 拋 <code>BusinessException</code> → 同方法 <code>@Transactional</code> 回滾（訂單不留 <code>ACCEPTED</code>、本機帳本不留該次扣款）。這是 order <strong>單庫</strong>回滾，不是呼叫 account 反向沖銷。</td>
+</tr>
+<tr>
+<td><strong>Kafka</strong></td>
+<td><code>fintech.kafka.enabled=true</code></td>
+<td><strong>不會</strong> rollback order</td>
+<td><code>syncTrade</code> 略過 Feign；<code>TradeEventPublisher.publishAfterCommit</code> 先 commit 再發 <code>trade-events</code> → account 最終一致。消費失敗<strong>目前無</strong>自動把 order 改回；<strong>尚無</strong> Saga／TCC／補償（預留擴增點）。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>NOTE：</strong>Demo 刻意簡化。<strong>未來可擴增（Kafka）</strong>：補償交易（沖銷／compensate topic）、編排式 Saga、或 TCC；接到 consumer／outbox 即可，雙庫邊界不變。手冊：<a href="../portals/handbook.html#account-sync-rollback">handbook §5.7.1</a>；開關：<a href="./distributed.html#account-sync-rollback">distributed.html</a>。</p>
+</blockquote>
+
 <h2>引擎與擁有者</h2>
 <table>
 <thead>
@@ -259,6 +289,16 @@ flowchart LR
 <tr><td>沒開容器</td><td>QueryService warn 後改打 H2，不擋查詢</td></tr>
 </tbody>
 </table>
+<h3 id="redis-evict">NOTE：evict 是什麼？</h3>
+<p><strong>evict = 刪 Redis 快取 key</strong>（<code>account:{userId}</code>、<code>positions:{userId}</code>），<strong>不是</strong>刪 H2 帳本。</p>
+<ul>
+<li><strong>讀</strong>：cache-aside — hit 回傳快取；miss 查 H2 再寫入（TTL 600s）。</li>
+<li><strong>寫後</strong>：入帳（Feign <code>apply-trade</code>／Kafka <code>trade-events</code>）後呼叫 <code>AccountQueryService.evict</code>，避免 Portal 髒讀舊餘額。</li>
+<li>Redis 掛了：降級打 H2，不擋查詢。</li>
+</ul>
+<blockquote>
+<p>教學敘事：<a href="../portals/handbook.html#redis-evict">handbook §4 NOTE</a> · 分散式：<a href="./distributed.html#redis-evict">distributed.html</a>。</p>
+</blockquote>
 
 <h2>ER Model — order DB（fintechdemo）</h2>
 <div class="mermaid">

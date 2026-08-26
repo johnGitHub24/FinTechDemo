@@ -60,6 +60,7 @@
   <a href="#ch04">第 4 章　模組與埠</a>
   <a href="#ch05">第 5 章　雙庫與 ER Model</a>
   <a href="#ch06">第 6 章　分散式怎麼講</a>
+  <a href="#monitoring-start">　└ 6.1 觀測啟動 NOTE</a>
   <a href="#ch-job">第 7 章　Job 逾時取消</a>
   <h2>API</h2>
   <a href="#ch07">第 8 章　API 地圖</a>
@@ -511,7 +512,96 @@ erDiagram
       <li><b>Eureka</b>：可口述改 <code>lb://</code>，Demo 用固定 URL 保證可跑</li>
       <li><b>資料邊界</b>：見 <a href="#ch05">§5 ER</a> — 訂單與帳本分庫，用事件／Feign 對齊</li>
       <li><b>排程</b>：Job 不碰訂單表，只敲門；見 <a href="#ch-job">第 7 章</a></li>
+      <li><b>觀測</b>：Prometheus／Grafana 啟動與 scrape；見 <a href="#monitoring-start">§6.1 NOTE</a></li>
     </ul>
+
+    <h3 id="monitoring-start">6.1 NOTE：Prometheus／Grafana 怎麼啟動、怎麼運作</h3>
+    <blockquote>
+      <strong>一句話：</strong>本專案<strong>不自寫</strong> Prom／Grafana 程式碼，用 Docker 映像；業務 JVM 只暴露
+      <code>/actuator/prometheus</code>。記法：<strong>Locust＝壓力</strong> → <strong>Prometheus＝帳本</strong> → <strong>Grafana＝畫圖</strong>。
+    </blockquote>
+
+    <h4>啟動方式（擇一）</h4>
+    <table>
+      <tr><th>方式</th><th>指令／入口</th><th>說明</th></tr>
+      <tr>
+        <td><b>一鍵本機 Demo</b></td>
+        <td><code>.\開啟Demo.cmd</code></td>
+        <td>
+          → <code>ensure-demo-links.ps1</code> 的 <code>Ensure-Monitoring</code>：
+          先探 <code>:9090</code>／<code>:3000</code>；沒起來且 Docker Ready →
+          <code>docker compose --profile monitoring up -d prometheus grafana</code>
+        </td>
+      </tr>
+      <tr>
+        <td><b>只起監控</b></td>
+        <td><code>docker compose --profile monitoring up -d prometheus grafana</code></td>
+        <td>不必起全業務容器；需 <strong>Docker Desktop Ready</strong></td>
+      </tr>
+      <tr>
+        <td><b>無 Docker 備援</b></td>
+        <td><code>.\demo\start-monitoring-local.ps1</code></td>
+        <td>需本機 <code>tools/</code> 已有 Prom／Grafana 二進位；平常優先 Docker</td>
+      </tr>
+    </table>
+    <p>
+      前置：先開 Docker Desktop。埠<strong>沒改過</strong>——Grafana <code>:3000</code>（<code>admin</code>／<code>admin</code>）、
+      Prometheus <code>:9090</code>。開不了多半是 daemon 沒開，不是埠號錯。
+    </p>
+
+    <h4>相關設定檔</h4>
+    <table>
+      <tr><th>檔案</th><th>職責</th></tr>
+      <tr>
+        <td><code>docker-compose.yml</code>（service <code>prometheus</code>／<code>grafana</code>）</td>
+        <td>映像、埠、<code>profiles: [monitoring]</code>、volume、Grafana 帳密環境變數</td>
+      </tr>
+      <tr>
+        <td><code>monitoring/prometheus.yml</code></td>
+        <td>每 15s scrape 誰；路徑 <code>/actuator/prometheus</code></td>
+      </tr>
+      <tr>
+        <td><code>monitoring/grafana/provisioning/datasources/datasource.yml</code></td>
+        <td>資料源 → 同網 <code>http://prometheus:9090</code></td>
+      </tr>
+      <tr>
+        <td><code>monitoring/grafana/provisioning/dashboards/dashboards.yml</code></td>
+        <td>自動載入儀表板目錄</td>
+      </tr>
+      <tr>
+        <td><code>monitoring/grafana/dashboards/fintech-demo.json</code></td>
+        <td>FinTechDemo Overview</td>
+      </tr>
+      <tr>
+        <td>各服務 <code>application.yml</code></td>
+        <td><code>management.endpoints.web.exposure.include</code> 含 <code>prometheus</code></td>
+      </tr>
+      <tr>
+        <td><code>demo/ensure-demo-links.ps1</code> → <code>Ensure-Monitoring</code></td>
+        <td>一鍵 Demo 時探針＋compose 拉起</td>
+      </tr>
+    </table>
+
+    <h4>資料怎麼流</h4>
+    <ol>
+      <li>業務服務（bootRun <code>:8080～8084</code>）經 Micrometer 暴露 <code>GET /actuator/prometheus</code></li>
+      <li>Prometheus 容器依 <code>prometheus.yml</code> scrape（目前 target＝
+        <code>host.docker.internal:808x</code>，打本機 JVM；適合 IntelliJ／開啟Demo）</li>
+      <li>Grafana 查 PromQL，畫 Overview</li>
+    </ol>
+    <div class="mermaid">
+flowchart LR
+  JVM["業務 JVM Actuator"] -->|"/actuator/prometheus"| PROM["Prometheus :9090"]
+  PROM --> GRAF["Grafana :3000"]
+    </div>
+    <blockquote>
+      <strong>NOTE：</strong>Prom／Grafana 容器 Healthy ≠ Targets 全綠。業務沒起來時 Targets 會 DOWN——
+      沒東西可 scrape。看 Targets：<a href="http://localhost:9090/targets" target="_blank" rel="noopener">:9090/targets</a>；
+      Grafana：<a href="http://localhost:3000" target="_blank" rel="noopener">:3000</a> → FinTechDemo Overview。
+      腳本目錄：<a href="demo-scripts.html">demo-scripts.html</a> ·
+      分散式摘要：<a href="../architecture/distributed.html#monitoring-start">distributed.html</a> ·
+      測試／觀測：<a href="../architecture/testing.html#monitoring-start">testing.html</a>。
+    </blockquote>
   </div>
 </article>
 

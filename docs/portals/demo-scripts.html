@@ -364,10 +364,17 @@ flowchart TD
       <div class="cmd-row"><code class="cmd">.\demo\run-loadtest.ps1 -WebUi</code><button type="button" class="copy" data-copy=".\demo\run-loadtest.ps1 -WebUi">複製</button></div>
     </div>
 
-    <div class="script-card">
-      <h4><code>start-monitoring-local.ps1</code></h4>
-      <p><b>用途：</b>無 Docker 時本機起 Prometheus :9090／Grafana :3000。</p>
+    <div class="script-card" id="monitoring-start">
+      <h4><code>start-monitoring-local.ps1</code>／compose monitoring</h4>
+      <p><b>用途：</b>Prometheus :9090 + Grafana :3000（觀測）。優先 Docker；無 Docker 才用本腳本。</p>
+      <div class="cmd-row"><code class="cmd">docker compose --profile monitoring up -d prometheus grafana</code><button type="button" class="copy" data-copy="docker compose --profile monitoring up -d prometheus grafana">複製</button></div>
       <div class="cmd-row"><code class="cmd">.\demo\start-monitoring-local.ps1</code><button type="button" class="copy" data-copy=".\demo\start-monitoring-local.ps1">複製</button></div>
+      <blockquote class="warn-box" style="margin-top:0.75rem">
+        <strong>NOTE：</strong>一鍵 <code>.\開啟Demo.cmd</code> 會經 <code>Ensure-Monitoring</code> 試拉 compose。
+        設定：<code>monitoring/prometheus.yml</code>（scrape 本機 808x Actuator）、Grafana provisioning＋
+        <code>fintech-demo.json</code>。資料流：JVM → Prom 帳本 → Grafana 畫圖。
+        完整教學：<a href="handbook.html#monitoring-start">handbook §6.1</a>。
+      </blockquote>
     </div>
 
     <div class="script-card">

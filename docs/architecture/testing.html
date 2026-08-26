@@ -83,8 +83,19 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <h2>Case ID（摘要）</h2>
 <p>見 <a href="../%E6%B8%AC%E8%A9%A6%E8%88%87CI.md">測試與CI.md</a>。Fixture：<code>docs/test-data/...</code>。</p>
 <p>HTTP API（AUTH／ORDER／SEC／ACCOUNT／RISK／GW／LEDGER／JWT／STALE／FLOW）為 <strong>Unit+Int 成對</strong>。<br><code>*-BOOT-001</code> 僅斷言 context 載入，標 <strong>unit-only</strong>。<br>Hook 子字串（<code>RDER-001</code> 來自 <code>ORDER-001</code>，非錯字）可忽略。</p>
-<h2>觀測</h2>
-<p><code>monitoring/prometheus.yml</code> + compose profile <code>monitoring</code>；前端登入頁／nav 可開 Grafana／Prometheus／Locust。</p>
+<h2 id="monitoring-start">觀測（Prometheus／Grafana）</h2>
+<p><code>monitoring/prometheus.yml</code> + compose profile <code>monitoring</code>；前端 nav 可開 Grafana／Prometheus／Locust。</p>
+<blockquote>
+<p><strong>NOTE 啟動：</strong></p>
+<ol>
+<li>先 Docker Desktop Ready</li>
+<li><code>.\開啟Demo.cmd</code>（內建 <code>Ensure-Monitoring</code>）或
+  <code>docker compose --profile monitoring up -d prometheus grafana</code></li>
+<li>Grafana <code>http://localhost:3000</code>（admin／admin）· Prometheus <code>http://localhost:9090</code></li>
+</ol>
+<p>業務暴露 <code>/actuator/prometheus</code>；Prom 經 <code>host.docker.internal:808x</code> scrape；Grafana 查 Prom 畫 Overview。
+詳：<a href="../portals/handbook.html#monitoring-start">handbook §6.1</a> · <a href="./distributed.html#monitoring-start">distributed.html</a>。</p>
+</blockquote>
 <h2>驗證入口</h2>
 <pre><code class="language-powershell">.\scripts\check.ps1
 </code></pre>

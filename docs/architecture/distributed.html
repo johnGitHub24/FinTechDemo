@@ -205,6 +205,22 @@ main { max-width:900px; padding:1.25rem 1.5rem 3rem; margin:0 auto; }
 <li>詳表：<a href="../portals/handbook.html#account-sync-rollback">handbook §5.7.1</a> · <a href="./db.html#account-sync-rollback">db.html</a>。</li>
 </ul>
 </blockquote>
+<h2 id="monitoring-start">NOTE：Prometheus／Grafana 啟動與運作</h2>
+<p>本專案<strong>不自寫</strong>監控程式；Docker 映像 + 業務 Actuator。埠：Grafana <code>:3000</code>（admin／admin）、Prometheus <code>:9090</code>。</p>
+<table>
+<thead><tr><th>啟動</th><th>指令</th></tr></thead>
+<tbody>
+<tr><td>一鍵 Demo</td><td><code>.\開啟Demo.cmd</code> → <code>Ensure-Monitoring</code></td></tr>
+<tr><td>只起監控</td><td><code>docker compose --profile monitoring up -d prometheus grafana</code></td></tr>
+<tr><td>無 Docker</td><td><code>.\demo\start-monitoring-local.ps1</code></td></tr>
+</tbody>
+</table>
+<p><strong>設定：</strong><code>docker-compose.yml</code>（profile <code>monitoring</code>）· <code>monitoring/prometheus.yml</code>（scrape <code>host.docker.internal:808x/actuator/prometheus</code>，15s）·
+Grafana provisioning（datasource → <code>http://prometheus:9090</code>）· <code>monitoring/grafana/dashboards/fintech-demo.json</code>。</p>
+<p><strong>資料流：</strong>JVM Micrometer → <code>/actuator/prometheus</code> → Prometheus 帳本 → Grafana 畫圖。容器 Healthy ≠ Targets UP（業務沒起則 Targets DOWN）。</p>
+<blockquote>
+<p>完整教學：<a href="../portals/handbook.html#monitoring-start">handbook §6.1</a> · 腳本：<a href="../portals/demo-scripts.html#monitoring-start">demo-scripts</a> · <a href="./testing.html#monitoring-start">testing.html</a>。</p>
+</blockquote>
 <h2>Gateway 路由</h2>
 <ul>
 <li><code>/api/accounts/**</code>、<code>/api/positions</code> → account:8084</li>

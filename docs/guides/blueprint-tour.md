@@ -184,6 +184,16 @@ docker compose --profile full up -d frontend
 
 Locust :8089 → Order；Prometheus :9090；Grafana :3000。進階章節，面試可略。
 
+**NOTE 啟動（完整教學：[handbook §6.1](../portals/handbook.html#monitoring-start)）：**
+
+1. Docker Desktop Ready  
+2. `.\開啟Demo.cmd`（`Ensure-Monitoring`）或 `docker compose --profile monitoring up -d prometheus grafana`  
+3. Grafana http://localhost:3000（admin／admin）· Prometheus http://localhost:9090  
+
+設定：`monitoring/prometheus.yml`、Grafana provisioning、各服務 Actuator `prometheus`。  
+資料流：`/actuator/prometheus` → Prom scrape（`host.docker.internal:808x`）→ Grafana Overview。  
+容器 Healthy ≠ Targets UP（業務沒起則 Targets DOWN）。
+
 ---
 
 ### `#k8s-intellij` — K8s 主章（最重）

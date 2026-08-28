@@ -26,3 +26,6 @@ docs/_md/
 docs/tools/package-lock.json
 logs/
 
+
+# eos-minimal onboard
+.env

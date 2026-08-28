@@ -1,6 +1,6 @@
-# FinTechDemo — 專案規則（薄）
+﻿# FinTechDemo — 專案規則（薄）
 
-繼承：EngineeringOS eos-minimal @ **0.1.10**  
+繼承：EngineeringOS eos-minimal @ **0.1.13**  
 公版：`EngineeringOS/eos-minimal/` · `knowledge/apply-workspace.md`  
 權威：[FinTechDemo-SPEC.md](FinTechDemo-SPEC.md)（[`docs/guides/spec.html`](docs/guides/spec.html)）
 

@@ -34,6 +34,10 @@
     <p v-if="!story.flowSteps.value.length" class="story-meta">（等待第一次帶 demoTrace 的 API）</p>
 
     <h4 class="story-sub">服務儀表板</h4>
+    <p v-if="k8sMode" class="story-meta k8s-topo-note">
+      <strong>K8s 模式</strong>：燈號來自叢集內探測，Gateway／Job 可能顯示紅（本機 :8080／:8083）。
+      實際入口請看登入頁 <code>:{{ k8sPfPort }}</code> port-forward。
+    </p>
     <div class="lamp-row" :class="{ 'is-refreshing': topoRefreshing }">
       <div
         v-for="s in services"
@@ -127,8 +131,12 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useDemoStoryStore } from '../stores/demoStory';
 import { inferStage } from '../demo/inferStage.js';
+import { isK8sFrontendMode } from '../config/demoLinks';
+import { getK8sGatewayPfPort } from '../config/serviceStatusMode';
 
 const story = useDemoStoryStore();
+const k8sMode = computed(() => isK8sFrontendMode());
+const k8sPfPort = computed(() => getK8sGatewayPfPort());
 const stages = ['S1', 'S2', 'S3'];
 const orderStates = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'];
 const topoRefreshing = ref(false);

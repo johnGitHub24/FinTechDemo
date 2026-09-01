@@ -1034,6 +1034,50 @@ tbody tr:hover { background: var(--surface2); }
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
+.login-topo-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mode-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.mode-badge.local {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+.mode-badge.k8s {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #93c5fd;
+}
+.mode-lead {
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+}
+.topo-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0.65rem 0 0.35rem;
+}
+.topo-section-title:first-of-type {
+  margin-top: 0;
+}
+.req-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+}
 .login-topo-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1177,6 +1221,16 @@ a.demo-nav-btn.router-link-active {
 }
 .topo-list li.up .badge { color: var(--ok); }
 .topo-list li.down .badge { color: var(--danger); }
+.topo-list li.na .dot { background: var(--muted); }
+.topo-list li.na .badge { color: var(--muted); }
+.topo-list li.ignored {
+  opacity: 0.62;
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+.topo-list li.ignored .dot { background: var(--muted); }
+.topo-list li.ignored .badge { color: var(--muted); font-weight: 600; }
+.topo-list-ignored { margin-bottom: 0.25rem; }
 .warn-banner {
   margin: 0.65rem 0 0;
   padding: 0.55rem 0.7rem;

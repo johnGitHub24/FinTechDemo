@@ -33,6 +33,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: () => '/actuator/health'
       },
+      // K8s：port-forward Gateway（VITE_API_TARGET 預設 http://127.0.0.1:18080）
+      '/proxy/k8s-gateway-pf-health': {
+        target: process.env.VITE_API_TARGET || 'http://127.0.0.1:18080',
+        changeOrigin: true,
+        rewrite: () => '/actuator/health'
+      },
       '/proxy/job-health': {
         target: 'http://localhost:8083',
         changeOrigin: true,

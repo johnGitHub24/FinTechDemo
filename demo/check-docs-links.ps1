@@ -1,4 +1,4 @@
-# FinTechDemo check-docs-links.ps1
+﻿# FinTechDemo check-docs-links.ps1
 # Scan docs HTML (exclude javadoc) for broken local href targets.
 param()
 $ErrorActionPreference = "Continue"

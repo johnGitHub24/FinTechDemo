@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   K8s walkthrough: Docker Desktop images vs kind vs Pods.

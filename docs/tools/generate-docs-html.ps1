@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   依 docs/catalog.yaml 產生主題目錄靜態 HTML。
 .EXAMPLE

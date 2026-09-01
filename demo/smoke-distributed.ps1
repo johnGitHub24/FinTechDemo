@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   分散式手測：Kafka + Redis infra +（若服務已起）API 煙霧流程。
 

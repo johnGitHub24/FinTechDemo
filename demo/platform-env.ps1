@@ -1,4 +1,4 @@
-# platform-env.ps1 — Load demo/platform-run.properties (Run Anywhere constants)
+﻿# platform-env.ps1 — Load demo/platform-run.properties (Run Anywhere constants)
 #
 # Usage:
 #   . "$PSScriptRoot\platform-env.ps1" -ProjectRoot $Root

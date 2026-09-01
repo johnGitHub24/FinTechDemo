@@ -1,4 +1,4 @@
-# FinTechDemo — pipeline verify
+﻿# FinTechDemo — pipeline verify
 #   .\demo\verify-pipeline.ps1
 #   .\demo\verify-pipeline.ps1 -Up
 #   .\demo\verify-pipeline.ps1 -Up -Smoke

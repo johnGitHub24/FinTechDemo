@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   驗證 FinTechDemo K8s overlay 可 kustomize build。
 

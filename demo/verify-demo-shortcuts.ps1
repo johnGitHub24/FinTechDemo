@@ -1,4 +1,4 @@
-# FinTechDemo verify-demo-shortcuts.ps1
+﻿# FinTechDemo verify-demo-shortcuts.ps1
 # Probe only (no start). On FAIL run: .\demo\ensure-demo-links.ps1
 param()
 $ErrorActionPreference = "Continue"

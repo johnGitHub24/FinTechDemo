@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Locust 壓測：baseline（order :8081）或 fullflow（gateway :8080），產出 reports。
 

@@ -88,6 +88,49 @@ function Get-PlatformServiceChecks {
     )
 }
 
+function Get-PlatformLocalDemoPorts {
+    return @(
+        $PlatformGatewayPort,
+        $PlatformOrderPort,
+        $PlatformRiskPort,
+        $PlatformJobPort,
+        $PlatformAccountPort,
+        $PlatformVitePort,
+        $PlatformH2TcpPort,
+        $PlatformK8sGatewayPfLocal,
+        5500,
+        3000,
+        9090,
+        8089,
+        9094
+    ) | Where-Object { $_ -gt 0 } | Select-Object -Unique
+}
+
+function Stop-PlatformListeningPort {
+    param([int]$Port)
+    $conns = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+    foreach ($c in $conns) {
+        $ownerPid = [int]$c.OwningProcess
+        if ($ownerPid -le 0) { continue }
+        Write-Host "  stop :$Port pid=$ownerPid" -ForegroundColor DarkGray
+        Stop-Process -Id $ownerPid -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Stop-PlatformGradleDaemons {
+    Get-CimInstance Win32_Process -Filter "Name='java.exe'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -match 'GradleDaemon' -and
+            $_.CommandLine -notmatch 'bootRun' -and
+            $_.CommandLine -notmatch 'GradleWrapperMain'
+        } |
+        ForEach-Object {
+            Write-Host "  stop gradle-daemon pid=$($_.ProcessId)" -ForegroundColor DarkGray
+            Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+}
+
 function Use-PlatformKube {
     New-Item -ItemType Directory -Force -Path $PlatformToolsDir | Out-Null
     $env:KUBECONFIG = $PlatformKubeConfig
@@ -109,6 +152,38 @@ function Export-PlatformKube {
 function Test-PlatformDockerHostileName([string]$ContainerName) {
     if (-not $PlatformDockerHostilePattern) { return $false }
     return $ContainerName -match $PlatformDockerHostilePattern
+}
+
+function Test-PlatformDockerReady {
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { return $false }
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    try {
+        docker info *> $null
+        return $LASTEXITCODE -eq 0
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+}
+
+function Invoke-PlatformDockerComposeQuiet {
+    param([Parameter(Mandatory)][string[]]$ComposeArgs)
+    if (-not (Test-PlatformDockerReady)) {
+        Write-Host '  SKIP docker compose (daemon not running)' -ForegroundColor DarkYellow
+        return $false
+    }
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    try {
+        & docker compose @ComposeArgs *> $null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  WARN docker compose $($ComposeArgs -join ' ') exit=$LASTEXITCODE" -ForegroundColor DarkYellow
+            return $false
+        }
+        return $true
+    } finally {
+        $ErrorActionPreference = $prev
+    }
 }
 
 function Get-PlatformDockerServerArch {

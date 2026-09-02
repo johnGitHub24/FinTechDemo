@@ -16,7 +16,9 @@ Sync: `apply-workspace.ps1 -WithDemo`
 |------------|------|--------|
 | `platform-*` | **設定／函式庫** | 埠、K8s、kubeconfig 常數 |
 | `ensure-*`、`開啟Demo.cmd` | **本機啟動（權威）** | 拉起 bootRun／Vite／Gateway… |
+| `stop-*`、`關閉Demo.cmd` | **本機關閉** | 釋放埠、可選停 docker compose |
 | `start-k8s-*`、`k8s-*`、`check-k8s`、`開啟K8sDemo.cmd` | **K8s** | kind／walkthrough／只驗 YAML |
+| `stop-k8s-*`、`關閉K8sDemo.cmd` | **K8s 關閉** | 停 port-forward／Vite；可選刪 kind |
 | `doctor-*`、`verify-*`、`smoke-*`、`check-*` | **診斷／驗證** | 探針、閘門、連結檢查 |
 | `run-*` | **壓測** | Locust |
 | `start-monitoring-*`、`export-*` | **可選工具** | 本機監控、匯出圖 |
@@ -30,7 +32,10 @@ Sync: `apply-workspace.ps1 -WithDemo`
 
 ```powershell
 .\開啟Demo.cmd                 # 本機（＝ ensure-demo-links -ForceRestart）
+.\關閉Demo.cmd                 # 停本機 Demo 埠（對應開啟Demo）
 .\開啟K8sDemo.cmd              # kind（＝ start-k8s-demo；與本機擇一）
+.\關閉K8sDemo.cmd              # 停 K8s port-forward + Vite（對應開啟K8sDemo）
+.\關閉全部Demo.cmd             # 本機 + K8s 都停（預設保留 kind 叢集）
 .\demo\doctor-demo.ps1 -Fix    # 診斷＋修復
 .\demo\verify-pipeline.ps1     # check + compose + k8s 閘門
 ```
@@ -58,6 +63,14 @@ Sync: `apply-workspace.ps1 -WithDemo`
 | `start-demo.ps1` | **相容**：轉發 ensure（或 `-Minimal` 印指引） |
 | `start-guide.ps1` | **相容**：印入口說明 |
 
+### 1b. 本機關閉（對應 ensure／開啟Demo）
+
+| 檔案 | 目的 |
+|------|------|
+| `stop-demo-services.ps1` | 釋放 Gateway/Order/Risk/Job/Account、Vite、docs :5500、監控、Locust 等埠；`關閉Demo.cmd` 呼叫 |
+| `關閉Demo.cmd`（專案根） | 薄包裝 stop-demo-services；`-StopDocker` 停 redis／Prometheus／Grafana；`-StopDockerDown` 再 `compose down` |
+| `關閉全部Demo.cmd` | 先 stop-demo（含 `-StopDocker`）再 stop-k8s |
+
 ### 2. K8s（必須 · 與本機擇一）
 
 | 檔案 | 目的 |
@@ -65,6 +78,13 @@ Sync: `apply-workspace.ps1 -WithDemo`
 | `start-k8s-demo.ps1` | **先停本機 Demo 埠** → kind + build/load + apply（`開啟K8sDemo.cmd`）；成功後 port-forward `:18080` + **預設重起 Vite**；`-SkipFrontend` 略過 |
 | `k8s-walkthrough.ps1` | Images／kind／Pods 三層檢查 |
 | `check-k8s.ps1` | 只 kustomize 驗 YAML（不連叢集） |
+
+### 2b. K8s 關閉（對應 start-k8s／開啟K8sDemo）
+
+| 檔案 | 目的 |
+|------|------|
+| `stop-k8s-demo.ps1` | 停 Gateway port-forward `:18080`、Vite；`關閉K8sDemo.cmd` 呼叫 |
+| `關閉K8sDemo.cmd`（專案根） | 薄包裝 stop-k8s；`-DeleteCluster` 執行 `kind delete cluster` |
 
 ### 3. 診斷／驗證（必須）
 

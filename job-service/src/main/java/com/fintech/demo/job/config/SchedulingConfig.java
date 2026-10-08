@@ -8,8 +8,8 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 /**
  * 【職責】啟用並設定 job-service 的排程執行緒池。
- * 【技巧】{@code SchedulingConfigurer} 自訂 {@link ThreadPoolTaskScheduler}，避免預設單執行緒卡住。
- * 【概念】排程與業務觸發分離：此處只管「何時跑」，真正取消在 RemoteJobTriggerService。
+ * <p>【技巧】{@code SchedulingConfigurer} 自訂 {@link ThreadPoolTaskScheduler}，避免預設單執行緒卡住。
+ * <p>【概念】排程與業務觸發分離：此處只管「何時跑」，真正取消在 RemoteJobTriggerService。
  */
 @Configuration
 @EnableScheduling

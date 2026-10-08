@@ -17,12 +17,12 @@ import java.util.List;
 
 /**
  * 【職責】應用就緒後於 Console 印出常用 URL，並對 HTTP 入口探測 UP／DOWN。
- * 【技巧】聽 {@link ApplicationReadyEvent}；開關來自 {@code startup.info.*}；UTF-8 {@link PrintStream}；
- *         探測超時短（800ms），失敗當 DOWN，不擋啟動。
- * 【概念】開發便利＋Loop 驗服務：bootRun 後應看到框線與本服務 [UP]。關聯服務未起則 [DOWN]（提示，非失敗）。
- * 【邊界】不負責啟動下游／Docker；不把探測當 Gate（Gate 仍是 {@code scripts/check.ps1}）。
- * 編碼：JVM {@code -Dstdout.encoding=UTF-8} + IDE Console UTF-8
- * （見 eos-minimal/knowledge/startup-info-logger-encoding.md）
+ * <p>【技巧】聽 {@link ApplicationReadyEvent}；開關來自 {@code startup.info.*}；UTF-8 {@link PrintStream}；
+ * <br>探測超時短（800ms），失敗當 DOWN，不擋啟動。
+ * <p>【概念】開發便利＋Loop 驗服務：bootRun 後應看到框線與本服務 [UP]。關聯服務未起則 [DOWN]（提示，非失敗）。
+ * <p>【邊界】不負責啟動下游／Docker；不把探測當 Gate（Gate 仍是 {@code scripts/check.ps1}）。
+ * <br>編碼：JVM {@code -Dstdout.encoding=UTF-8} + IDE Console UTF-8
+ * <br>（見 eos-minimal/knowledge/startup-info-logger-encoding.md）
  */
 @Component
 public class StartupInfoLogger implements ApplicationListener<ApplicationReadyEvent> {

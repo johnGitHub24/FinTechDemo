@@ -13,8 +13,8 @@ import java.util.Map;
 
 /**
  * 【職責】伺服器端探測各服務 actuator health，組裝拓撲燈號。
- * 【技巧】RestClient 短超時；失敗＝紅燈，不拋到 API 呼叫端。
- * 【概念】給前端 PROCESS FLOW 儀表板「環境開到哪」的事實依據。
+ * <p>【技巧】RestClient 短超時；失敗＝紅燈，不拋到 API 呼叫端。
+ * <p>【概念】給前端 PROCESS FLOW 儀表板「環境開到哪」的事實依據。
  */
 @Service
 public class TopologyService {

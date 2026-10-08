@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * 【職責】從 SecurityContext 解析目前登入用戶（含 DB id／角色）。
- * 【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
- * 【概念】Service 是 Demo 最常說明的「流程編排」層。
+ * <p>【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
+ * <p>【概念】Service 是 Demo 最常說明的「流程編排」層。
  */
 @Component
 public class CurrentUserService {

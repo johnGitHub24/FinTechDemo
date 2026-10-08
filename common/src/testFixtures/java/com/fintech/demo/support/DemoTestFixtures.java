@@ -8,9 +8,9 @@ import java.nio.file.Paths;
 
 /**
  * 【職責】測試用 JSON fixture 載入器：從 {@code docs/test-data/{category}/{caseId}.json} 讀取。
- * 【技巧】自 {@code user.dir} 向上尋找含 {@code docs/test-data} 的專案根（多模組 Gradle 相容）。
- * 【概念】把案例資料與測試程式分離，同一份 JSON 可對照規格書 Case ID（對齊 TradingCRUD CrudTestFixtures）。
- * 【邊界】不負責解析／斷言，只回傳字串內容。
+ * <p>【技巧】自 {@code user.dir} 向上尋找含 {@code docs/test-data} 的專案根（多模組 Gradle 相容）。
+ * <p>【概念】把案例資料與測試程式分離，同一份 JSON 可對照規格書 Case ID（對齊 TradingCRUD CrudTestFixtures）。
+ * <p>【邊界】不負責解析／斷言，只回傳字串內容。
  */
 public final class DemoTestFixtures {
 
@@ -19,8 +19,8 @@ public final class DemoTestFixtures {
 
     /**
      * 【職責】載入指定分類與 Case ID 的 JSON 字串。
-     * 【技巧】路徑相對專案根 {@code docs/test-data/...}。
-     * 【概念】Case ID 與檔名對齊（如 ORDER-001-SUCCESS），方便追蹤規格與簡報。
+     * <p>【技巧】路徑相對專案根 {@code docs/test-data/...}。
+     * <p>【概念】Case ID 與檔名對齊（如 ORDER-001-SUCCESS），方便追蹤規格與簡報。
      *
      * @param category 子目錄（auth／order／risk／account）
      * @param caseId   不含副檔名的案例檔名

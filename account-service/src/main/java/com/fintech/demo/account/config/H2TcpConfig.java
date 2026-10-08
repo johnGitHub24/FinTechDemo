@@ -12,10 +12,10 @@ import java.sql.SQLException;
 
 /**
  * 【職責】本機 Demo：在同一 JVM 開 H2 TCP，讓 IntelliJ／DataGrip 連到正在跑的 mem DB（accountdb）。
- * 【技巧】Spring 用 {@code jdbc:h2:mem:accountdb}；外部用 {@code jdbc:h2:tcp://localhost:9094/mem:accountdb}。
- *         埠 9094 避開 Kafka 9092 與 order H2 TCP 9093。
- * 【概念】mem 庫只活在 process 內；DataGrip 填 mem URL 會開出另一份空庫，必須走 TCP。
- * 【邊界】埠被占用（舊 account-service 未停）時只 warn、不讓整個應用啟動失敗；測試關 {@code spring.h2.tcp.enabled=false}。
+ * <p>【技巧】Spring 用 {@code jdbc:h2:mem:accountdb}；外部用 {@code jdbc:h2:tcp://localhost:9094/mem:accountdb}。
+ * <br>埠 9094 避開 Kafka 9092 與 order H2 TCP 9093。
+ * <p>【概念】mem 庫只活在 process 內；DataGrip 填 mem URL 會開出另一份空庫，必須走 TCP。
+ * <p>【邊界】埠被占用（舊 account-service 未停）時只 warn、不讓整個應用啟動失敗；測試關 {@code spring.h2.tcp.enabled=false}。
  */
 @Component
 @ConditionalOnProperty(name = "spring.h2.tcp.enabled", havingValue = "true", matchIfMissing = true)

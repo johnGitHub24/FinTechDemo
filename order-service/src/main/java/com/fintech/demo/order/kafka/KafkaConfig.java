@@ -12,8 +12,8 @@ import org.springframework.kafka.core.ProducerFactory;
 
 /**
  * 【職責】Kafka Topic 與 Template（僅 kafka.enabled=true）。
- * 【技巧】以 @Configuration／Properties 外置環境差異。
- * 【概念】order-events＝執行編排；trade-events＝通知 account-service 入帳（跨服務 event bus）。
+ * <p>【技巧】以 @Configuration／Properties 外置環境差異。
+ * <p>【概念】order-events＝執行編排；trade-events＝通知 account-service 入帳（跨服務 event bus）。
  */
 @Configuration
 @ConditionalOnProperty(name = "fintech.kafka.enabled", havingValue = "true")

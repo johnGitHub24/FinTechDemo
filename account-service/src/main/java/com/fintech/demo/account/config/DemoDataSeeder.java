@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】寫入 Demo 帳戶／持倉：userId=1 現金 85000＋AAPL 100@150；userId=2 現金 100000。
- * 【技巧】委派 LedgerService.seed*，再經 QueryService 回填 Redis，DataGrip 才看得到 key。
- * 【概念】與 order-service seeder 對齊數字，方便跨服務對帳 Demo。
+ * <p>【技巧】委派 LedgerService.seed*，再經 QueryService 回填 Redis，DataGrip 才看得到 key。
+ * <p>【概念】與 order-service seeder 對齊數字，方便跨服務對帳 Demo。
  */
 @Component
 public class DemoDataSeeder implements ApplicationRunner {

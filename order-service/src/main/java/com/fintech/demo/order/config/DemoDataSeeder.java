@@ -23,8 +23,8 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】寫入串連假資料：users → accounts／orders／positions／audit_log。
- * 【技巧】密碼以 BCrypt 寫入，供 JWT 登入驗證。
- * 【概念】教學 Demo 以可講清邊界為優先。
+ * <p>【技巧】密碼以 BCrypt 寫入，供 JWT 登入驗證。
+ * <p>【概念】教學 Demo 以可講清邊界為優先。
  */
 @Component
 public class DemoDataSeeder implements ApplicationRunner {
@@ -57,8 +57,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     /**
      * 【職責】在空資料庫建立可登入的使用者、帳戶、訂單、持倉與審計範例。
-     * 【技巧】以 userRepository.count 作冪等 guard，所有種子資料在同一交易中寫入。
-     * 【概念】一致的 Demo 資料可直接展示登入、下單、查帳與審計整條流程。
+     * <p>【技巧】以 userRepository.count 作冪等 guard，所有種子資料在同一交易中寫入。
+     * <p>【概念】一致的 Demo 資料可直接展示登入、下單、查帳與審計整條流程。
      */
     @Override
     @Transactional
@@ -101,8 +101,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     /**
      * 【職責】建立並保存指定角色的展示使用者。
-     * 【技巧】以共用 PasswordEncoder 對固定 Demo 密碼雜湊後再保存。
-     * 【概念】種子資料也應遵守正式登入使用的密碼存放規則。
+     * <p>【技巧】以共用 PasswordEncoder 對固定 Demo 密碼雜湊後再保存。
+     * <p>【概念】種子資料也應遵守正式登入使用的密碼存放規則。
      */
     private UserEntity saveUser(String username, Role role) {
         UserEntity u = new UserEntity();
@@ -114,8 +114,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     /**
      * 【職責】為展示使用者建立 TWD 現金帳戶。
-     * 【技巧】帳戶資料由 userId 關聯，不將展示名稱寫入帳本。
-     * 【概念】帳戶是訂單成交扣款與風控現金檢查的資料基礎。
+     * <p>【技巧】帳戶資料由 userId 關聯，不將展示名稱寫入帳本。
+     * <p>【概念】帳戶是訂單成交扣款與風控現金檢查的資料基礎。
      */
     private void saveAccount(Long userId, BigDecimal cash) {
         AccountEntity a = new AccountEntity();
@@ -127,8 +127,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     /**
      * 【職責】建立並保存具指定狀態的展示訂單。
-     * 【技巧】集中設定冪等鍵、商品、方向、價格與數量，避免 seed 欄位不一致。
-     * 【概念】預置多種狀態能讓 Portal 直接展示訂單狀態機。
+     * <p>【技巧】集中設定冪等鍵、商品、方向、價格與數量，避免 seed 欄位不一致。
+     * <p>【概念】預置多種狀態能讓 Portal 直接展示訂單狀態機。
      */
     private OrderEntity saveOrder(
             Long userId, String clientOrderId, String symbol,
@@ -146,8 +146,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     /**
      * 【職責】寫入展示用審計紀錄。
-     * 【技巧】以動作、資源與細節組成可查詢的 audit_log 資料。
-     * 【概念】審計紀錄讓系統能回答誰在何時執行了哪項交易操作。
+     * <p>【技巧】以動作、資源與細節組成可查詢的 audit_log 資料。
+     * <p>【概念】審計紀錄讓系統能回答誰在何時執行了哪項交易操作。
      */
     private void audit(String username, String action, String resource, String detail) {
         AuditLogEntity log = new AuditLogEntity();

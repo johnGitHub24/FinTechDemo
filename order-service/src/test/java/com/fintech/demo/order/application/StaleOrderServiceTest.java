@@ -22,8 +22,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 /**
  * 【職責】驗證逾時待處理訂單的排程取消規則。
- * 【技巧】以 Mockito 提供不同建立時間的訂單，隔離資料庫與時間邊界以外的相依。
- * 【概念】逾時取消只應影響超過門檻且狀態仍為 PENDING 的訂單。
+ * <p>【技巧】以 Mockito 提供不同建立時間的訂單，隔離資料庫與時間邊界以外的相依。
+ * <p>【概念】逾時取消只應影響超過門檻且狀態仍為 PENDING 的訂單。
  */
 class StaleOrderServiceTest {
 

@@ -18,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】內部逾時取消 Job API 整合測試，與 STALE-001 單元成對。
- * 【技巧】先寫入一筆逾時 PENDING，再帶 X-Job-Token 觸發。
- * 【概念】job-service 遠端觸發同一條內部契約。
+ * <p>【技巧】先寫入一筆逾時 PENDING，再帶 X-Job-Token 觸發。
+ * <p>【概念】job-service 遠端觸發同一條內部契約。
  */
 class InternalJobApiIntegrationTest extends OrderIntegrationTestBase {
 

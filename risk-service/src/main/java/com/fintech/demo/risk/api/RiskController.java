@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 【職責】風控 HTTP API，供 order-service Feign 呼叫。
- * 【技巧】只做參數／驗證／HTTP 狀態；商業規則在 Service。
- * 【概念】薄 Controller 利於測試與替換傳輸層。
+ * <p>【技巧】只做參數／驗證／HTTP 狀態；商業規則在 Service。
+ * <p>【概念】薄 Controller 利於測試與替換傳輸層。
  */
 @RestController
 @RequestMapping("/api/risk")

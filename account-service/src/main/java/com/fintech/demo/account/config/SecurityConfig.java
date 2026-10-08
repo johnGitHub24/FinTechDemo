@@ -13,8 +13,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * 【職責】無狀態 JWT FilterChain；actuator／internal 放行。
- * 【技巧】internal 以自訂 header token 驗證，不走 JWT，方便 Feign／Job 呼叫。
- * 【概念】業務 API 要登入；內部同步路徑用共享 secret，Demo 等級即可。
+ * <p>【技巧】internal 以自訂 header token 驗證，不走 JWT，方便 Feign／Job 呼叫。
+ * <p>【概念】業務 API 要登入；內部同步路徑用共享 secret，Demo 等級即可。
  */
 @Configuration
 public class SecurityConfig {

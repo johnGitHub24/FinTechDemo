@@ -15,8 +15,8 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * 【職責】Order 就緒後印短橫幅：LOOP 狀態 + 各服務 UP／DOWN（即時探測）。
- * 【技巧】ensure 開啟且尚未通時標 STARTING（不是最終失敗）。
- * 【概念】最終以 {@link DemoStackBootstrap} 結束後全橫幅 UP 為準。
+ * <p>【技巧】ensure 開啟且尚未通時標 STARTING（不是最終失敗）。
+ * <p>【概念】最終以 {@link DemoStackBootstrap} 結束後全橫幅 UP 為準。
  */
 @Component
 @Order(50)

@@ -13,9 +13,9 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】下單請求 DTO。
- * 【技巧】class + Lombok {@code @Data}（非 record）：Jackson／測試以 {@code setXxx} 組裝；Bean Validation 擋非法輸入。
- * 【概念】為何不用 record？Request 綁定階段需要可變；不可變訂單回應可另用 record 或本類映射後再輸出。
- *         規則：Properties／回應／Kafka 事件 → record；Entity／需 setXxx 的 Request → class + Lombok。
+ * <p>【技巧】class + Lombok {@code @Data}（非 record）：Jackson／測試以 {@code setXxx} 組裝；Bean Validation 擋非法輸入。
+ * <p>【概念】為何不用 record？Request 綁定階段需要可變；不可變訂單回應可另用 record 或本類映射後再輸出。
+ * <br>規則：Properties／回應／Kafka 事件 → record；Entity／需 setXxx 的 Request → class + Lombok。
  */
 @Data
 @NoArgsConstructor

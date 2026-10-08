@@ -14,8 +14,8 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】用戶現金帳戶持久化（userId 唯一）。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；uniqueConstraints 保證一用戶一帳戶。
- * 【概念】為何不用 record？Entity 是帳本真相來源且可變；對外契約用 AccountDto record。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；uniqueConstraints 保證一用戶一帳戶。
+ * <p>【概念】為何不用 record？Entity 是帳本真相來源且可變；對外契約用 AccountDto record。
  */
 @Entity
 @Table(name = "accounts", uniqueConstraints = @UniqueConstraint(columnNames = "user_id"))

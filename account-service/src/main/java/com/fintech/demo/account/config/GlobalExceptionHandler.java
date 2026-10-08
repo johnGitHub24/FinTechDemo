@@ -11,8 +11,8 @@ import java.util.Map;
 
 /**
  * 【職責】統一例外 → HTTP 狀態與 JSON body。
- * 【技巧】由 GlobalExceptionHandler 映成 HTTP 狀態。
- * 【概念】用例外類型區分 404／400，比回傳 null 更明確。
+ * <p>【技巧】由 GlobalExceptionHandler 映成 HTTP 狀態。
+ * <p>【概念】用例外類型區分 404／400，比回傳 null 更明確。
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {

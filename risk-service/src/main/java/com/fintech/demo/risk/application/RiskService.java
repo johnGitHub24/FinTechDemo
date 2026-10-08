@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】精簡風控：名義金額 ≤ 現金，且 ≤ 單筆上限。
- * 【技巧】上限來自 {@code fintech.risk.max-notional}；純記憶體規則、無 DB。
- * 【概念】獨立 risk-service 後，規則變更不必重佈署 order-service。
+ * <p>【技巧】上限來自 {@code fintech.risk.max-notional}；純記憶體規則、無 DB。
+ * <p>【概念】獨立 risk-service 後，規則變更不必重佈署 order-service。
  */
 @Service
 public class RiskService {
@@ -23,8 +23,8 @@ public class RiskService {
 
     /**
      * 【職責】檢查單筆名義金額是否通過風控。
-     * 【技巧】規則：數量／價格合法 → notional ≤ maxNotional → BUY 時 notional ≤ 現金。
-     * 【概念】風控獨立進程後，order 只能「問可不可以」，不能自己偷偷改規則。
+     * <p>【技巧】規則：數量／價格合法 → notional ≤ maxNotional → BUY 時 notional ≤ 現金。
+     * <p>【概念】風控獨立進程後，order 只能「問可不可以」，不能自己偷偷改規則。
      * @param request 含 side／qty／price／cashBalance
      * @return allowed + reason
      */

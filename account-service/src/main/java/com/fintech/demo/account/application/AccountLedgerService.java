@@ -19,8 +19,8 @@ import java.util.List;
 
 /**
  * 【職責】帳戶／持倉帳本：查詢、成交入帳、Demo seed。
- * 【技巧】BUY 扣現金＋加權均價；SELL 減持倉＋加現金；notional 缺省時用 price×qty。
- * 【概念】帳本是單一寫入點；Redis 只是讀側快取，寫入後由 QueryService 清 key。
+ * <p>【技巧】BUY 扣現金＋加權均價；SELL 減持倉＋加現金；notional 缺省時用 price×qty。
+ * <p>【概念】帳本是單一寫入點；Redis 只是讀側快取，寫入後由 QueryService 清 key。
  */
 @Service
 public class AccountLedgerService {
@@ -35,8 +35,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】讀取指定使用者的帳戶資料並轉為跨服務 DTO。
-     * 【技巧】使用 readOnly 交易與 repository 的 userId 查詢，缺失時明確拋出 404 業務例外。
-     * 【概念】帳本讀取以 userId 作資料隔離的核心索引。
+     * <p>【技巧】使用 readOnly 交易與 repository 的 userId 查詢，缺失時明確拋出 404 業務例外。
+     * <p>【概念】帳本讀取以 userId 作資料隔離的核心索引。
      */
     @Transactional(readOnly = true)
     public AccountDto getAccount(Long userId) {
@@ -47,8 +47,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】讀取指定使用者全部持倉並轉換為 DTO。
-     * 【技巧】在 readOnly 交易中以 stream 統一映射 entity。
-     * 【概念】持倉是帳本的衍生讀模型，不能由外部直接修改。
+     * <p>【技巧】在 readOnly 交易中以 stream 統一映射 entity。
+     * <p>【概念】持倉是帳本的衍生讀模型，不能由外部直接修改。
      */
     @Transactional(readOnly = true)
     public List<PositionDto> listPositions(Long userId) {
@@ -59,8 +59,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】將非同步成交事件轉接為帳本入帳請求。
-     * 【技巧】驗證事件後複製必要欄位到 ApplyTradeRequest，再共用同步入帳邏輯。
-     * 【概念】事件與 HTTP 兩種輸入共用同一帳本規則可避免行為漂移。
+     * <p>【技巧】驗證事件後複製必要欄位到 ApplyTradeRequest，再共用同步入帳邏輯。
+     * <p>【概念】事件與 HTTP 兩種輸入共用同一帳本規則可避免行為漂移。
      */
     @Transactional
     public AccountDto applyTrade(TradeExecutedEvent event) {
@@ -80,8 +80,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】依買賣方向更新現金與持倉並回傳最新帳戶。
-     * 【技巧】先驗證交易、計算名義金額，再在單一交易中完成帳戶與持倉更新。
-     * 【概念】帳本更新應是唯一寫入點，確保現金與持倉的一致性。
+     * <p>【技巧】先驗證交易、計算名義金額，再在單一交易中完成帳戶與持倉更新。
+     * <p>【概念】帳本更新應是唯一寫入點，確保現金與持倉的一致性。
      */
     @Transactional
     public AccountDto applyTrade(ApplyTradeRequest req) {
@@ -132,8 +132,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】冪等建立展示持倉。
-     * 【技巧】用 userId 與 symbol 作存在性判斷，僅在尚未建立時保存。
-     * 【概念】持倉的自然鍵是使用者與商品的組合。
+     * <p>【技巧】用 userId 與 symbol 作存在性判斷，僅在尚未建立時保存。
+     * <p>【概念】持倉的自然鍵是使用者與商品的組合。
      */
     @Transactional
     public void seedPosition(Long userId, String symbol, int quantity, BigDecimal avgPrice) {
@@ -150,8 +150,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】買入時建立或更新持倉數量及加權平均成本。
-     * 【技巧】既有持倉以舊成本加新成本除以新數量，採四位 HALF_UP。
-     * 【概念】平均成本是長期持倉估值與後續損益計算的基礎。
+     * <p>【技巧】既有持倉以舊成本加新成本除以新數量，採四位 HALF_UP。
+     * <p>【概念】平均成本是長期持倉估值與後續損益計算的基礎。
      */
     private void upsertBuyPosition(Long userId, String symbol, int qty, BigDecimal price) {
         PositionEntity pos = positionRepository.findByUserIdAndSymbol(userId, symbol).orElse(null);
@@ -175,8 +175,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】驗證帳本入帳所需的使用者、商品、方向、數量與價格。
-     * 【技巧】對空值、空白字串與非正數及早拋出 BusinessException。
-     * 【概念】交易資料的完整性應在更新帳本前被強制保證。
+     * <p>【技巧】對空值、空白字串與非正數及早拋出 BusinessException。
+     * <p>【概念】交易資料的完整性應在更新帳本前被強制保證。
      */
     private void validateTrade(ApplyTradeRequest req) {
         if (req.getUserId() == null || req.getSymbol() == null || req.getSymbol().isBlank()) {
@@ -195,8 +195,8 @@ public class AccountLedgerService {
 
     /**
      * 【職責】取得交易名義金額，缺省時依價格乘數量計算。
-     * 【技巧】優先採用事件攜帶的 notional，避免不同服務重算規則產生差異。
-     * 【概念】明確傳遞金額可維持跨服務事件的財務語意一致。
+     * <p>【技巧】優先採用事件攜帶的 notional，避免不同服務重算規則產生差異。
+     * <p>【概念】明確傳遞金額可維持跨服務事件的財務語意一致。
      */
     private BigDecimal resolveNotional(ApplyTradeRequest req) {
         if (req.getNotional() != null) {

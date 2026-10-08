@@ -18,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】內部入帳 API 整合測試，與 LEDGER 單元 Case 成對。
- * 【技巧】{@code @Transactional} 回滾，避免污染 ACCOUNT-001 種子餘額。
- * 【概念】Feign／Job 走 X-Internal-Token，不經使用者 JWT。
+ * <p>【技巧】{@code @Transactional} 回滾，避免污染 ACCOUNT-001 種子餘額。
+ * <p>【概念】Feign／Job 走 X-Internal-Token，不經使用者 JWT。
  */
 @Tag("integration")
 @SpringBootTest

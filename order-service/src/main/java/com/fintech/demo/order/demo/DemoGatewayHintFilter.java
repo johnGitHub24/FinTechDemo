@@ -11,8 +11,8 @@ import java.io.IOException;
 
 /**
  * 【職責】讀取 Gateway 轉發標記，供 TradingService 組 demoTrace。
- * 【技巧】header {@code X-Demo-Via-Gateway: 1} → request attribute。
- * 【概念】讓 PROCESS FLOW 能顯示「有沒有經過 Gateway」。
+ * <p>【技巧】header {@code X-Demo-Via-Gateway: 1} → request attribute。
+ * <p>【概念】讓 PROCESS FLOW 能顯示「有沒有經過 Gateway」。
  */
 @Component
 public class DemoGatewayHintFilter extends OncePerRequestFilter {

@@ -13,8 +13,8 @@ import java.util.List;
 
 /**
  * 【職責】自 users 表載入帳密與 ROLE_。
- * 【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
- * 【概念】Service 是 Demo 最常說明的「流程編排」層。
+ * <p>【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
+ * <p>【概念】Service 是 Demo 最常說明的「流程編排」層。
  */
 @Service
 public class DemoUserDetailsService implements UserDetailsService {

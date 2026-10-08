@@ -8,8 +8,8 @@ import org.springframework.web.client.RestClient;
 
 /**
  * 【職責】呼叫 order-service 內部 Job API（薄 Job 編排）。
- * 【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
- * 【概念】Service 是 Demo 最常說明的「流程編排」層。
+ * <p>【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
+ * <p>【概念】Service 是 Demo 最常說明的「流程編排」層。
  */
 @Service
 public class RemoteJobTriggerService {
@@ -28,8 +28,8 @@ public class RemoteJobTriggerService {
 
     /**
      * 【職責】呼叫 order-service 內部端點以取消逾時訂單。
-     * 【技巧】以 RestClient 帶 X-Job-Token POST；遠端不可用時記錄 warn 而不讓排程執行緒失敗。
-     * 【概念】Job-service 是遠端工作觸發者，不直接耦合 order-service 的資料庫。
+     * <p>【技巧】以 RestClient 帶 X-Job-Token POST；遠端不可用時記錄 warn 而不讓排程執行緒失敗。
+     * <p>【概念】Job-service 是遠端工作觸發者，不直接耦合 order-service 的資料庫。
      */
     public void triggerCancelStale() {
         try {

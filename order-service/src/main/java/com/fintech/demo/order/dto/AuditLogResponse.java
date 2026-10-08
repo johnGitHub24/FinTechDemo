@@ -8,8 +8,8 @@ import java.time.Instant;
 
 /**
  * 【職責】審計紀錄查詢回應 DTO。
- * 【技巧】class + Lombok {@code @Data}：Service 以 setter 從 Entity 映射。
- * 【概念】審計是證據鏈；映射階段可變。純快照契約亦可改 record（見 AccountResponse）。
+ * <p>【技巧】class + Lombok {@code @Data}：Service 以 setter 從 Entity 映射。
+ * <p>【概念】審計是證據鏈；映射階段可變。純快照契約亦可改 record（見 AccountResponse）。
  */
 @Data
 @NoArgsConstructor

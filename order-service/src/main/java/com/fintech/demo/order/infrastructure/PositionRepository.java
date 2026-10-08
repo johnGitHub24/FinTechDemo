@@ -7,8 +7,8 @@ import java.util.Optional;
 
 /**
  * 【職責】持倉持久化存取。
- * 【技巧】{@code findByUserIdAndSymbol} 對齊「一人一標的一列」模型。
- * 【概念】成交後 upsert 持倉；賣出前必須先有足夠數量。
+ * <p>【技巧】{@code findByUserIdAndSymbol} 對齊「一人一標的一列」模型。
+ * <p>【概念】成交後 upsert 持倉；賣出前必須先有足夠數量。
  */
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
     List<PositionEntity> findByUserId(Long userId);

@@ -18,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】訂單 API 整合測試：Happy／驗證失敗／未授權／成交／取消（Fixture 驅動）。
- * 【技巧】DemoTestFixtures；風控 Mock 預設通過，ORDER-006 再改為拒絕。
- * 【概念】對齊單元 Case：ORDER-001 到 ORDER-008、SEC-001、JWT-001、JWT-002。
+ * <p>【技巧】DemoTestFixtures；風控 Mock 預設通過，ORDER-006 再改為拒絕。
+ * <p>【概念】對齊單元 Case：ORDER-001 到 ORDER-008、SEC-001、JWT-001、JWT-002。
  */
 class OrderApiIntegrationTest extends OrderIntegrationTestBase {
 

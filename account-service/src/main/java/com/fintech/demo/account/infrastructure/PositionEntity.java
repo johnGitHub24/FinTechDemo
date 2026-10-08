@@ -14,8 +14,8 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】持倉列（userId + symbol 唯一）。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；unique 複合鍵支援 upsert。
- * 【概念】為何不用 record？JPA Entity 必須可變。對外快照用 PositionDto record。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；unique 複合鍵支援 upsert。
+ * <p>【概念】為何不用 record？JPA Entity 必須可變。對外快照用 PositionDto record。
  */
 @Entity
 @Table(name = "positions", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "symbol"}))

@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * 【職責】登入請求：username／password。
- * 【技巧】class + Lombok {@code @Data}（非 record）：Jackson 綁定需 {@code setXxx}；{@code @NotBlank} 擋空字串。
- * 【概念】為何不用 record？Request 需可變綁定；登入成功後的不可變結果見 {@link LoginResponse} record。
+ * <p>【技巧】class + Lombok {@code @Data}（非 record）：Jackson 綁定需 {@code setXxx}；{@code @NotBlank} 擋空字串。
+ * <p>【概念】為何不用 record？Request 需可變綁定；登入成功後的不可變結果見 {@link LoginResponse} record。
  */
 @Data
 @NoArgsConstructor

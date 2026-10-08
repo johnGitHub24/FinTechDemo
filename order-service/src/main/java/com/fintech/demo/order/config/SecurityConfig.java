@@ -19,8 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * 【職責】無狀態 JWT FilterChain + RBAC（USER／ADMIN）。
- * 【技巧】PUBLIC 含 swagger／actuator／login；audit 限 ADMIN。
- * 【概念】前端 router 守衛只是 UX；真正授權在這裡。
+ * <p>【技巧】PUBLIC 含 swagger／actuator／login；audit 限 ADMIN。
+ * <p>【概念】前端 router 守衛只是 UX；真正授權在這裡。
  */
 @Configuration
 @EnableMethodSecurity
@@ -48,9 +48,9 @@ public class SecurityConfig {
 
     /**
      * 【職責】建立無狀態 JWT 的 HTTP 授權規則與 filter chain。
-     * 【技巧】停用 CSRF／Session；Audit 限 ADMIN。401／403 用 setStatus 寫 JSON，避免 {@code sendError}
-     *         觸發 Tomcat ERROR 轉發／error 再被當成未登入而把 403 變成 401。
-     * 【概念】真正的存取控制應在伺服器端執行，前端守衛只能改善使用體驗。
+     * <p>【技巧】停用 CSRF／Session；Audit 限 ADMIN。401／403 用 setStatus 寫 JSON，避免 {@code sendError}
+     * <br>觸發 Tomcat ERROR 轉發／error 再被當成未登入而把 403 變成 401。
+     * <p>【概念】真正的存取控制應在伺服器端執行，前端守衛只能改善使用體驗。
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -72,8 +72,8 @@ public class SecurityConfig {
 
     /**
      * 【職責】把安全例外寫成固定 JSON 狀態，不走 {@code sendError}。
-     * 【技巧】直接 setStatus＋寫 body，讓已登入但缺角色的請求維持 403。
-     * 【概念】Tomcat 對 sendError 會 ERROR dispatch；若 /error 仍需認證，使用者會看到 401。
+     * <p>【技巧】直接 setStatus＋寫 body，讓已登入但缺角色的請求維持 403。
+     * <p>【概念】Tomcat 對 sendError 會 ERROR dispatch；若 /error 仍需認證，使用者會看到 401。
      */
     private static void writeJson(HttpServletResponse res, HttpStatus status, String error) throws java.io.IOException {
         res.setStatus(status.value());
@@ -83,8 +83,8 @@ public class SecurityConfig {
 
     /**
      * 【職責】提供使用者密碼雜湊與驗證所需的 PasswordEncoder。
-     * 【技巧】採用 BCryptPasswordEncoder，不保存明文密碼。
-     * 【概念】密碼雜湊是帳密驗證與 JWT 簽發之前的必要安全邊界。
+     * <p>【技巧】採用 BCryptPasswordEncoder，不保存明文密碼。
+     * <p>【概念】密碼雜湊是帳密驗證與 JWT 簽發之前的必要安全邊界。
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -93,8 +93,8 @@ public class SecurityConfig {
 
     /**
      * 【職責】公開 Spring Security 組裝完成的 AuthenticationManager。
-     * 【技巧】從 AuthenticationConfiguration 取得，避免自行重建 provider 鏈。
-     * 【概念】Service 透過此介面驗證帳密，與具體安全設定解耦。
+     * <p>【技巧】從 AuthenticationConfiguration 取得，避免自行重建 provider 鏈。
+     * <p>【概念】Service 透過此介面驗證帳密，與具體安全設定解耦。
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

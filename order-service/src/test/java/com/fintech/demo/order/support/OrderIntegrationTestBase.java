@@ -17,8 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】order-service 整合測試基底：完整 Spring Boot + MockMvc；外部 Feign 以 MockBean 隔離。
- * 【技巧】{@code @Tag("integration")}；子類專注 CASE；提供 login／bearer 輔助。
- * 【概念】對齊 TradingCRUD IntegrationTestBase；契約測與單元 Case ID 成對。
+ * <p>【技巧】{@code @Tag("integration")}；子類專注 CASE；提供 login／bearer 輔助。
+ * <p>【概念】對齊 TradingCRUD IntegrationTestBase；契約測與單元 Case ID 成對。
  */
 @Tag("integration")
 @SpringBootTest

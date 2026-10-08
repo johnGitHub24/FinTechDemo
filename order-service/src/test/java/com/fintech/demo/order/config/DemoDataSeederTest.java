@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 【職責】鎖定種子常數，與 FLOW-001 整合（DB 關聯）成對。
- * 【技巧】不啟動 Spring；只斷言 Demo 帳號契約。
- * 【概念】前後台 Demo 登入帳密必須與 Seeder 一致。
+ * <p>【技巧】不啟動 Spring；只斷言 Demo 帳號契約。
+ * <p>【概念】前後台 Demo 登入帳密必須與 Seeder 一致。
  */
 @Tag("unit")
 class DemoDataSeederTest {

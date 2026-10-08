@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 【職責】單元測試 LoginRequest Bean Validation，與 AUTH-003 HTTP 成對。
- * 【技巧】純 Validator，不啟動 Spring。
- * 【概念】缺欄位應在進入 AuthService 前被擋下。
+ * <p>【技巧】純 Validator，不啟動 Spring。
+ * <p>【概念】缺欄位應在進入 AuthService 前被擋下。
  */
 @Tag("unit")
 class LoginRequestValidationTest {

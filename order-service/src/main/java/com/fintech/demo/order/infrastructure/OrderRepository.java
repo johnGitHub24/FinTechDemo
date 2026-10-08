@@ -11,8 +11,8 @@ import java.util.Optional;
 
 /**
  * 【職責】訂單持久化與條件分頁查詢。
- * 【技巧】JPQL 以 {@code :status IS NULL OR ...} 做可選狀態篩選；{@code clientOrderId} 冪等檢查。
- * 【概念】查詢條件外置到 Repository，Service 保持流程可讀。
+ * <p>【技巧】JPQL 以 {@code :status IS NULL OR ...} 做可選狀態篩選；{@code clientOrderId} 冪等檢查。
+ * <p>【概念】查詢條件外置到 Repository，Service 保持流程可讀。
  */
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 

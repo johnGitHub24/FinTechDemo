@@ -14,8 +14,8 @@ import lombok.Setter;
 
 /**
  * 【職責】使用者帳號（登入／RBAC 基礎表）。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）。
- * 【概念】為何不用 record？JPA Entity 必須可變；JWT 讀 passwordHash／role。登入回應才用 LoginResponse record。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）。
+ * <p>【概念】為何不用 record？JPA Entity 必須可變；JWT 讀 passwordHash／role。登入回應才用 LoginResponse record。
  */
 @Entity
 @Table(name = "users")

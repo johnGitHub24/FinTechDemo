@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 /**
  * 【職責】呼叫 account-service 內部帳本 API（本版：固定 URL OpenFeign）。
- * 【技巧】url 來自 {@code fintech.services.account-url}；內部呼叫帶 {@code X-Internal-Token}。
- * 【概念】order 編排成交後可同步入帳；account 管現金／持倉（第三業務 MS）。
- *         服務發現升級同 {@link RiskClient}：拿掉 url → Eureka／服務名（SPEC §2.3）。
+ * <p>【技巧】url 來自 {@code fintech.services.account-url}；內部呼叫帶 {@code X-Internal-Token}。
+ * <p>【概念】order 編排成交後可同步入帳；account 管現金／持倉（第三業務 MS）。
+ * <br>服務發現升級同 {@link RiskClient}：拿掉 url → Eureka／服務名（SPEC §2.3）。
  */
 @FeignClient(name = "account-service", url = "${fintech.services.account-url}")
 public interface AccountClient {

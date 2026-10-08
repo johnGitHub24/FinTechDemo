@@ -15,8 +15,8 @@ import java.util.List;
 
 /**
  * 【職責】逾時 PENDING 訂單取消（Job 呼叫）。
- * 【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
- * 【概念】Service 是 Demo 最常說明的「流程編排」層。
+ * <p>【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
+ * <p>【概念】Service 是 Demo 最常說明的「流程編排」層。
  */
 @Service
 public class StaleOrderService {
@@ -35,8 +35,8 @@ public class StaleOrderService {
 
     /**
      * 【職責】取消超過設定分鐘數仍為 PENDING 的訂單，並回傳取消數量。
-     * 【技巧】以 Instant 閾值過濾後逐筆更新狀態，確保整批更新位於同一交易內。
-     * 【概念】排程取消是逾時補償機制，避免未成交訂單永久停留在狀態機中。
+     * <p>【技巧】以 Instant 閾值過濾後逐筆更新狀態，確保整批更新位於同一交易內。
+     * <p>【概念】排程取消是逾時補償機制，避免未成交訂單永久停留在狀態機中。
      */
     @Transactional
     public int cancelStalePending() {

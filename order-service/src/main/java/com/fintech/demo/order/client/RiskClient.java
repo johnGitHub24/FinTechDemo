@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 【職責】呼叫 risk-service 風控 API（本版：固定 URL OpenFeign）。
- * 【技巧】{@code @FeignClient(name=..., url="${fintech.services.risk-url}")}；成交路徑同步等待風控結果。
- * 【概念】固定 URL 先把交易鏈跑穩。升級時拿掉 {@code url}、改依服務名＋Eureka，
- *         Gateway 改 {@code lb://}——這是發現機制升級，不是重寫業務（見 FinTechDemo-SPEC §2.3；
- *         完整串接見 TradingMicroService）。
+ * <p>【技巧】{@code @FeignClient(name=..., url="${fintech.services.risk-url}")}；成交路徑同步等待風控結果。
+ * <p>【概念】固定 URL 先把交易鏈跑穩。升級時拿掉 {@code url}、改依服務名＋Eureka，
+ * <br>Gateway 改 {@code lb://}——這是發現機制升級，不是重寫業務（見 FinTechDemo-SPEC §2.3；
+ * <br>完整串接見 TradingMicroService）。
  */
 @FeignClient(name = "risk-service", url = "${fintech.services.risk-url}")
 public interface RiskClient {

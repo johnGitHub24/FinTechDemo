@@ -14,8 +14,8 @@ import static org.mockito.Mockito.verify;
 
 /**
  * 【職責】驗證 Gateway Demo 限流：通過與超限 429。
- * 【技巧】直接呼叫 filter，不啟動完整 Spring context。
- * 【概念】CASE GW-004／GW-005 與 Gateway HTTP 整合成對。
+ * <p>【技巧】直接呼叫 filter，不啟動完整 Spring context。
+ * <p>【概念】CASE GW-004／GW-005 與 Gateway HTTP 整合成對。
  */
 class RateLimitWebFilterTest {
 

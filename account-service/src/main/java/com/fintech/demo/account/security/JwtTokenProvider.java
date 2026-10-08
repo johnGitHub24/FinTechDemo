@@ -16,8 +16,8 @@ import java.util.Map;
 
 /**
  * 【職責】驗證 order-service 簽發的 JWT（同 secret），解析 username／uid。
- * 【技巧】優先讀 claim {@code uid}；缺省時以 username→userId 對照（trader1→1、admin→2）。
- * 【概念】account 不簽發 token，只驗簽；跨 MS 共用 secret 是 Demo 簡化，正式應改 JWKS。
+ * <p>【技巧】優先讀 claim {@code uid}；缺省時以 username→userId 對照（trader1→1、admin→2）。
+ * <p>【概念】account 不簽發 token，只驗簽；跨 MS 共用 secret 是 Demo 簡化，正式應改 JWKS。
  */
 @Component
 public class JwtTokenProvider {

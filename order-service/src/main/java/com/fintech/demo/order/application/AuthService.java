@@ -15,8 +15,8 @@ import java.util.List;
 
 /**
  * 【職責】登入：驗證後簽 JWT（含 uid，供 account-service 跨服務辨識）。
- * 【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
- * 【概念】Service 是 Demo 最常說明的「流程編排」層。
+ * <p>【技巧】讀多用 @Transactional(readOnly=true)；寫入走預設交易。
+ * <p>【概念】Service 是 Demo 最常說明的「流程編排」層。
  */
 @Service
 public class AuthService {
@@ -36,8 +36,8 @@ public class AuthService {
 
     /**
      * 【職責】驗證使用者帳密並回傳含角色與 uid 的登入結果。
-     * 【技巧】交由 AuthenticationManager 驗證，成功後從資料庫取得穩定 userId 再簽 JWT。
-     * 【概念】登入流程把身分驗證與權杖簽發集中在 Service，Controller 無需知道安全細節。
+     * <p>【技巧】交由 AuthenticationManager 驗證，成功後從資料庫取得穩定 userId 再簽 JWT。
+     * <p>【概念】登入流程把身分驗證與權杖簽發集中在 Service，Controller 無需知道安全細節。
      */
     public LoginResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(

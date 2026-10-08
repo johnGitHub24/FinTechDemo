@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 【職責】單元測試 CreateOrderRequest 的 Bean Validation，與 ORDER HTTP Case 成對。
- * 【技巧】純 Validator（無 Spring 容器）。
- * 【概念】進 MockMvc 前先鎖住 DTO 規則，失敗成本更低。
+ * <p>【技巧】純 Validator（無 Spring 容器）。
+ * <p>【概念】進 MockMvc 前先鎖住 DTO 規則，失敗成本更低。
  */
 @Tag("unit")
 class CreateOrderRequestValidationTest {

@@ -49,8 +49,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * 【職責】覆蓋 TradingService 建單、冪等與風控成交。
- * 【技巧】Mockito 隔離 RiskClient／Repository／Kafka publisher。
- * 【概念】訂單核心單元測試：happy path 與 reject 路徑都在這。
+ * <p>【技巧】Mockito 隔離 RiskClient／Repository／Kafka publisher。
+ * <p>【概念】訂單核心單元測試：happy path 與 reject 路徑都在這。
  */
 @ExtendWith(MockitoExtension.class)
 class TradingServiceTest {
@@ -138,7 +138,7 @@ class TradingServiceTest {
 
     /**
      * CASE ORDER-005：Given 風控通過 When execute Then ACCEPTED 且扣現金。
-     * CASE FLOW-005：成交後餘額與持倉由同一 execute 路徑更新。
+     * <br>CASE FLOW-005：成交後餘額與持倉由同一 execute 路徑更新。
      */
     @Test
     void ORDER_005_FLOW_005_execute_whenRiskAllows_shouldAcceptAndDeductCash() {
@@ -205,7 +205,7 @@ class TradingServiceTest {
 
     /**
      * CASE ORDER-007：Given PENDING 訂單 When cancel Then CANCELLED。
-     * CASE FLOW-006：取消後歷程狀態與整合層同一契約。
+     * <br>CASE FLOW-006：取消後歷程狀態與整合層同一契約。
      */
     @Test
     void ORDER_007_FLOW_006_cancelPending_shouldMarkCancelled() {
@@ -229,7 +229,7 @@ class TradingServiceTest {
 
     /**
      * CASE ORDER-008：Given 分頁查詢 When list Then meta.page 與 size 正確，且列上有 username。
-     * CASE FLOW-007：ADMIN／USER 列表皆走同一 list 契約。
+     * <br>CASE FLOW-007：ADMIN／USER 列表皆走同一 list 契約。
      */
     @Test
     void ORDER_008_FLOW_007_list_shouldReturnPagedMeta() {

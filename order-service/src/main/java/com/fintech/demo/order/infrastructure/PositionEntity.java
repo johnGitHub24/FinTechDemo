@@ -14,9 +14,9 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】持倉（後台 B2）；與 ACCEPTED 買單串連。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）：JPA 需無參建構與可變欄位。
- * 【概念】為何不用 record？Entity 有生命週期／dirty checking。API 持倉快照見 PositionResponse record。
- *         規則：Properties／回應／Kafka 事件 → record；JPA Entity／需 setXxx Request → class + Lombok。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）：JPA 需無參建構與可變欄位。
+ * <p>【概念】為何不用 record？Entity 有生命週期／dirty checking。API 持倉快照見 PositionResponse record。
+ * <br>規則：Properties／回應／Kafka 事件 → record；JPA Entity／需 setXxx Request → class + Lombok。
  */
 @Entity
 @Table(name = "positions", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "symbol"}))

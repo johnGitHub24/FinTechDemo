@@ -22,8 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】帳戶 API 整合測試（Fixture 文件對照 ACCOUNT Case）。
- * 【技巧】JWT 含 uid；套件 {@code /api/} 讓成對掃描歸入整合層。
- * 【概念】與單元 AccountLedger／JwtTokenProvider 成對，保護 /api/accounts/me。
+ * <p>【技巧】JWT 含 uid；套件 {@code /api/} 讓成對掃描歸入整合層。
+ * <p>【概念】與單元 AccountLedger／JwtTokenProvider 成對，保護 /api/accounts/me。
  */
 @Tag("integration")
 @SpringBootTest

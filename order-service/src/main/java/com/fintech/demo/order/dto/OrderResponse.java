@@ -11,8 +11,8 @@ import java.time.Instant;
 
 /**
  * 【職責】訂單回應 DTO。
- * 【技巧】class + Lombok {@code @Data}：Service 以 setter 從 Entity 逐欄映射（教學上較直觀）。
- * 【概念】此處保留可變映射風格；若欄位固定且一次建構，可改 record。Entity 本身必須 class + Lombok（JPA）。
+ * <p>【技巧】class + Lombok {@code @Data}：Service 以 setter 從 Entity 逐欄映射（教學上較直觀）。
+ * <p>【概念】此處保留可變映射風格；若欄位固定且一次建構，可改 record。Entity 本身必須 class + Lombok（JPA）。
  */
 @Data
 @NoArgsConstructor

@@ -50,8 +50,8 @@ import java.util.Map;
 
 /**
  * 【職責】訂單交易核心：建單、Feign 風控、成交、取消、帳本與審計。
- * 【技巧】execute 以固定 URL Feign 呼叫 risk-service；Kafka publisher 用 ObjectProvider 可選啟用。
- * 【概念】微服務拆分後，成交路徑必須真實連到 :8082，才符合分散式設計敘事。
+ * <p>【技巧】execute 以固定 URL Feign 呼叫 risk-service；Kafka publisher 用 ObjectProvider 可選啟用。
+ * <p>【概念】微服務拆分後，成交路徑必須真實連到 :8082，才符合分散式設計敘事。
  */
 @Service
 @Transactional
@@ -95,8 +95,8 @@ public class TradingService {
 
     /**
      * 【職責】建立 PENDING 訂單（冪等鍵 clientOrderId）。
-     * 【技巧】symbol 統一 toUpperCase；成功後可選發 Kafka order-events。
-     * 【概念】建單 ≠ 成交：先落單再 execute，方便風控與取消。
+     * <p>【技巧】symbol 統一 toUpperCase；成功後可選發 Kafka order-events。
+     * <p>【概念】建單 ≠ 成交：先落單再 execute，方便風控與取消。
      * @param userId 登入使用者
      * @param request 下單內容
      * @return 新建訂單
@@ -130,8 +130,8 @@ public class TradingService {
 
     /**
      * 【職責】成交：Feign 風控 → 調帳／持倉 → ACCEPTED，並同步／發佈成交事件。
-     * 【技巧】riskClient 固定打 :8082；Kafka publisher 以 ObjectProvider 可選。
-     * 【概念】這是分散式 Demo 的關鍵路徑：order 編排、risk 決策、account 入帳可拆服務。
+     * <p>【技巧】riskClient 固定打 :8082；Kafka publisher 以 ObjectProvider 可選。
+     * <p>【概念】這是分散式 Demo 的關鍵路徑：order 編排、risk 決策、account 入帳可拆服務。
      * @param userId 擁有者（禁止跨使用者成交）
      * @param orderId 訂單主鍵
      */
@@ -211,8 +211,8 @@ public class TradingService {
 
     /**
      * 【職責】取消尚未成交的 PENDING 訂單。
-     * 【技巧】同樣用狀態 guard，避免取消已 ACCEPTED 的單。
-     * 【概念】取消是使用者主動路徑；逾時取消則由 job-service 觸發。
+     * <p>【技巧】同樣用狀態 guard，避免取消已 ACCEPTED 的單。
+     * <p>【概念】取消是使用者主動路徑；逾時取消則由 job-service 觸發。
      */
     public OrderResponse cancel(Long userId, Long orderId) {
         OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
@@ -235,8 +235,8 @@ public class TradingService {
 
     /**
      * 【職責】訂單分頁列表；ADMIN 可看全部，USER 只看自己。
-     * 【技巧】page／size 做邊界夾制，防止一次拉爆記憶體。
-     * 【概念】伺服器端分頁是 Portal 大表的基本功。
+     * <p>【技巧】page／size 做邊界夾制，防止一次拉爆記憶體。
+     * <p>【概念】伺服器端分頁是 Portal 大表的基本功。
      */
     @Transactional(readOnly = true)
     public PageResponse<OrderResponse> list(Long userId, boolean adminAll, OrderStatus status, int page, int size) {
@@ -284,8 +284,8 @@ public class TradingService {
 
     /**
      * 【職責】買入後更新（或新建）持倉與加權平均成本。
-     * 【技巧】avg = (舊成本 + 新成本) / 新數量，HALF_UP 到 4 位。
-     * 【概念】均價是後續賣出損益估算的基礎（本 Demo 未做完整 PnL）。
+     * <p>【技巧】avg = (舊成本 + 新成本) / 新數量，HALF_UP 到 4 位。
+     * <p>【概念】均價是後續賣出損益估算的基礎（本 Demo 未做完整 PnL）。
      */
     private void upsertBuyPosition(Long userId, OrderEntity order) {
         PositionEntity pos = positionRepository.findByUserIdAndSymbol(userId, order.getSymbol())
@@ -326,8 +326,8 @@ public class TradingService {
 
     /**
      * 【職責】Entity → 訂單回應，並帶下單者帳號供前台／後台對帳。
-     * 【技巧】帳號以 userId 查 users；找不到時降級 {@code user-{id}}，避免列表整頁失敗。
-     * 【概念】ADMIN 看全站單時，username 才能把「別人的成交」與「本人餘額」分開講。
+     * <p>【技巧】帳號以 userId 查 users；找不到時降級 {@code user-{id}}，避免列表整頁失敗。
+     * <p>【概念】ADMIN 看全站單時，username 才能把「別人的成交」與「本人餘額」分開講。
      */
     private OrderResponse toOrderResponse(OrderEntity e) {
         OrderResponse r = new OrderResponse();
@@ -346,8 +346,8 @@ public class TradingService {
 
     /**
      * 【職責】把 userId 轉成 Demo 可唸的帳號。
-     * 【技巧】複用 {@link UserRepository#findById}，不另開批次查詢（本 Demo 分頁 ≤100）。
-     * 【概念】列表對帳靠帳號字串，不靠記住 userId=1 是 trader1。
+     * <p>【技巧】複用 {@link UserRepository#findById}，不另開批次查詢（本 Demo 分頁 ≤100）。
+     * <p>【概念】列表對帳靠帳號字串，不靠記住 userId=1 是 trader1。
      */
     private String displayUsername(Long userId) {
         if (userId == null) {
@@ -365,8 +365,8 @@ public class TradingService {
 
     /**
      * 【職責】判斷本次請求是否經 Gateway 轉發。
-     * 【技巧】讀 {@link DemoGatewayHintFilter} 寫入的 request attribute；無 HTTP 上下文（單元測）則 false。
-     * 【概念】viaGateway 只影響 demoTrace 展示，不改業務結果。
+     * <p>【技巧】讀 {@link DemoGatewayHintFilter} 寫入的 request attribute；無 HTTP 上下文（單元測）則 false。
+     * <p>【概念】viaGateway 只影響 demoTrace 展示，不改業務結果。
      */
     private boolean viaGateway() {
         RequestAttributes attrs = RequestContextHolder.getRequestAttributes();

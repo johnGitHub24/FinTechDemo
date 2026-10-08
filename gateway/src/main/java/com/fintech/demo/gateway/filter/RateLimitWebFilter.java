@@ -21,12 +21,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 【職責】Gateway 入口輕量限流：依客戶端鍵做每秒固定視窗計數，超限回 429。
- * 【技巧】Gateway MVC（Servlet）用 {@link OncePerRequestFilter}；Demo 用進程內
- *         {@link ConcurrentHashMap} 計數（免強制 Redis）。類名對齊 APIGatewayMQ 的
- *         {@code RateLimitWebFilter}，方便口述「入口有限流」。
- * 【概念】限流放在 Filter 而非 Controller：所有進入 Gateway 的請求在轉發下游前先被保護。
- *         正式多副本應改 Redis INCR（見 APIGatewayMQ）；本 Demo 證明機制存在即可。
- * 【邊界】不做認證、不解析 body；閾值來自 {@code fintech.gateway.rate-limit.per-second}。
+ * <p>【技巧】Gateway MVC（Servlet）用 {@link OncePerRequestFilter}；Demo 用進程內
+ * <br>{@link ConcurrentHashMap} 計數（免強制 Redis）。類名對齊 APIGatewayMQ 的
+ * <br>{@code RateLimitWebFilter}，方便口述「入口有限流」。
+ * <p>【概念】限流放在 Filter 而非 Controller：所有進入 Gateway 的請求在轉發下游前先被保護。
+ * <br>正式多副本應改 Redis INCR（見 APIGatewayMQ）；本 Demo 證明機制存在即可。
+ * <p>【邊界】不做認證、不解析 body；閾值來自 {@code fintech.gateway.rate-limit.per-second}。
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
@@ -44,8 +44,8 @@ public class RateLimitWebFilter extends OncePerRequestFilter {
 
     /**
      * 【職責】對非 actuator／OPTIONS 請求做 1 秒視窗計數；超限寫 429 JSON。
-     * 【技巧】window key 含 epoch 秒，自然過期；順便清掉非當秒的舊 key 避免 map 膨脹。
-     * 【概念】固定視窗實作簡單，適合 Demo；邊界秒可能短暫突衝，與令牌桶不同。
+     * <p>【技巧】window key 含 epoch 秒，自然過期；順便清掉非當秒的舊 key 避免 map 膨脹。
+     * <p>【概念】固定視窗實作簡單，適合 Demo；邊界秒可能短暫突衝，與令牌桶不同。
      */
     @Override
     protected void doFilterInternal(

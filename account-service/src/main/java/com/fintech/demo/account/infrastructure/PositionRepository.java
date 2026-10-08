@@ -7,8 +7,8 @@ import java.util.Optional;
 
 /**
  * 【職責】持倉 Repository。
- * 【技巧】Spring Data 方法名／JPQL 產生查詢。
- * 【概念】資料存取與領域規則分離，避免 Repository 膨脹。
+ * <p>【技巧】Spring Data 方法名／JPQL 產生查詢。
+ * <p>【概念】資料存取與領域規則分離，避免 Repository 膨脹。
  */
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
 

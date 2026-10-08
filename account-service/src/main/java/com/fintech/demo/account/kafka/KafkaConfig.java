@@ -9,8 +9,8 @@ import org.springframework.kafka.config.TopicBuilder;
 
 /**
  * 【職責】確保 trade-events Topic 存在（僅 kafka.enabled=true）。
- * 【技巧】以 @Configuration／Properties 外置環境差異。
- * 【概念】Producer（order）與 Consumer（account）都可宣告 Topic，idempotent。
+ * <p>【技巧】以 @Configuration／Properties 外置環境差異。
+ * <p>【概念】Producer（order）與 Consumer（account）都可宣告 Topic，idempotent。
  */
 @Configuration
 @ConditionalOnProperty(name = "fintech.kafka.enabled", havingValue = "true")

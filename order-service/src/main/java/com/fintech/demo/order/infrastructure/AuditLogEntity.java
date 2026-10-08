@@ -14,8 +14,8 @@ import java.time.Instant;
 
 /**
  * 【職責】審計軌跡（後台 B4）；種子資料對應具體訂單動作。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；{@code @PrePersist} 補 createdAt。
- * 【概念】為何不用 record？JPA Entity 必須可變。規則：事件／回應 → record；Entity → class + Lombok。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record）；{@code @PrePersist} 補 createdAt。
+ * <p>【概念】為何不用 record？JPA Entity 必須可變。規則：事件／回應 → record；Entity → class + Lombok。
  */
 @Entity
 @Table(name = "audit_log")

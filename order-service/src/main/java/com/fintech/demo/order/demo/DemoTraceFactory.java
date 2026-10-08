@@ -10,8 +10,8 @@ import java.util.UUID;
 
 /**
  * 【職責】組裝 create／execute／cancel 的 demoTrace。
- * 【技巧】viaGateway 時在 hops 前端插入 gateway；risk 成敗都寫 hop。
- * 【概念】輕量展演契約，讓前端 PROCESS FLOW 有事實依據。
+ * <p>【技巧】viaGateway 時在 hops 前端插入 gateway；risk 成敗都寫 hop。
+ * <p>【概念】輕量展演契約，讓前端 PROCESS FLOW 有事實依據。
  */
 public final class DemoTraceFactory {
 

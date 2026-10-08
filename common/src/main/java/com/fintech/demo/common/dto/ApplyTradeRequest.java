@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 
 /**
  * 【職責】同步 Feign 入帳請求，欄位對齊 {@code TradeExecutedEvent}。
- * 【技巧】class + Lombok {@code @Data}（非 record）：無參／全參＋{@code setXxx} 供逐步組裝與 Jackson。
- * 【概念】為何不用 record？Request 組裝階段可變；成交後事件快照才用 record（TradeExecutedEvent）。
- *         規則：Properties／API 回應／Kafka 事件 → record；需 setXxx 的 Request → class + Lombok。
+ * <p>【技巧】class + Lombok {@code @Data}（非 record）：無參／全參＋{@code setXxx} 供逐步組裝與 Jackson。
+ * <p>【概念】為何不用 record？Request 組裝階段可變；成交後事件快照才用 record（TradeExecutedEvent）。
+ * <br>規則：Properties／API 回應／Kafka 事件 → record；需 setXxx 的 Request → class + Lombok。
  */
 @Data
 @NoArgsConstructor

@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * 【職責】同步通知 account-service 入帳（Kafka 關閉時的分散式路徑）。
- * 【技巧】預設 feign-sync=true；失敗拋 BusinessException，讓 execute 交易回滾，避免 ACCEPTED 與 Portal 帳本脫節。
- * 【概念】Kafka on → 走 trade-events（略過 Feign）；Kafka off + feign-sync → Feign 強一致寫 account。
+ * <p>【技巧】預設 feign-sync=true；失敗拋 BusinessException，讓 execute 交易回滾，避免 ACCEPTED 與 Portal 帳本脫節。
+ * <p>【概念】Kafka on → 走 trade-events（略過 Feign）；Kafka off + feign-sync → Feign 強一致寫 account。
  */
 @Service
 public class AccountSyncService {
@@ -37,8 +37,8 @@ public class AccountSyncService {
 
     /**
      * 【職責】在 Feign 同步模式讀取 account-service 的現金餘額。
-     * 【技巧】Kafka 已啟用或同步開關關閉時直接略過；遠端失敗記錄 warn 並降級為 null。
-     * 【概念】此讀取為可選跨服務整合，讓單體本機 Demo 不依賴 account-service。
+     * <p>【技巧】Kafka 已啟用或同步開關關閉時直接略過；遠端失敗記錄 warn 並降級為 null。
+     * <p>【概念】此讀取為可選跨服務整合，讓單體本機 Demo 不依賴 account-service。
      */
     public AccountDto fetchCash(Long userId) {
         if (!feignSync || kafkaEnabled) {
@@ -54,8 +54,8 @@ public class AccountSyncService {
 
     /**
      * 【職責】把成交事件同步轉為 account-service 的入帳請求。
-     * 【技巧】只在非 Kafka 的 Feign 模式組裝 ApplyTradeRequest；失敗必須上拋，與 order 本機帳本同進退。
-     * 【概念】Kafka 與同步 HTTP 是兩條互斥的服務整合路徑，避免同筆成交重複入帳。
+     * <p>【技巧】只在非 Kafka 的 Feign 模式組裝 ApplyTradeRequest；失敗必須上拋，與 order 本機帳本同進退。
+     * <p>【概念】Kafka 與同步 HTTP 是兩條互斥的服務整合路徑，避免同筆成交重複入帳。
      */
     public void syncTrade(TradeExecutedEvent event) {
         if (!feignSync || kafkaEnabled) {

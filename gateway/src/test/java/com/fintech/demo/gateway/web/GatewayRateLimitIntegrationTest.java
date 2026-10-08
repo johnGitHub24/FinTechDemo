@@ -18,8 +18,8 @@ import static org.mockito.Mockito.verify;
 
 /**
  * 【職責】Gateway 限流 Spring 整合：注入正式 Filter bean＋測試組態。
- * 【技巧】不走下游 HTTP 代理（本機無 order-service）；直接打 Filter。
- * 【概念】與 RateLimitWebFilterTest 的 GW-004／GW-005 成對；閾值來自 TestPropertySource。
+ * <p>【技巧】不走下游 HTTP 代理（本機無 order-service）；直接打 Filter。
+ * <p>【概念】與 RateLimitWebFilterTest 的 GW-004／GW-005 成對；閾值來自 TestPropertySource。
  */
 @Tag("integration")
 @SpringBootTest

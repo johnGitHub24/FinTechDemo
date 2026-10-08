@@ -6,8 +6,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * 【職責】FinTechDemo【主入口】Application（等同單專案的 main）。
- * 【技巧】IntelliJ Run Configuration 選這個類即可最短 Demo；前端另開 Vite。
- * 【概念】其他 *Application 是微服務加開項，不是「不知道開哪個」的替代主入口。
+ * <p>【技巧】IntelliJ Run Configuration 選這個類即可最短 Demo；前端另開 Vite。
+ * <p>【概念】其他 *Application 是微服務加開項，不是「不知道開哪個」的替代主入口。
  *
  * <pre>
  * IntelliJ：Run → OrderServiceApplication

@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * 【職責】定時取消逾時 PENDING（Job 薄、Service 厚）。
- * 【技巧】配合同套件 Service／Controller 使用。
- * 【概念】教學 Demo 以可講清邊界為優先。
+ * <p>【技巧】配合同套件 Service／Controller 使用。
+ * <p>【概念】教學 Demo 以可講清邊界為優先。
  */
 @Component
 public class StaleOrderCancelJob {

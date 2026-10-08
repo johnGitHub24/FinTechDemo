@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 【職責】OpenAPI／Swagger 設定（學習用 API 文件）。
- * 【技巧】Bearer JWT 一次 Authorize，之後 Try it out 自動帶 Token。
- * 【概念】對齊 TradingCRUD docs/swagger.html 的「可點可試」體驗。
+ * <p>【技巧】Bearer JWT 一次 Authorize，之後 Try it out 自動帶 Token。
+ * <p>【概念】對齊 TradingCRUD docs/swagger.html 的「可點可試」體驗。
  */
 @Configuration
 public class OpenApiConfig {

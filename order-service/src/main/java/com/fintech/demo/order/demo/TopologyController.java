@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 【職責】Demo 拓撲探測 API（公開，登入頁亦可呼叫）。
- * 【技巧】GET /api/demo/topology；由 {@link TopologyService} 代 ping health。
- * 【概念】避開瀏覽器跨埠 CORS；訪客可在 /login 看到 Risk 是否 UP（成交必要條件）。
+ * <p>【技巧】GET /api/demo/topology；由 {@link TopologyService} 代 ping health。
+ * <p>【概念】避開瀏覽器跨埠 CORS；訪客可在 /login 看到 Risk 是否 UP（成交必要條件）。
  */
 @RestController
 @RequestMapping("/api/demo")

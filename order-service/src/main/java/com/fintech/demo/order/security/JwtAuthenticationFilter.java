@@ -18,8 +18,8 @@ import java.util.List;
 
 /**
  * 【職責】Authorization: Bearer → SecurityContext。
- * 【技巧】配合同套件 Service／Controller 使用。
- * 【概念】教學 Demo 以可講清邊界為優先。
+ * <p>【技巧】配合同套件 Service／Controller 使用。
+ * <p>【概念】教學 Demo 以可講清邊界為優先。
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -33,8 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 【職責】將有效 Bearer JWT 轉換為 Spring Security 的 Authentication。
-     * 【技巧】只有 Context 尚未有身分時才建立 authority，最後一律繼續 filter chain。
-     * 【概念】Filter 是 HTTP token 與框架 SecurityContext 之間的轉接層。
+     * <p>【技巧】只有 Context 尚未有身分時才建立 authority，最後一律繼續 filter chain。
+     * <p>【概念】Filter 是 HTTP token 與框架 SecurityContext 之間的轉接層。
      */
     @Override
     protected void doFilterInternal(
@@ -57,8 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 【職責】從 Authorization header 擷取 Bearer token。
-     * 【技巧】先檢查 header 有文字且以前綴開頭，再移除固定前綴。
-     * 【概念】集中解析可避免各端點各自處理 header 格式而產生差異。
+     * <p>【技巧】先檢查 header 有文字且以前綴開頭，再移除固定前綴。
+     * <p>【概念】集中解析可避免各端點各自處理 header 格式而產生差異。
      */
     private String resolve(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

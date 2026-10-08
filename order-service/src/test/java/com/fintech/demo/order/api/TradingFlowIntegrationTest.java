@@ -37,8 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】驗證種子資料、JWT 授權與交易 API 的端對端流程。
- * 【技巧】套件 {@code /api/} 讓成對掃描歸入整合層；外部 Client 以 MockBean 隔離。
- * 【概念】整合測試保護交易歷程、帳戶餘額與持倉在 API 操作後的一致性。
+ * <p>【技巧】套件 {@code /api/} 讓成對掃描歸入整合層；外部 Client 以 MockBean 隔離。
+ * <p>【概念】整合測試保護交易歷程、帳戶餘額與持倉在 API 操作後的一致性。
  */
 @Tag("integration")
 @SpringBootTest

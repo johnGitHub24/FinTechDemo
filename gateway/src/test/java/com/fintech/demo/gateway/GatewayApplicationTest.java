@@ -6,8 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 /**
  * 【職責】驗證 Gateway 的 Spring Boot 應用程式內容可完整載入。
- * 【技巧】使用 @SpringBootTest 啟動完整 ApplicationContext。
- * 【概念】Gateway 的 context test 可及早找出路由或自動組態的啟動衝突。
+ * <p>【技巧】使用 @SpringBootTest 啟動完整 ApplicationContext。
+ * <p>【概念】Gateway 的 context test 可及早找出路由或自動組態的啟動衝突。
  */
 class GatewayApplicationTest {
 

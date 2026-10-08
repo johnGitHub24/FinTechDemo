@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 【職責】風控 API 整合測試（Fixture 驅動）。
- * 【技巧】DemoTestFixtures 載入 RISK-001、RISK-002、RISK-003；套件 {@code /api/} 歸入整合層。
- * 【概念】與 RiskServiceTest 單元 Case 成對。
+ * <p>【技巧】DemoTestFixtures 載入 RISK-001、RISK-002、RISK-003；套件 {@code /api/} 歸入整合層。
+ * <p>【概念】與 RiskServiceTest 單元 Case 成對。
  */
 @Tag("integration")
 @SpringBootTest

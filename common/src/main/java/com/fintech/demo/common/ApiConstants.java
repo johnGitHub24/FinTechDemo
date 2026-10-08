@@ -2,8 +2,8 @@ package com.fintech.demo.common;
 
 /**
  * 【職責】跨服務共用常數（API 前綴、Kafka topic 名等）。
- * 【技巧】Topic 名集中宣告，Producer／Consumer 避免字串漂移。
- * 【概念】order-events＝下單執行；trade-events＝成交入帳（account-service）。
+ * <p>【技巧】Topic 名集中宣告，Producer／Consumer 避免字串漂移。
+ * <p>【概念】order-events＝下單執行；trade-events＝成交入帳（account-service）。
  */
 public final class ApiConstants {
 

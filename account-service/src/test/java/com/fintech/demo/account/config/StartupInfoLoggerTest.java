@@ -20,8 +20,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * 【職責】驗證啟動橫幅：關閉不印；開啟時印 health／框線；probe=false 不打網路。
- * 【技巧】Mockito Environment；stdout 以 UTF-8 捕捉。
- * 【概念】Loop：bootRun 應見「後端已啟動」與本服務 [UP]；單元測不依賴已啟動的埠。
+ * <p>【技巧】Mockito Environment；stdout 以 UTF-8 捕捉。
+ * <p>【概念】Loop：bootRun 應見「後端已啟動」與本服務 [UP]；單元測不依賴已啟動的埠。
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

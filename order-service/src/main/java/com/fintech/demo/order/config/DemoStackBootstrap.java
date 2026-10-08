@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 【職責】Order 就緒後自動跑 Loop Engineering：{@code demo/ensure-demo-links.ps1 -FromOrder}。
- * 【技巧】背景執行；失敗會重試，直到橫幅服務全 UP（或耗盡重試）。
- * 【概念】Windows 上 bat／npm 必須用 cmd /c（腳本內已根修）；FromOrder 跳過 javadoc／test 長工。
- * 【邊界】省 RAM：{@code ensure-skip-docker}／{@code ensure-skip-locust}；測試關 {@code ensure-stack=false}。
+ * <p>【技巧】背景執行；失敗會重試，直到橫幅服務全 UP（或耗盡重試）。
+ * <p>【概念】Windows 上 bat／npm 必須用 cmd /c（腳本內已根修）；FromOrder 跳過 javadoc／test 長工。
+ * <p>【邊界】省 RAM：{@code ensure-skip-docker}／{@code ensure-skip-locust}；測試關 {@code ensure-stack=false}。
  */@Component
 @Order(100)
 @ConditionalOnProperty(name = "fintech.startup.ensure-stack", havingValue = "true", matchIfMissing = true)

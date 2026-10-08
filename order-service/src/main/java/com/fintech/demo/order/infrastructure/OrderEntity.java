@@ -20,10 +20,10 @@ import java.time.Instant;
 
 /**
  * 【職責】委託／成交歷史（前台 blotter + 後台歷史 B3）。
- * 【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）：
- *         JPA 需要無參建構與可變欄位；{@code @Data} 的 equals／hashCode 不宜含全部欄位。
- * 【概念】為何不用 record？Entity 有生命週期／dirty checking，必須可變。
- *         規則：Properties／API 回應／Kafka 事件 → record；JPA Entity／需 setXxx 的 Request → class + Lombok。
+ * <p>【技巧】class + Lombok {@code @Getter}/{@code @Setter}（非 record、勿 {@code @Data}）：
+ * <br>JPA 需要無參建構與可變欄位；{@code @Data} 的 equals／hashCode 不宜含全部欄位。
+ * <p>【概念】為何不用 record？Entity 有生命週期／dirty checking，必須可變。
+ * <br>規則：Properties／API 回應／Kafka 事件 → record；JPA Entity／需 setXxx 的 Request → class + Lombok。
  */
 @Entity
 @Table(name = "orders")

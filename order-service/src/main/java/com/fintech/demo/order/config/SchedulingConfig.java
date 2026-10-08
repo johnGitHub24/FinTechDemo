@@ -8,8 +8,8 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 /**
  * 【職責】多執行緒排程池（EOS：pool-size ≥ 2）。
- * 【技巧】以 @Configuration／Properties 外置環境差異。
- * 【概念】組態與業務分離，本機／Docker profile 才好切。
+ * <p>【技巧】以 @Configuration／Properties 外置環境差異。
+ * <p>【概念】組態與業務分離，本機／Docker profile 才好切。
  */
 @Configuration
 @EnableScheduling

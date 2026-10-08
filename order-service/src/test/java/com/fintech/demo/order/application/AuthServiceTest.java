@@ -27,8 +27,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 /**
  * 【職責】驗證登入流程的驗證委派、使用者查詢與 JWT 回應組裝。
- * 【技巧】以 Mockito 模擬 AuthenticationManager、UserRepository 與 JwtTokenProvider。
- * 【概念】認證、使用者識別與權杖簽發應在服務層協作，Controller 不承擔安全細節。
+ * <p>【技巧】以 Mockito 模擬 AuthenticationManager、UserRepository 與 JwtTokenProvider。
+ * <p>【概念】認證、使用者識別與權杖簽發應在服務層協作，Controller 不承擔安全細節。
  */
 class AuthServiceTest {
 
@@ -46,9 +46,9 @@ class AuthServiceTest {
 
     /**
      * CASE AUTH-001：Given 認證成功的使用者與角色，When 登入，Then 回傳 JWT、帳號及角色。
-     * CASE JWT-001：回傳的 token 字串非空，整合層以同一權杖存取 API。
-     * CASE SEC-001：登入契約假設後續請求必須帶 Token（無 Token 由 Filter 拒）。
-     * CASE FLOW-002：未授權與 SEC-001 同一拒絕語意。
+     * <br>CASE JWT-001：回傳的 token 字串非空，整合層以同一權杖存取 API。
+     * <br>CASE SEC-001：登入契約假設後續請求必須帶 Token（無 Token 由 Filter 拒）。
+     * <br>CASE FLOW-002：未授權與 SEC-001 同一拒絕語意。
      */
     @Test
     void AUTH_001_login_shouldReturnBearerTokenAndRoles() {
@@ -78,7 +78,7 @@ class AuthServiceTest {
 
     /**
      * CASE AUTH-002：Given AuthenticationManager 拒絕，When 登入，Then 拋 BadCredentialsException。
-     * CASE JWT-002：失敗登入不簽發可用權杖，對應整合層無效 Token → 401。
+     * <br>CASE JWT-002：失敗登入不簽發可用權杖，對應整合層無效 Token → 401。
      */
     @Test
     void AUTH_002_badCredentials_shouldPropagate() {

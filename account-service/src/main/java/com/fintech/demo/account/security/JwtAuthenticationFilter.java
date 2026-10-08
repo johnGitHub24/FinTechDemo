@@ -18,8 +18,8 @@ import java.util.List;
 
 /**
  * 【職責】Authorization: Bearer → SecurityContext（無狀態）。
- * 【技巧】principal 放 username；userId 由 Controller 再調 JwtTokenProvider.getUserId。
- * 【概念】Filter 只負責「是誰」與角色，帳本查詢用 uid claim。
+ * <p>【技巧】principal 放 username；userId 由 Controller 再調 JwtTokenProvider.getUserId。
+ * <p>【概念】Filter 只負責「是誰」與角色，帳本查詢用 uid claim。
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

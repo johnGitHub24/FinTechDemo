@@ -13,8 +13,8 @@ import java.util.Map;
 
 /**
  * 【職責】供 job-service 觸發的內部 Job API。
- * 【技巧】只做參數／驗證／HTTP 狀態；商業規則在 Service。
- * 【概念】薄 Controller 利於測試與替換傳輸層。
+ * <p>【技巧】只做參數／驗證／HTTP 狀態；商業規則在 Service。
+ * <p>【概念】薄 Controller 利於測試與替換傳輸層。
  */
 @RestController
 @RequestMapping("/api/internal/jobs")
@@ -32,8 +32,8 @@ public class InternalJobController {
 
     /**
      * 【職責】供 job-service 請求取消逾時未成交訂單。
-     * 【技巧】先比對 X-Job-Token 再執行服務，拒絕缺失或不符的內部呼叫。
-     * 【概念】內部端點可不經使用者 JWT，但仍需服務對服務的最小驗證。
+     * <p>【技巧】先比對 X-Job-Token 再執行服務，拒絕缺失或不符的內部呼叫。
+     * <p>【概念】內部端點可不經使用者 JWT，但仍需服務對服務的最小驗證。
      */
     @PostMapping("/cancel-stale")
     public Map<String, Object> cancelStale(@RequestHeader(value = "X-Job-Token", required = false) String token) {

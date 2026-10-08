@@ -28,8 +28,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 /**
  * 【職責】驗證帳本服務的買賣入帳、現金餘額與持倉轉換規則。
- * 【技巧】以 Mockito 隔離 Repository，並以 ArgumentCaptor 檢查寫入的持倉內容。
- * 【概念】帳本是現金與持倉的唯一寫入點，測試保護其金融不變量。
+ * <p>【技巧】以 Mockito 隔離 Repository，並以 ArgumentCaptor 檢查寫入的持倉內容。
+ * <p>【概念】帳本是現金與持倉的唯一寫入點，測試保護其金融不變量。
  */
 class AccountLedgerServiceTest {
 
